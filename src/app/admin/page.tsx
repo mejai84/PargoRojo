@@ -5,6 +5,7 @@ import { DollarSign, ShoppingBag, Users, TrendingUp, Clock, Loader2, ArrowUp, Ar
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 // Función simple para formatear hora
 const formatTime = (date: Date) => {
@@ -227,8 +228,8 @@ export default function AdminDashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatsCard
                     title="Ingresos Hoy"
-                    value={`${stats.todayRevenue.toFixed(2)}€`}
-                    subtitle={`Ayer: ${stats.yesterdayRevenue.toFixed(2)}€`}
+                    value={formatPrice(stats.todayRevenue)}
+                    subtitle={`Ayer: ${formatPrice(stats.yesterdayRevenue)}`}
                     icon={DollarSign}
                     trend={calculateTrend(stats.todayRevenue, stats.yesterdayRevenue)}
                     trendUp={stats.todayRevenue >= stats.yesterdayRevenue}
@@ -257,7 +258,7 @@ export default function AdminDashboard() {
                 />
                 <StatsCard
                     title="Ticket Promedio"
-                    value={stats.totalOrdersToday > 0 ? `${(stats.todayRevenue / stats.totalOrdersToday).toFixed(2)}€` : '0.00€'}
+                    value={stats.totalOrdersToday > 0 ? formatPrice(stats.todayRevenue / stats.totalOrdersToday) : formatPrice(0)}
                     subtitle="Por pedido"
                     icon={TrendingUp}
                     trend="+0%"
@@ -286,7 +287,7 @@ export default function AdminDashboard() {
                             <div key={i} className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="font-medium capitalize">{day.day}</span>
-                                    <span className="font-mono font-bold text-primary">{day.revenue.toFixed(2)}€</span>
+                                    <span className="font-mono font-bold text-primary">{formatPrice(day.revenue)}</span>
                                 </div>
                                 <div className="h-3 bg-white/5 rounded-full overflow-hidden">
                                     <div
@@ -329,7 +330,7 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="font-mono font-bold">{order.total?.toFixed(2)}€</span>
+                                    <span className="font-mono font-bold">{formatPrice(order.total || 0)}</span>
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusStyle(order.status)}`}>
                                         {getStatusLabel(order.status)}
                                     </span>
@@ -356,7 +357,7 @@ export default function AdminDashboard() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">{item.sales} ventas</span>
-                                    <span className="font-mono font-bold text-primary">{item.revenue.toFixed(2)}€</span>
+                                    <span className="font-mono font-bold text-primary">{formatPrice(item.revenue)}</span>
                                 </div>
                             </div>
                         ))}
