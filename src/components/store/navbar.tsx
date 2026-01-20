@@ -169,7 +169,7 @@ export function Navbar() {
                                                             </div>
                                                             <div>
                                                                 <div className="text-foreground font-bold text-sm group-hover/item:text-primary transition-colors">{prod.name}</div>
-                                                                <div className="text-xs text-muted-foreground">{prod.price.toFixed(2)}€</div>
+                                                                <div className="text-xs text-muted-foreground">${prod.price.toLocaleString('es-CO')}</div>
                                                             </div>
                                                         </Link>
                                                     ))}

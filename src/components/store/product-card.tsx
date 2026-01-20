@@ -32,7 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
                         <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                             {product.name}
                         </h3>
-                        <span className="font-bold text-lg">{product.price.toFixed(2)}€</span>
+                        <span className="font-bold text-lg">${product.price.toLocaleString('es-CO')}</span>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
                         {product.ingredients?.join(", ") || product.description}

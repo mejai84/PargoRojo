@@ -156,18 +156,18 @@ export default function Home() {
             <div className="space-y-4">
               {[
                 {
-                  name: "David G.",
-                  text: "Las mejores hamburguesas de Laviana sin duda. La carne es espectacular y el trato de 10. ¡Repetiremos seguro!",
+                  name: "María G.",
+                  text: "La mejor cazuela de mariscos de todo Caucasia. El sabor es auténtico y la atención es inmejorable.",
                   bg: "bg-white/5"
                 },
                 {
-                  name: "Laura M.",
-                  text: "Un sitio con mucho rollo. La hamburguesa Pozu es brutal, y las patatas con 4 salsas son obligatorias.",
+                  name: "Carlos P.",
+                  text: "Un sitio espectacular para ir en familia. El Pargo Rojo frito es enorme y delicioso. ¡100% recomendado!",
                   bg: "bg-white/[0.02]"
                 },
                 {
-                  name: "Javi F.",
-                  text: "Calidad precio inmejorable. Se nota que los ingredientes son frescos. El servicio a domicilio funciona genial, llega todo caliente.",
+                  name: "Ana L.",
+                  text: "Me encanta el ambiente y la comida. Los precios son muy justos para la calidad que ofrecen. Volveré seguro.",
                   bg: "bg-white/5"
                 }
               ].map((review, i) => (
