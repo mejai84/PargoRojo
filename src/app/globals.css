@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-radius: var(--radius);
+}
+
+:root {
+  /* Pozu 2.0 Brand Colors */
+  --background: #0D0D0D;
+  --foreground: #FFFFFF;
+  
+  --card: #1A1A1A;
+  --card-foreground: #FFFFFF;
+  
+  --popover: #1A1A1A;
+  --popover-foreground: #FFFFFF;
+  
+  --primary: #FF6B35;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #FFD23F;
+  --secondary-foreground: #0D0D0D;
+  
+  --muted: #262626;
+  --muted-foreground: #A0A0A0;
+  
+  --accent: #FF6B35;
+  --accent-foreground: #FFFFFF;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #262626;
+  --input: #262626;
+  --ring: #FF6B35;
+  
+  --radius: 0.75rem;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #FF6B35, #FFD23F);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
