@@ -252,4 +252,6 @@ BEGIN
   (cat_id, 'MILO FRIO', 6000, ''),
   (cat_id, 'MILO CALIENTE', 6000, '');
 
+  UPDATE public.products SET is_available = true, deleted_at = NULL;
+  UPDATE public.categories SET is_active = true, deleted_at = NULL;
 END $$;

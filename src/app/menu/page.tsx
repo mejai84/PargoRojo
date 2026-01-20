@@ -22,31 +22,50 @@ function MenuContent() {
 
     const fetchData = async () => {
         setLoading(true)
+        console.log("Iniciando carga de datos...");
 
-        // Fetch Categories
-        const { data: catData } = await supabase
-            .from('categories')
-            .select('*')
-            .eq('is_active', true)
-            .order('order_position')
+        try {
+            // Fetch Categories
+            const { data: catData, error: catError } = await supabase
+                .from('categories')
+                .select('*')
+                .eq('is_active', true)
+                .is('deleted_at', null)
+                .order('order_position')
 
-        if (catData) setCategories(catData)
+            if (catError) console.error("Error cargando categorías:", catError);
+            if (catData && catData.length > 0) {
+                setCategories(catData)
+            } else {
+                const { categories: localCats } = await import("@/lib/data")
+                setCategories(localCats)
+            }
 
-        // Fetch Products
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .is('deleted_at', null)
-            .eq('is_available', true)
-            .order('name')
+            // Fetch Products
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .is('deleted_at', null)
+                .eq('is_available', true)
+                .order('name')
 
-        if (!error && data) {
-            setProducts(data)
-        } else {
-            // Fallback to local data
-            const { products: localProducts } = await import("@/lib/data")
+            if (error) console.error("Error cargando productos:", error);
+
+            if (data && data.length > 0) {
+                console.log(`${data.length} productos cargados desde Supabase`);
+                setProducts(data)
+            } else {
+                console.warn("No se encontraron productos en Supabase, usando datos locales...");
+                const { products: localProducts } = await import("@/lib/data")
+                setProducts(localProducts)
+            }
+        } catch (err) {
+            console.error("Error crítico en fetchData:", err);
+            const { products: localProducts, categories: localCats } = await import("@/lib/data")
             setProducts(localProducts)
+            setCategories(localCats)
         }
+
         setLoading(false)
     }
 

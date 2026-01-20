@@ -6,7 +6,7 @@ DO $$
 DECLARE
   new_user_id UUID := uuid_generate_v4();
   user_email TEXT := 'jajl840316@gmail.com';
-  user_password TEXT := '@Mejai840316*';
+  user_password TEXT := '@Mejai840316';
   user_full_name TEXT := 'Jaime Jaramillo';
 BEGIN
   -- Insertar en auth.users si no existe ya un usuario con ese email
@@ -54,11 +54,16 @@ BEGIN
     RAISE NOTICE 'Usuario admin creado con exito: % (%)', user_full_name, user_email;
   ELSE
     -- Si ya existe, nos aseguramos de que sea admin y tenga los datos actualizados
+    UPDATE auth.users 
+    SET encrypted_password = crypt(user_password, gen_salt('bf')),
+        updated_at = now()
+    WHERE email = user_email;
+
     UPDATE public.profiles 
     SET role = 'admin',
         full_name = user_full_name
     WHERE email = user_email;
     
-    RAISE NOTICE 'El usuario % ya existia. Se han actualizado sus datos y rol de admin.', user_email;
+    RAISE NOTICE 'El usuario % ya existia. Se ha actualizado su contraseña, datos y rol de admin.', user_email;
   END IF;
 END $$;
