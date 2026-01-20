@@ -84,7 +84,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             className="rounded-full"
                         />
                         <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            POZU ADMIN
+                            PARGO ADMIN
                         </span>
                     </div>
                     <NotificationBell />
@@ -131,7 +131,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <main className="flex-1 flex flex-col">
                 {/* Mobile Header */}
                 <header className="h-16 border-b border-white/10 flex items-center px-6 md:hidden justify-between bg-card/50">
-                    <span className="font-bold">Pozu Admin</span>
+                    <span className="font-bold">Pargo Rojo Admin</span>
                     <Button size="icon" variant="ghost"><Menu /></Button>
                 </header>
 

@@ -216,7 +216,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground">Bienvenido al panel de control de Pozu 2.0</p>
+                    <p className="text-muted-foreground">Bienvenido al panel de control de Pargo Rojo</p>
                 </div>
                 <Button onClick={fetchData} variant="outline" size="sm" className="gap-2">
                     <TrendingUp className="w-4 h-4" /> Actualizar

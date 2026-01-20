@@ -13,9 +13,9 @@ export async function sendReportEmail(email: string, reportData: any) {
         }
 
         const { data, error } = await resend.emails.send({
-            from: 'Pozu Reports <onboarding@resend.dev>',
+            from: 'Pargo Rojo Reports <onboarding@resend.dev>',
             to: [email],
-            subject: `Reporte Pozu - ${new Date().toLocaleDateString('es-ES')}`,
+            subject: `Reporte Pargo Rojo - ${new Date().toLocaleDateString('es-ES')}`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1 style="color: #333;">Reporte de Rendimiento</h1>
@@ -46,7 +46,7 @@ export async function sendReportEmail(email: string, reportData: any) {
                     </ul>
                     
                     <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;" />
-                    <p style="font-size: 0.8em; color: #999; text-align: center;">Pozu 2.0 Admin System</p>
+                    <p style="font-size: 0.8em; color: #999; text-align: center;">Pargo Rojo Admin System</p>
                 </div>
             `
         })

@@ -67,7 +67,7 @@ export function Footer() {
                     <div className="space-y-6">
                         <h4 className="font-bold uppercase tracking-wider text-sm">Personal</h4>
                         <p className="text-xs text-muted-foreground">
-                            Si eres parte del equipo de Pozu, accede aquí para gestionar pedidos y productos.
+                            Si eres parte del equipo de Pargo Rojo, accede aquí para gestionar pedidos y productos.
                         </p>
                         <Link
                             href="/admin"
@@ -80,7 +80,7 @@ export function Footer() {
                 </div>
 
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-                    <p>© {new Date().getFullYear()} POZU 2.0. Todos los derechos reservados.</p>
+                    <p>© {new Date().getFullYear()} PARGO ROJO. Todos los derechos reservados.</p>
                     <div className="flex gap-6">
                         <a href="#" className="hover:text-foreground">Privacidad</a>
                         <a href="#" className="hover:text-foreground">Términos</a>

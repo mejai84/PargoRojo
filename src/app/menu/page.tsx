@@ -71,8 +71,8 @@ function MenuContent() {
                     <div className="space-y-4">
                         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Nuestra <span className="text-gradient">Carta</span></h1>
                         <p className="text-muted-foreground text-lg max-w-xl">
-                            Desde las clásicas del Pozu hasta nuestras creaciones más atrevidas.
-                            Todo hecho con carne 100% ternera asturiana.
+                            Desde los clásicos de la casa hasta nuestras creaciones más especiales.
+                            Pescado fresco del día, mariscos seleccionados y el mejor sazón de la costa.
                         </p>
                     </div>
 

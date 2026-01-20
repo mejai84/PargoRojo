@@ -15,7 +15,7 @@ export default function CombosPage() {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-                        Próximamente: <span className="text-gradient">Combos Pozu</span>
+                        Próximamente: <span className="text-gradient">Combos Gran Rafa</span>
                     </h1>
 
                     <p className="text-xl text-muted-foreground leading-relaxed">

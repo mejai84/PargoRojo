@@ -18,9 +18,9 @@ interface Settings {
 }
 
 const defaultSettings: Settings = {
-    business_name: "Pozu 2.0",
+    business_name: "Pargo Rojo",
     phone: "+34 600 000 000",
-    email: "info@pozu.com",
+    email: "admin@pargorojo.com",
     address: "Calle Principal, 123",
     delivery_fee: 2.50,
     min_order_amount: 10.00,
@@ -606,7 +606,7 @@ export default function AdminSettingsPage() {
                                         <label className="text-sm font-medium">Pie de foto</label>
                                         <textarea
                                             className="w-full h-32 p-3 rounded-lg bg-white/5 border border-white/10 resize-none focus:border-pink-500 outline-none transition-colors"
-                                            placeholder="¡Nueva hamburguesa disponible! 🍔🔥 #Pozu20 #BurgerLover"
+                                            placeholder="¡Hoy tenemos Pargo Rojo! 🐟🔥 #PargoRojo #Seafood"
                                         />
                                     </div>
                                     <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold">
