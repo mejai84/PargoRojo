@@ -17,34 +17,30 @@ export default function NosotrosPage() {
                             Nuestra Historia
                         </span>
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-                            Más que una <span className="text-gradient">Hamburguesería</span>
+                            Pasión por la <span className="text-gradient">Comida de Mar</span>
                         </h1>
                         <p className="text-xl text-muted-foreground leading-relaxed">
-                            Nacimos en el corazón de Pola de Laviana con una misión clara: elevar el concepto de la hamburguesa artesanal usando producto de nuestra tierra.
+                            Desde nuestros inicios en Caucasia, nos hemos dedicado a traer los sabores más frescos del Caribe a tu mesa. Pargo Rojo es tradición y calidad.
                         </p>
 
                         <div className="grid grid-cols-2 gap-8 pt-8">
                             <div>
-                                <div className="text-4xl font-bold text-primary mb-2">+10k</div>
-                                <p className="text-muted-foreground">Clientes satisfechos</p>
+                                <div className="text-4xl font-bold text-primary mb-2">+15</div>
+                                <p className="text-muted-foreground">Años de experiencia</p>
                             </div>
                             <div>
                                 <div className="text-4xl font-bold text-primary mb-2">100%</div>
-                                <p className="text-muted-foreground">Ternera Asturiana</p>
+                                <p className="text-muted-foreground">Pesca Fresca</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="relative aspect-video lg:aspect-square rounded-3xl overflow-hidden border border-white/10 group">
-                        <Image
-                            src="/images/logo.jpg"
-                            alt="Interior del local"
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
+                        {/* Placeholder image until user uploads specific "About" image */}
+                        <div className="absolute inset-0 bg-[url('/images/hero-bg.jpg')] bg-cover bg-center"></div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                         <div className="absolute bottom-6 left-6 right-6 p-6 glass rounded-2xl border border-white/10">
-                            <p className="text-lg font-medium italic">"El sabor del Pozu no se explica, se siente en cada mordisco."</p>
+                            <p className="text-lg font-medium italic">"El verdadero sabor del mar, preparado con el alma."</p>
                         </div>
                     </div>
                 </div>
@@ -58,27 +54,27 @@ export default function NosotrosPage() {
                             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
                                 <ShieldCheck className="w-8 h-8 text-primary" />
                             </div>
-                            <h3 className="text-2xl font-bold">Calidad Suprema</h3>
+                            <h3 className="text-2xl font-bold">Frescura Garantizada</h3>
                             <p className="text-muted-foreground leading-relaxed">
-                                Seleccionamos personalmente cada ingrediente. Nuestra carne nunca ha sido congelada y nuestro pan se hornea a diario.
+                                Seleccionamos el mejor pescado y marisco diariamente. Del mar a tu plato, garantizando la máxima calidad en cada bocado.
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
                                 <Heart className="w-8 h-8 text-primary" />
                             </div>
-                            <h3 className="text-2xl font-bold">Hecho a Mano</h3>
+                            <h3 className="text-2xl font-bold">Sazón Tradicional</h3>
                             <p className="text-muted-foreground leading-relaxed">
-                                Aquí no hay máquinas procesadoras. Cada hamburguesa es boleada y aplastada a mano para mantener su jugosidad.
+                                Nuestras recetas conservan el toque casero y tradicional de la cocina costeña, preparadas con amor y dedicación.
                             </p>
                         </div>
                         <div className="space-y-4">
                             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
                                 <Star className="w-8 h-8 text-primary" />
                             </div>
-                            <h3 className="text-2xl font-bold">Esencia Rockera</h3>
+                            <h3 className="text-2xl font-bold">Ambiente Familiar</h3>
                             <p className="text-muted-foreground leading-relaxed">
-                                Somos Pozu por la mina y por el espíritu. Un ambiente joven, dinámico y con la mejor música de fondo.
+                                En Gran Rafa, te sentirás como en casa. Un espacio acogedor pensado para disfrutar en familia y con amigos.
                             </p>
                         </div>
                     </div>
@@ -91,8 +87,8 @@ export default function NosotrosPage() {
                     <h2 className="text-3xl md:text-5xl font-bold">¿Dónde encontrarnos?</h2>
                     <div className="flex flex-col items-center gap-4">
                         <MapPin className="w-12 h-12 text-primary animate-bounce" />
-                        <p className="text-xl font-bold">Calle Río Cares, 2 - Pola de Laviana</p>
-                        <p className="text-muted-foreground">Asturias (España)</p>
+                        <p className="text-xl font-bold">C.Cial. Cauca Centro - Caucasia</p>
+                        <p className="text-muted-foreground">Antioquia, Colombia</p>
                     </div>
                 </div>
             </section>

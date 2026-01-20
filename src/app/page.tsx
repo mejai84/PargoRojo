@@ -9,11 +9,11 @@ import { products } from "@/lib/data";
 
 export default function Home() {
   // Filtrar productos para la home
-  const featuredBurgers = [
-    products.find(p => p.id === "pozu"),
-    products.find(p => p.id === "gourmet"),
-    products.find(p => p.id === "selecta"),
-    products.find(p => p.id === "oikos")
+  const featuredDishes = [
+    products.find(p => p.id === "pargo_rojo"),
+    products.find(p => p.id === "cazuela_mariscos"),
+    products.find(p => p.id === "churrasco"),
+    products.find(p => p.id === "arroz_marinera")
   ].filter((p): p is typeof products[0] => Boolean(p));
 
   return (
@@ -94,13 +94,13 @@ export default function Home() {
           <div className="flex flex-col items-center text-center mb-16 gap-3">
             <h2 className="text-3xl md:text-5xl font-bold">Nuestros Favoritos</h2>
             <p className="text-muted-foreground text-lg max-w-2xl">
-              Una selección de las hamburguesas más pedidas por nuestros clientes. ¿Cuál te atreves a probar hoy?
+              Una selección de los platos más pedidos por nuestros clientes. ¿Cuál te atreves a probar hoy?
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredBurgers.map((burger) =>
-              <ProductCard key={burger.id} product={burger} />
+            {featuredDishes.map((dish) =>
+              <ProductCard key={dish.id} product={dish} />
             )}
           </div>
         </div>
