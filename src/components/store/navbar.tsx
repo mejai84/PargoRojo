@@ -105,13 +105,13 @@ export function Navbar() {
                     <Link href="/" className="flex items-center gap-3 group">
                         <Image
                             src="/images/logo.jpg"
-                            alt="Pozu 2.0 Logo"
+                            alt="Pargo Rojo Logo"
                             width={48}
                             height={48}
                             className="rounded-full border-2 border-white/10 group-hover:border-primary/50 transition-colors"
                         />
-                        <span className="text-2xl font-bold tracking-tighter text-gradient">
-                            POZU 2.0
+                        <span className="text-xl font-bold tracking-tighter text-gradient uppercase">
+                            Pargo Rojo
                         </span>
                     </Link>
 

@@ -13,15 +13,15 @@ export function Footer() {
                         <Link href="/" className="flex items-center gap-3">
                             <Image
                                 src="/images/logo.jpg"
-                                alt="Pozu 2.0 Logo"
+                                alt="Pargo Rojo Logo"
                                 width={40}
                                 height={40}
                                 className="rounded-full"
                             />
-                            <span className="text-xl font-bold tracking-tighter">POZU 2.0</span>
+                            <span className="text-xl font-bold tracking-tighter">Pargo Rojo</span>
                         </Link>
                         <p className="text-muted-foreground text-sm leading-relaxed">
-                            Las mejores hamburguesas artesanales de Asturias. Calidad premium y sabor inigualable en cada bocado.
+                            Lo mejor en comida de mar, Pescados y Mariscos. Espectaculares asados en Caucasia, Antioquia.
                         </p>
                         <div className="flex items-center gap-4">
                             <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all">
@@ -50,15 +50,15 @@ export function Footer() {
                         <ul className="space-y-4 text-sm text-muted-foreground">
                             <li className="flex items-center gap-3">
                                 <MapPin className="w-4 h-4 text-primary" />
-                                <span>C. Río Cares, 2, Pola de Laviana</span>
+                                <span>C.Cial. Cauca Centro, Caucasia</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="w-4 h-4 text-primary" />
-                                <span>+34 987 654 321</span>
+                                <span>320 784 8287</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="w-4 h-4 text-primary" />
-                                <span>hola@pozu.com</span>
+                                <span>contacto@pargorojo.com</span>
                             </li>
                         </ul>
                     </div>

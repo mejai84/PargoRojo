@@ -8,8 +8,8 @@ import { Footer } from "@/components/store/footer";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "POZU 2.0 | Hamburguesas Artesanales",
-    description: "Las mejores hamburguesas artesanales de la ciudad. Realiza tu pedido online ahora.",
+    title: "Pargo Rojo - Gran Rafa | Restaurante",
+    description: "Lo mejor en comida de mar, Pescados y Mariscos. Espectaculares asados en Caucasia.",
 };
 
 export default function RootLayout({

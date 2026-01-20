@@ -24,36 +24,41 @@
 }
 
 :root {
-  /* Pozu 2.0 Brand Colors */
-  --background: #0D0D0D;
+  /* Pargo Rojo Brand Colors - Modern Dark Mode */
+  --background: #121214;
+  /* Matte Charcoal */
   --foreground: #FFFFFF;
-  
-  --card: #1A1A1A;
+
+  --card: #1C1C1F;
+  /* Slightly lighter for depth */
   --card-foreground: #FFFFFF;
-  
-  --popover: #1A1A1A;
+
+  --popover: #1C1C1F;
   --popover-foreground: #FFFFFF;
-  
-  --primary: #FF6B35;
+
+  --primary: #EF4444;
+  /* Pargo Red (Bright) */
   --primary-foreground: #FFFFFF;
-  
-  --secondary: #FFD23F;
-  --secondary-foreground: #0D0D0D;
-  
-  --muted: #262626;
-  --muted-foreground: #A0A0A0;
-  
-  --accent: #FF6B35;
+
+  --secondary: #F59E0B;
+  /* Gran Rafa Gold */
+  --secondary-foreground: #FFFFFF;
+
+  --muted: #27272A;
+  --muted-foreground: #A1A1AA;
+
+  --accent: #F59E0B;
   --accent-foreground: #FFFFFF;
-  
-  --destructive: #EF4444;
+
+  --destructive: #991B1B;
   --destructive-foreground: #FFFFFF;
 
-  --border: #262626;
-  --input: #262626;
-  --ring: #FF6B35;
-  
-  --radius: 0.75rem;
+  --border: #27272A;
+  --input: #27272A;
+  --ring: #EF4444;
+
+  --radius: 1rem;
+  /* More modern rounded corners */
 }
 
 body {
@@ -71,7 +76,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #FF6B35, #FFD23F);
+  background: linear-gradient(to right, #EF4444, #F59E0B);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
