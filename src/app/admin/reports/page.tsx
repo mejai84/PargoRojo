@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
     FileText,
@@ -166,18 +167,18 @@ export default function ReportsPage() {
 
         const csvContent = [
             ['Resumen del Reporte'],
-            ['Ingresos Totales', `${reportData.totalRevenue.toFixed(2)}€`],
+            ['Ingresos Totales', formatPrice(reportData.totalRevenue)],
             ['Total de Pedidos', reportData.totalOrders],
             ['Total de Clientes', reportData.totalCustomers],
-            ['Valor Promedio del Pedido', `${reportData.averageOrderValue.toFixed(2)}€`],
+            ['Valor Promedio del Pedido', formatPrice(reportData.averageOrderValue)],
             [],
             ['Top Productos'],
             ['Producto', 'Ventas', 'Ingresos'],
-            ...reportData.topProducts.map(p => [p.name, p.sales, `${p.revenue.toFixed(2)}€`]),
+            ...reportData.topProducts.map(p => [p.name, p.sales, formatPrice(p.revenue)]),
             [],
             ['Ingresos Diarios'],
             ['Fecha', 'Ingresos', 'Pedidos'],
-            ...reportData.dailyRevenue.map(d => [d.date, `${d.revenue.toFixed(2)}€`, d.orders])
+            ...reportData.dailyRevenue.map(d => [d.date, formatPrice(d.revenue), d.orders])
         ].map(row => row.join(',')).join('\n')
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -373,7 +374,7 @@ export default function ReportsPage() {
                                 <span className="text-sm font-medium text-muted-foreground">Ingresos Totales</span>
                             </div>
                             <div className="text-3xl font-bold text-green-500">
-                                {reportData.totalRevenue.toFixed(2)}€
+                                {formatPrice(reportData.totalRevenue)}
                             </div>
                         </div>
 
@@ -409,7 +410,7 @@ export default function ReportsPage() {
                                 <span className="text-sm font-medium text-muted-foreground">Ticket Promedio</span>
                             </div>
                             <div className="text-3xl font-bold text-orange-500">
-                                {reportData.averageOrderValue.toFixed(2)}€
+                                {formatPrice(reportData.averageOrderValue)}
                             </div>
                         </div>
                     </div>
@@ -441,12 +442,12 @@ export default function ReportsPage() {
                                             fontSize={12}
                                             tickLine={false}
                                             axisLine={false}
-                                            tickFormatter={(value: number) => `${value}€`}
+                                            tickFormatter={(value: number) => formatPrice(value)}
                                         />
                                         <Tooltip
                                             contentStyle={{ backgroundColor: '#1e1e1e', borderColor: '#333' }}
                                             labelStyle={{ color: '#888' }}
-                                            formatter={(value: number) => [`${value.toFixed(2)}€`, 'Ingresos']}
+                                            formatter={(value: any) => [formatPrice(value || 0), 'Ingresos']}
                                         />
                                         <Area
                                             type="monotone"
@@ -480,7 +481,7 @@ export default function ReportsPage() {
                                         <Tooltip
                                             cursor={{ fill: '#ffffff10' }}
                                             contentStyle={{ backgroundColor: '#1e1e1e', borderColor: '#333' }}
-                                            formatter={(value: number) => [`${value.toFixed(2)}€`, 'Ingresos']}
+                                            formatter={(value: any) => [formatPrice(value || 0), 'Ingresos']}
                                         />
                                         <Bar dataKey="revenue" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                                     </BarChart>
@@ -513,7 +514,7 @@ export default function ReportsPage() {
                                         <Tooltip
                                             cursor={{ fill: '#ffffff10' }}
                                             contentStyle={{ backgroundColor: '#1e1e1e', borderColor: '#333' }}
-                                            formatter={(value: number) => [value, 'Pedidos']}
+                                            formatter={(value: any) => [value || 0, 'Pedidos']}
                                         />
                                         <Bar dataKey="orders" fill="#ec4899" radius={[4, 4, 0, 0]} />
                                     </BarChart>
