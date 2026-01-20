@@ -80,7 +80,7 @@ function MenuContent() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <input
                             type="text"
-                            placeholder="Busca tu favorita..."
+                            placeholder="Buscar en el menú..."
                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all text-lg"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -88,29 +88,31 @@ function MenuContent() {
                     </div>
                 </div>
 
-                {/* Categories Filter */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-8 scrollbar-hide no-scrollbar -mx-6 px-6">
-                    <button
-                        onClick={() => setActiveCategory("all")}
-                        className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === "all"
-                            ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                            : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10"
-                            }`}
-                    >
-                        Todos
-                    </button>
-                    {categories.map(cat => (
+                {/* Categories Filter - Sticky implementation */}
+                <div className="sticky top-20 z-30 bg-background/80 backdrop-blur-md -mx-6 px-6 py-4 border-b border-white/5 mb-8">
+                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide no-scrollbar">
                         <button
-                            key={cat.id}
-                            onClick={() => setActiveCategory(cat.id)}
-                            className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === cat.id
+                            onClick={() => setActiveCategory("all")}
+                            className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === "all"
                                 ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
                                 : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10"
                                 }`}
                         >
-                            {cat.name}
+                            Todos
                         </button>
-                    ))}
+                        {categories.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setActiveCategory(cat.id)}
+                                className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === cat.id
+                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                    : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10"
+                                    }`}
+                            >
+                                {cat.name}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Products Grid */}

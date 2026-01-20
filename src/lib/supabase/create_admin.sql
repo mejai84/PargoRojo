@@ -7,7 +7,7 @@ DECLARE
   new_user_id UUID := uuid_generate_v4();
   user_email TEXT := 'jajl840316@gmail.com';
   user_password TEXT := '@Mejai840316*';
-  user_full_name TEXT := 'Jaime Alberto Jaramillo Lopez';
+  user_full_name TEXT := 'Jaime Jaramillo';
 BEGIN
   -- Insertar en auth.users si no existe ya un usuario con ese email
   IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = user_email) THEN

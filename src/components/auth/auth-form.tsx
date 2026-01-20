@@ -12,7 +12,6 @@ export function AuthForm() {
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [isPasswordLogin, setIsPasswordLogin] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
     const router = useRouter()
 
@@ -22,26 +21,12 @@ export function AuthForm() {
         setMessage(null)
 
         try {
-            if (isPasswordLogin) {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                })
-                if (error) throw error
-                router.push('/')
-            } else {
-                const { error } = await supabase.auth.signInWithOtp({
-                    email,
-                    options: {
-                        emailRedirectTo: `${location.origin}/auth/callback`,
-                    },
-                })
-                if (error) throw error
-                setMessage({
-                    type: 'success',
-                    text: '¡Enlace enviado! Revisa tu correo electrónico para iniciar sesión.'
-                })
-            }
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
+            if (error) throw error
+            router.push('/')
         } catch (error: any) {
             setMessage({
                 type: 'error',
@@ -53,30 +38,10 @@ export function AuthForm() {
     }
 
     return (
-        <div className="w-full max-w-sm space-y-4">
-            <div className="flex bg-white/5 p-1 rounded-2xl gap-1">
-                <button
-                    onClick={() => setIsPasswordLogin(false)}
-                    className={cn(
-                        "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
-                        !isPasswordLogin ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-foreground"
-                    )}
-                >
-                    Email Mágico
-                </button>
-                <button
-                    onClick={() => setIsPasswordLogin(true)}
-                    className={cn(
-                        "flex-1 py-2 text-xs font-bold rounded-xl transition-all",
-                        isPasswordLogin ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-foreground"
-                    )}
-                >
-                    Contraseña
-                </button>
-            </div>
-
+        <div className="w-full max-w-sm space-y-6">
             <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
+                    <label className="text-sm font-medium ml-1">Email</label>
                     <div className="relative">
                         <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                         <input
@@ -91,26 +56,25 @@ export function AuthForm() {
                     </div>
                 </div>
 
-                {isPasswordLogin && (
-                    <div className="space-y-2">
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                            <input
-                                type="password"
-                                placeholder="Tu contraseña"
-                                className="w-full h-11 pl-10 rounded-xl bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground placeholder:text-muted-foreground/50"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                disabled={loading}
-                            />
-                        </div>
+                <div className="space-y-2">
+                    <label className="text-sm font-medium ml-1">Contraseña</label>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                        <input
+                            type="password"
+                            placeholder="Tu contraseña"
+                            className="w-full h-11 pl-10 rounded-xl bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground placeholder:text-muted-foreground/50"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            disabled={loading}
+                        />
                     </div>
-                )}
+                </div>
 
                 <Button
                     type="submit"
-                    className="w-full h-11 font-bold text-base"
+                    className="w-full h-11 font-bold text-base bg-primary hover:bg-primary/90 mt-2"
                     disabled={loading}
                 >
                     {loading ? (
@@ -119,7 +83,7 @@ export function AuthForm() {
                             Ingresando...
                         </>
                     ) : (
-                        isPasswordLogin ? "Entrar" : "Continuar con Email"
+                        "Iniciar Sesión"
                     )}
                 </Button>
             </form>
@@ -132,10 +96,6 @@ export function AuthForm() {
                     {message.text}
                 </div>
             )}
-
-            <div className="text-center text-xs text-muted-foreground">
-                ¿Olvidaste tu contraseña? Usa el Email Mágico para entrar directamente.
-            </div>
         </div>
     )
 }
