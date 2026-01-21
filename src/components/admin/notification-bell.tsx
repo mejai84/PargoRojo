@@ -2,13 +2,13 @@
 
 import { Bell, Check, X } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { useNotifications } from "@/lib/supabase/notifications"
+import { useAdminNotifications } from "@/lib/supabase/notifications"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 export function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false)
-    const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications()
+    const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useAdminNotifications()
     const dropdownRef = useRef<HTMLDivElement>(null)
 
     // Close dropdown when clicking outside

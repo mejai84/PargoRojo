@@ -15,6 +15,8 @@ interface Settings {
     min_order_amount: number
     is_open: boolean
     enable_combos: boolean
+    whatsapp_enabled: boolean
+    whatsapp_phone: string
 }
 
 const defaultSettings: Settings = {
@@ -25,7 +27,9 @@ const defaultSettings: Settings = {
     delivery_fee: 2.50,
     min_order_amount: 10.00,
     is_open: true,
-    enable_combos: false
+    enable_combos: false,
+    whatsapp_enabled: true,
+    whatsapp_phone: "+573000000000"
 }
 
 export default function AdminSettingsPage() {
@@ -111,7 +115,9 @@ export default function AdminSettingsPage() {
                 const features = featuresData.value as any
                 setSettings(prev => ({
                     ...prev,
-                    enable_combos: features.enable_combos ?? prev.enable_combos
+                    enable_combos: features.enable_combos ?? prev.enable_combos,
+                    whatsapp_enabled: features.whatsapp_enabled ?? prev.whatsapp_enabled,
+                    whatsapp_phone: features.whatsapp_phone || prev.whatsapp_phone
                 }))
             }
 
@@ -202,7 +208,9 @@ export default function AdminSettingsPage() {
         setLoading(true)
         try {
             const features = {
-                enable_combos: settings.enable_combos
+                enable_combos: settings.enable_combos,
+                whatsapp_enabled: settings.whatsapp_enabled,
+                whatsapp_phone: settings.whatsapp_phone
             }
 
             // Check if feature_flags exists
@@ -638,6 +646,34 @@ export default function AdminSettingsPage() {
                                     <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${settings.enable_combos ? 'translate-x-7' : 'translate-x-1'}`} />
                                 </button>
                             </div>
+
+                            <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                                <div>
+                                    <div className="font-bold">Botón de WhatsApp</div>
+                                    <div className="text-sm text-muted-foreground">Mostrar botón flotante de WhatsApp en el sitio</div>
+                                </div>
+                                <button
+                                    onClick={() => setSettings({ ...settings, whatsapp_enabled: !settings.whatsapp_enabled })}
+                                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${settings.whatsapp_enabled ? 'bg-green-500' : 'bg-gray-600'}`}
+                                >
+                                    <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${settings.whatsapp_enabled ? 'translate-x-7' : 'translate-x-1'}`} />
+                                </button>
+                            </div>
+
+                            {settings.whatsapp_enabled && (
+                                <div className="space-y-2 p-4 bg-white/5 rounded-xl animate-in slide-in-from-top-2">
+                                    <label className="text-sm font-medium flex items-center gap-2">
+                                        <Phone className="w-4 h-4 text-muted-foreground" />
+                                        Número de WhatsApp (con +, ej: +57...)
+                                    </label>
+                                    <input
+                                        value={settings.whatsapp_phone}
+                                        onChange={(e) => setSettings({ ...settings, whatsapp_phone: e.target.value })}
+                                        className="w-full p-3 rounded-lg bg-white/5 border border-white/10 focus:border-primary outline-none transition-colors"
+                                        placeholder="+573000000000"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <Button

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut, User, ShoppingBag, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/store/navbar"
+import { CustomerNotifications } from "@/components/store/customer-notifications"
 
 export default function CuentaPage() {
     const [user, setUser] = useState<any>(null)
@@ -100,6 +101,32 @@ export default function CuentaPage() {
                                 </Button>
                             </div>
                         )}
+
+                        {/* Puntos Gran Rafa Card */}
+                        <div className="p-8 rounded-[2.5xl] bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 relative overflow-hidden group">
+                            <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/20 blur-[60px] rounded-full group-hover:bg-primary/30 transition-all duration-700" />
+
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-primary font-bold tracking-wider uppercase text-xs">
+                                        <div className="w-8 h-0.5 bg-primary" />
+                                        Puntos Gran Rafa
+                                    </div>
+                                    <h3 className="text-4xl font-extrabold tracking-tight">
+                                        {profile?.loyalty_points || 0} <span className="text-xl text-muted-foreground font-medium">Puntos</span>
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Equivale a <span className="text-foreground font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format((profile?.loyalty_points || 0) * 10)}</span> de descuento en tu próximo pedido.
+                                    </p>
+                                </div>
+                                <Button variant="outline" className="h-12 px-8 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 hover:text-primary transition-all font-bold">
+                                    ¿Cómo ganar más?
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Notificaciones del Cliente */}
+                        <CustomerNotifications />
 
                         <div className="p-12 rounded-3xl bg-card border border-white/5 text-center space-y-4">
                             <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground opacity-20" />

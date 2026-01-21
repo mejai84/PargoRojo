@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Loader2, CreditCard, Banknote } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
+import { formatPrice } from "@/lib/utils"
+import { useEffect } from "react"
 
 export function CheckoutForm() {
     const { items, cartTotal, clearCart } = useCart()
@@ -23,6 +25,33 @@ export function CheckoutForm() {
         phone: ''
     })
 
+    const [profile, setProfile] = useState<any>(null)
+    const [pointsToRedeem, setPointsToRedeem] = useState(0)
+    const [pointsDiscount, setPointsDiscount] = useState(0)
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single()
+                setProfile(data)
+            }
+        }
+        fetchProfile()
+    }, [])
+
+    const handleRedeemPoints = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value) || 0
+        const maxPoints = profile?.loyalty_points || 0
+        const validatedPoints = Math.min(value, maxPoints)
+        setPointsToRedeem(validatedPoints)
+        setPointsDiscount(validatedPoints * 10) // 1 point = 10 COP
+    }
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
     }
@@ -37,8 +66,8 @@ export function CheckoutForm() {
             const user = session?.user
 
             // 2. Prepare Order Data
-            const deliveryFee = 2.50
-            const total = cartTotal + deliveryFee
+            const deliveryFee = 5000 // In COP
+            const total = Math.max(0, cartTotal + deliveryFee - pointsDiscount)
 
             const orderData = {
                 user_id: user?.id || null,
@@ -57,7 +86,8 @@ export function CheckoutForm() {
                 delivery_fee: deliveryFee,
                 total: total,
                 payment_method: paymentMethod,
-                payment_status: paymentMethod === 'cash' ? 'pending' : 'paid', // Simulating paid for stripe
+                payment_status: paymentMethod === 'cash' ? 'pending' : 'paid',
+                notes: pointsToRedeem > 0 ? `Redimidos ${pointsToRedeem} puntos ($${pointsDiscount})` : null
             }
 
             // 3. Insert Order
@@ -92,6 +122,19 @@ export function CheckoutForm() {
 
             if (itemsError) throw new Error(itemsError.message)
 
+            // 5. If points were used, register the transaction
+            if (pointsToRedeem > 0 && user) {
+                await supabase
+                    .from('loyalty_transactions')
+                    .insert([{
+                        user_id: user.id,
+                        order_id: order.id,
+                        amount: -pointsToRedeem,
+                        transaction_type: 'redemption',
+                        description: `Redención de puntos en pedido #${order.id}`
+                    }])
+            }
+
             // Success
             clearCart()
             router.push('/checkout/success')
@@ -120,24 +163,57 @@ export function CheckoutForm() {
                                 <span className="font-bold text-primary">{item.quantity}x</span>
                                 <span>{item.name}</span>
                             </div>
-                            <span>{(item.price * item.quantity).toFixed(2)}€</span>
+                            <span>{formatPrice(item.price * item.quantity)}</span>
                         </div>
                     ))}
                     <div className="border-t border-white/10 pt-4 mt-4 space-y-2">
                         <div className="flex justify-between text-muted-foreground">
                             <span>Subtotal</span>
-                            <span>{cartTotal.toFixed(2)}€</span>
+                            <span>{formatPrice(cartTotal)}</span>
                         </div>
                         <div className="flex justify-between text-muted-foreground">
                             <span>Envío</span>
-                            <span>2.50€</span>
+                            <span>{formatPrice(5000)}</span>
                         </div>
+                        {pointsDiscount > 0 && (
+                            <div className="flex justify-between text-green-500 font-medium">
+                                <span>Descuento Puntos</span>
+                                <span>-{formatPrice(pointsDiscount)}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between text-xl font-bold pt-2 border-t border-white/10 text-primary">
                             <span>Total</span>
-                            <span>{(cartTotal + 2.50).toFixed(2)}€</span>
+                            <span>{formatPrice(Math.max(0, cartTotal + 5000 - pointsDiscount))}</span>
                         </div>
                     </div>
                 </div>
+
+                {profile && profile.loyalty_points > 0 && (
+                    <div className="p-6 rounded-2xl bg-primary/10 border border-primary/20 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold">Puntos Disponibles:</span>
+                                <span className="text-primary font-bold">{profile.loyalty_points}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">1 pt = $10</span>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">¿Cuántos puntos deseas redimir?</label>
+                            <input
+                                type="number"
+                                value={pointsToRedeem}
+                                onChange={handleRedeemPoints}
+                                max={profile.loyalty_points}
+                                min={0}
+                                className="w-full bg-background border border-white/10 rounded-xl p-3 outline-none focus:border-primary"
+                                placeholder="Escribe la cantidad..."
+                            />
+                            {pointsDiscount > 0 && (
+                                <p className="text-xs text-green-500 font-bold">¡Ahorrarás {formatPrice(pointsDiscount)}!</p>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Formulario */}
@@ -177,7 +253,7 @@ export function CheckoutForm() {
                     </div>
 
                     <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={loading}>
-                        {loading ? <Loader2 className="animate-spin" /> : `Pagar ${(cartTotal + 2.50).toFixed(2)}€`}
+                        {loading ? <Loader2 className="animate-spin" /> : `Pagar ${formatPrice(Math.max(0, cartTotal + 5000 - pointsDiscount))}`}
                     </Button>
                 </form>
             </div>

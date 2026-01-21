@@ -47,9 +47,11 @@ export default function Home() {
                   Ver Carta Completa
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-white/5 border-white/10 hover:bg-white/10 hover:text-primary">
-                Reservar Mesa
-              </Button>
+              <Link href="/reservar">
+                <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-white/5 border-white/10 hover:bg-white/10 hover:text-primary">
+                  Reservar Mesa
+                </Button>
+              </Link>
             </div>
 
             <div className="flex items-center gap-8 mt-8 pt-8 border-t border-white/5 w-full">
