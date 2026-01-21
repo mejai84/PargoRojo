@@ -1,15 +1,25 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "@/components/store/navbar"
+import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Users, MessageSquare, CheckCircle2, ChevronRight } from "lucide-react"
+import { Calendar, Clock, Users, MessageSquare, CheckCircle2, ChevronRight, Loader2 } from "lucide-react"
 import { createReservation } from "@/app/actions/reservations"
 
 export default function ReservarPage() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            setIsAuthenticated(!!session)
+        }
+        checkAuth()
+    }, [])
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
@@ -26,6 +36,48 @@ export default function ReservarPage() {
         }
     }
 
+    if (isAuthenticated === null) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-background flex flex-col">
+                <Navbar />
+                <main className="flex-1 flex items-center justify-center p-6">
+                    <div className="max-w-md w-full bg-card border border-white/10 p-8 rounded-[2.5rem] text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                        <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Users className="w-10 h-10 text-primary" />
+                        </div>
+                        <h1 className="text-3xl font-bold">Reserva tu Mesa</h1>
+                        <p className="text-muted-foreground">
+                            Para realizar una reserva, necesitas tener una cuenta con nosotros. Es rápido y te permitirá gestionar tus reservas fácilmente.
+                        </p>
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => window.location.href = "/login?redirect=/reservar"}
+                                className="w-full h-12 rounded-xl text-lg font-bold"
+                            >
+                                Iniciar Sesión / Registrarse
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => window.location.href = "/"}
+                                className="w-full"
+                            >
+                                Volver al Inicio
+                            </Button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        )
+    }
+
     if (isSuccess) {
         return (
             <div className="min-h-screen bg-background flex flex-col">
@@ -37,7 +89,9 @@ export default function ReservarPage() {
                         </div>
                         <h1 className="text-3xl font-bold">¡Reserva Recibida!</h1>
                         <p className="text-muted-foreground">
-                            Hemos recibido tu solicitud de reserva. Te hemos enviado un correo de confirmación y nos pondremos en contacto contigo pronto.
+                            Hemos recibido tu solicitud de reserva.
+                            <span className="block font-bold text-primary mt-2">La reserva se confirmará sujeta a disponibilidad.</span>
+                            Te contactaremos pronto por teléfono o correo electrónico para confirmar si hay mesa disponible.
                         </p>
                         <Button onClick={() => window.location.href = "/"} className="w-full h-12 rounded-xl text-base font-bold">
                             Volver al Inicio

@@ -15,7 +15,7 @@ DECLARE
 BEGIN
     -- 1. PESCADOS Y MARISCOS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Pescados y Mariscos', 'pescados-y-mariscos', 1, true)
+    VALUES ('Pescados y Mariscos', 'pescados-y-mariscos', 2, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, description, is_available) VALUES
@@ -49,7 +49,7 @@ BEGIN
 
     -- 2. RICURAS DE NUESTRA REGIÓN
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Ricuras de nuestra Región', 'ricuras-region', 2, true)
+    VALUES ('Ricuras de nuestra Región', 'ricuras-region', 3, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, description, is_available) VALUES
@@ -70,7 +70,7 @@ BEGIN
 
     -- 3. CORTES GRUESOS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Cortes Gruesos', 'cortes-gruesos', 3, true)
+    VALUES ('Cortes Gruesos', 'cortes-gruesos', 4, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -84,7 +84,7 @@ BEGIN
 
     -- 4. ESPECIALIDADES A LA BRASA
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Especialidades a la Brasa', 'especialidades-brasa', 4, true)
+    VALUES ('Especialidades a la Brasa', 'especialidades-brasa', 5, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -98,7 +98,7 @@ BEGIN
 
     -- 5. CERDO
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Cerdo', 'cerdo', 5, true)
+    VALUES ('Cerdo', 'cerdo', 6, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -111,7 +111,7 @@ BEGIN
 
     -- 6. ARROCES
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Arroces', 'arroces', 6, true)
+    VALUES ('Arroces', 'arroces', 7, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -124,7 +124,7 @@ BEGIN
 
     -- 7. POLLOS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Pollos', 'pollos', 7, true)
+    VALUES ('Pollos', 'pollos', 8, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -140,7 +140,7 @@ BEGIN
 
     -- 8. PASTAS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Pastas', 'pastas', 8, true)
+    VALUES ('Pastas', 'pastas', 9, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -154,7 +154,7 @@ BEGIN
 
     -- 9. COMIDA MONTAÑERA
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Comida Montañera', 'comida-montanera', 9, true)
+    VALUES ('Comida Montañera', 'comida-montanera', 10, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -167,7 +167,7 @@ BEGIN
 
     -- 10. LASAÑAS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Lasañas', 'lasanas', 10, true)
+    VALUES ('Lasañas', 'lasanas', 11, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -178,7 +178,7 @@ BEGIN
 
     -- 11. COMIDAS RÁPIDAS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Comidas Rápidas', 'comidas-rapidas', 11, true)
+    VALUES ('Comidas Rápidas', 'comidas-rapidas', 12, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES
@@ -192,7 +192,7 @@ BEGIN
 
     -- 12. MENÚ INFANTIL
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Menú Infantil', 'menu-infantil', 12, true)
+    VALUES ('Menú Infantil', 'menu-infantil', 13, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, description, is_available) VALUES
@@ -204,7 +204,7 @@ BEGIN
 
     -- 13. ENTRADAS
     INSERT INTO public.categories (name, slug, order_position, is_active) 
-    VALUES ('Entradas', 'entradas', 13, true)
+    VALUES ('Entradas', 'entradas', 1, true)
     ON CONFLICT (slug) DO UPDATE SET is_active = true RETURNING id INTO cat_id;
     
     INSERT INTO public.products (category_id, name, price, is_available) VALUES

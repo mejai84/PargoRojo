@@ -53,6 +53,12 @@ interface Order {
     order_items: OrderItem[]
     payment_method: string
     payment_status: string
+    delivery_address?: {
+        street: string
+        city: string
+        phone: string
+    }
+    notes?: string
 }
 
 export default function AdminOrdersPage() {
@@ -203,6 +209,18 @@ export default function AdminOrdersPage() {
                 </div>
             </div>
 
+            {pendingOrders.length > 0 && (
+                <div className="bg-red-500/10 border border-red-500/50 p-4 rounded-xl flex items-center justify-between mb-4 animate-pulse">
+                    <div className="flex items-center gap-3">
+                        <AlertCircle className="w-8 h-8 text-red-500" />
+                        <div>
+                            <h3 className="text-lg font-bold text-red-500">¡ATENCIÓN CAJA! Hay {pendingOrders.length} pedidos por aprobar</h3>
+                            <p className="text-sm text-muted-foreground">Revisa los pedidos nuevos antes de enviarlos a cocina.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex-1 overflow-x-auto">
                 <div className="flex gap-6 min-w-[1000px] h-full pb-4">
                     <OrderColumn title="Nuevos" color="border-blue-500/50" count={pendingOrders.length} icon={AlertCircle}>
@@ -273,7 +291,7 @@ export default function AdminOrdersPage() {
                                                 <span className="font-bold block group-hover:text-primary transition-colors">{p.name}</span>
                                                 <span className="text-xs text-muted-foreground line-clamp-1">{p.description}</span>
                                             </div>
-                                            <span className="font-mono text-primary font-bold bg-primary/10 px-2 py-1 rounded">{p.price}€</span>
+                                            <span className="font-mono text-primary font-bold bg-primary/10 px-2 py-1 rounded">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(p.price)}</span>
                                         </button>
                                     ))}
                                     {filteredProducts.length === 0 && (
@@ -339,7 +357,7 @@ export default function AdminOrdersPage() {
                                                     <span className="font-medium">{item.name}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <span className="font-mono">{(item.price * item.quantity).toFixed(2)}€</span>
+                                                    <span className="font-mono">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(item.price * item.quantity)}</span>
                                                     <button onClick={() => removeFromNewOrder(item.id)} className="text-muted-foreground hover:text-red-500 transition-colors p-2">
                                                         <Trash2 className="w-5 h-5" />
                                                     </button>
@@ -353,7 +371,7 @@ export default function AdminOrdersPage() {
                                 <div className="mt-6 pt-4 border-t border-white/10 space-y-4">
                                     <div className="flex justify-between items-end">
                                         <span className="text-muted-foreground">Total a pagar</span>
-                                        <span className="text-3xl font-black text-primary">{newOrderItems.reduce((acc, i) => acc + (i.price * i.quantity), 0).toFixed(2)}€</span>
+                                        <span className="text-3xl font-black text-primary">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(newOrderItems.reduce((acc, i) => acc + (i.price * i.quantity), 0))}</span>
                                     </div>
 
                                     <Button
@@ -401,27 +419,48 @@ export default function AdminOrdersPage() {
                                                     <span className="font-bold text-lg text-primary w-8 text-center">{item.quantity}x</span>
                                                     <span className="font-medium">{productName}</span>
                                                 </div>
-                                                <span className="text-muted-foreground font-mono">{(item.unit_price * item.quantity).toFixed(2)}€</span>
+                                                <span className="text-muted-foreground font-mono">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(item.unit_price * item.quantity)}</span>
                                             </div>
                                         )
                                     })}
                                 </div>
                                 <div className="mt-4 flex justify-between items-center pt-4 border-t border-white/10 text-xl font-bold">
                                     <span>Total</span>
-                                    <span>{selectedOrder.total.toFixed(2)}€</span>
+                                    <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(selectedOrder.total)}</span>
                                 </div>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <h3 className="text-sm font-bold uppercase text-muted-foreground mb-4">Cliente</h3>
+                                    <h3 className="text-sm font-bold uppercase text-muted-foreground mb-4">Cliente / Entrega</h3>
                                     <div className="flex flex-col gap-3">
                                         <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
                                             <User className="w-5 h-5 text-muted-foreground" />
                                             <div>
                                                 <div className="font-medium">{getCustomerName(selectedOrder)}</div>
+                                                {selectedOrder.guest_info?.phone && <div className="text-sm text-muted-foreground">{selectedOrder.guest_info.phone}</div>}
                                             </div>
                                         </div>
+                                        {selectedOrder.delivery_address && (
+                                            <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5">
+                                                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                                                <div>
+                                                    <div className="font-medium">{selectedOrder.delivery_address.street}</div>
+                                                    <div className="text-sm text-muted-foreground">{selectedOrder.delivery_address.city}</div>
+                                                    {selectedOrder.delivery_address.phone && (
+                                                        <div className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                                                            <Phone className="w-3 h-3" /> {selectedOrder.delivery_address.phone}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {selectedOrder.notes && (
+                                            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm">
+                                                <span className="font-bold block mb-1">Notas:</span>
+                                                {selectedOrder.notes}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -546,7 +585,7 @@ function OrderCard({ order, onView, customerName }: any) {
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t border-white/5">
-                <span className="font-bold">{order.total.toFixed(2)}€</span>
+                <span className="font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(order.total)}</span>
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); onView(); }}>
                     Ver
                 </Button>

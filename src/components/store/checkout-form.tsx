@@ -13,7 +13,7 @@ import { useEffect } from "react"
 export function CheckoutForm() {
     const { items, cartTotal, clearCart } = useCart()
     const [loading, setLoading] = useState(false)
-    const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cash'>('stripe')
+    const [paymentMethod, setPaymentMethod] = useState<string>('nequi_daviplata')
     const router = useRouter()
 
     // Form fields
@@ -235,11 +235,11 @@ export function CheckoutForm() {
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 type="button"
-                                onClick={() => setPaymentMethod('stripe')}
-                                className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-colors ${paymentMethod === 'stripe' ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                                onClick={() => setPaymentMethod('nequi_daviplata' as any)}
+                                className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-colors ${paymentMethod === ('nequi_daviplata' as any) ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                             >
                                 <CreditCard className="w-6 h-6" />
-                                <span className="text-sm font-medium">Tarjeta / Bizum</span>
+                                <span className="text-sm font-medium">Nequi / Daviplata</span>
                             </button>
                             <button
                                 type="button"
@@ -247,7 +247,7 @@ export function CheckoutForm() {
                                 className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-colors ${paymentMethod === 'cash' ? 'bg-primary/10 border-primary text-primary' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
                             >
                                 <Banknote className="w-6 h-6" />
-                                <span className="text-sm font-medium">Efectivo</span>
+                                <span className="text-sm font-medium">Efectivo / Contraentrega</span>
                             </button>
                         </div>
                     </div>

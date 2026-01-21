@@ -169,7 +169,7 @@ export function Navbar() {
                                                             </div>
                                                             <div>
                                                                 <div className="text-foreground font-bold text-sm group-hover/item:text-primary transition-colors">{prod.name}</div>
-                                                                <div className="text-xs text-muted-foreground">${prod.price.toLocaleString('es-CO')}</div>
+                                                                <div className="text-xs text-muted-foreground">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(prod.price)}</div>
                                                             </div>
                                                         </Link>
                                                     ))}
@@ -301,7 +301,7 @@ export function Navbar() {
                                         </div>
                                         <div className="flex-1">
                                             <div className="font-bold text-lg group-hover:text-primary transition-colors">{product.name}</div>
-                                            <div className="text-primary font-bold">{product.price.toFixed(2)}€</div>
+                                            <div className="text-primary font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.price)}</div>
                                         </div>
                                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                                             <ChevronRight className="w-5 h-5 text-muted-foreground" />

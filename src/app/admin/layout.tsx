@@ -7,19 +7,21 @@ import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Users,
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+// ... imports anteriores se mantienen ...
+
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
-    { icon: Calendar, label: "Reservas", href: "/admin/reservations" },
-    { icon: ShoppingBag, label: "Pedidos", href: "/admin/orders" },
-    { icon: ChefHat, label: "Cocina (KDS)", href: "/admin/kitchen" },
-    { icon: QrCode, label: "Mesas & QR", href: "/admin/tables" },
-    { icon: Package, label: "Inventario", href: "/admin/inventory" },
-    { icon: Tag, label: "Cupones", href: "/admin/coupons" },
-    { icon: UtensilsCrossed, label: "Productos", href: "/admin/products" },
-    { icon: Users, label: "Clientes", href: "/admin/customers" },
-    { icon: Users, label: "Empleados", href: "/admin/employees" },
-    { icon: BarChart3, label: "Reportes", href: "/admin/reports" },
-    { icon: Settings, label: "Configuración", href: "/admin/settings" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/admin", roles: ['admin', 'manager', 'cashier'] },
+    { icon: ShoppingBag, label: "Caja / Pedidos", href: "/admin/orders", roles: ['admin', 'manager', 'cashier', 'waiter'] },
+    { icon: ChefHat, label: "Cocina (KDS)", href: "/admin/kitchen", roles: ['admin', 'manager', 'cook', 'chef'] },
+    { icon: QrCode, label: "Mesas & QR", href: "/admin/tables", roles: ['admin', 'manager', 'waiter', 'cashier', 'cleaner'] },
+    { icon: Calendar, label: "Reservas", href: "/admin/reservations", roles: ['admin', 'manager', 'host', 'cashier'] },
+    { icon: Package, label: "Inventario", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
+    { icon: Tag, label: "Cupones", href: "/admin/coupons", roles: ['admin', 'manager'] },
+    { icon: UtensilsCrossed, label: "Productos", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
+    { icon: Users, label: "Clientes", href: "/admin/customers", roles: ['admin', 'manager', 'cashier'] },
+    { icon: Users, label: "Empleados", href: "/admin/employees", roles: ['admin', 'manager'] },
+    { icon: BarChart3, label: "Reportes", href: "/admin/reports", roles: ['admin', 'manager'] },
+    { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
 ]
 
 import Image from "next/image"
@@ -33,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [authorized, setAuthorized] = useState(false)
+    const [userRole, setUserRole] = useState<string>("")
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -49,11 +52,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 .eq('id', session.user.id)
                 .single()
 
-            if (error || !data || (data.role !== 'admin' && data.role !== 'staff')) {
+            // Permitir acceso a roles específicos
+            const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host']
+
+            if (error || !data || !allowedRoles.includes(data.role)) {
                 router.push("/")
                 return
             }
 
+            setUserRole(data.role)
             setAuthorized(true)
             setLoading(false)
         }
@@ -73,6 +80,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     if (!authorized) return null
+
+    // Filter items based on role
+    // 'staff' is treated as a general role with access to most things for backward compatibility, or strictly mapped.
+    // Let's assume 'staff' ~ 'manager' for simplicity or verify specific perms.
+    // For specific roles, check the array.
+    const filteredItems = sidebarItems.filter(item => {
+        if (userRole === 'admin') return true
+        if (userRole === 'staff') return true // Legacy staff gets full access or restricted? Let's give full for now to avoid breaking.
+        return item.roles.includes(userRole)
+    })
 
     return (
         <div className="flex min-h-screen bg-background">
@@ -94,8 +111,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <NotificationBell />
                 </div>
 
+                <div className="px-6 py-2">
+                    <span className="text-xs font-mono uppercase text-muted-foreground border border-white/10 px-2 py-1 rounded-full bg-white/5">
+                        {userRole}
+                    </span>
+                </div>
+
                 <nav className="flex-1 p-4 space-y-2">
-                    {sidebarItems.map((item) => {
+                    {filteredItems.map((item) => {
                         const Icon = item.icon
                         const isActive = pathname === item.href
 

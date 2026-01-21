@@ -29,6 +29,8 @@ export function NotificationBell() {
                 return '/admin/orders'
             case 'order_ready':
                 return '/admin/kitchen'
+            case 'new_reservation':
+                return '/admin/reservations'
             default:
                 return '/admin'
         }
@@ -40,6 +42,8 @@ export function NotificationBell() {
                 return '🛒'
             case 'order_ready':
                 return '✅'
+            case 'new_reservation':
+                return '📅'
             case 'low_stock':
                 return '⚠️'
             case 'new_customer':

@@ -122,7 +122,7 @@ export default function Home() {
 
             <div className="h-[400px] w-full rounded-3xl overflow-hidden border border-white/10 relative group">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.7171458778656!2d-75.1966!3d7.9833!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e503b8e5c5a5a5b%3A0x0!2sCaucasia%2C%20Antioquia!5e0!3m2!1ses!2sco!4v1642150000000!5m2!1ses!2sco"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.726277638686!2d-75.19835822414777!3d7.982367705973789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e503b8603685609%3A0x5825287d377484e0!2sCauca%20Centro!5e0!3m2!1ses!2sco!4v1705800000000!5m2!1ses!2sco"
                 width="100%"
                 height="100%"
                 style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg)' }}

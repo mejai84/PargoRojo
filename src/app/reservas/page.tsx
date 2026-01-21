@@ -30,10 +30,11 @@ export default function ReservationsPage() {
                 .from('reservations')
                 .insert({
                     customer_name: formData.name,
-                    phone: formData.phone,
+                    customer_phone: formData.phone,
+                    customer_email: 'web@pargo.rojo', // Default for web reservations
                     reservation_date: formData.date,
                     reservation_time: formData.time,
-                    guests: formData.guests,
+                    num_people: formData.guests,
                     notes: formData.notes,
                     status: 'pending' // pending confirmation
                 })
@@ -57,10 +58,11 @@ export default function ReservationsPage() {
                         <CheckCircle className="w-10 h-10" />
                     </div>
                     <h2 className="text-3xl font-bold mb-4">¡Reserva Recibida!</h2>
-                    <p className="text-muted-foreground mb-8">
-                        Hemos recibido tu solicitud de reserva para el {formData.date} a las {formData.time}.
-                        <br />
-                        Te confirmaremos por teléfono o WhatsApp en breve.
+                    <p className="text-muted-foreground mb-8 text-lg">
+                        Hemos recibido tu solicitud de reserva para el <strong>{formData.date}</strong> a las <strong>{formData.time}</strong>.
+                        <br /><br />
+                        <span className="text-primary font-bold">IMPORTANTE:</span> Tu reserva está <span className="text-white underline">sujeta a disponibilidad</span>.
+                        Te confirmaremos por teléfono o WhatsApp en breve para asegurar tu mesa.
                     </p>
                     <Button
                         onClick={() => router.push('/')}
@@ -189,7 +191,7 @@ export default function ReservationsPage() {
                         </div>
 
                         <Button
-                            disable={loading}
+                            disabled={loading}
                             type="submit"
                             className="w-full h-16 text-xl font-bold rounded-2xl bg-primary hover:bg-primary/90 text-black shadow-xl shadow-primary/20"
                         >

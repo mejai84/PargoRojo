@@ -59,7 +59,7 @@ export function CartSheet() {
                                     <div className="flex justify-between items-start">
                                         <h3 className="font-semibold">{item.name}</h3>
                                         <span className="font-bold text-primary">
-                                            {(item.price * item.quantity).toFixed(2)}€
+                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(item.price * item.quantity)}
                                         </span>
                                     </div>
 
@@ -99,15 +99,15 @@ export function CartSheet() {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Subtotal</span>
-                                <span>{cartTotal.toFixed(2)}€</span>
+                                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(cartTotal)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Envío estimado</span>
-                                <span>2.50€</span>
+                                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(5000)}</span>
                             </div>
                             <div className="flex justify-between text-xl font-bold pt-2 border-t border-white/10">
                                 <span>Total</span>
-                                <span>{(cartTotal + 2.50).toFixed(2)}€</span>
+                                <span>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(cartTotal + 5000)}</span>
                             </div>
                         </div>
                         <Link href="/checkout" onClick={toggleCart}>
