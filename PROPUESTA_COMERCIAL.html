@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Comercial - Sistema Pargo Rojo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --primary: #e11d48; /* Color Pargo Rojo */
+            --secondary: #0f172a;
+            --text: #334155;
+            --bg: #ffffff;
+            --accent: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            background: #f8fafc;
+        }
+
+        .page {
+            max-width: 21cm;
+            min-height: 29.7cm;
+            margin: 2rem auto;
+            background: white;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Portada */
+        .cover {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 80vh;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            border-left: 5px solid var(--primary);
+            padding-left: 1rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-top: 1.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        /* Tarjetas de Beneficios */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: var(--accent);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        ul {
+            padding-left: 1.2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tabla Comparativa */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: var(--secondary);
+            color: white;
+        }
+
+        td:last-child {
+            font-weight: bold;
+            color: var(--primary);
+            background: #fff1f2;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 2rem;
+        }
+
+        /* Botón de impresión (se oculta al imprimir) */
+        .print-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+            transition: transform 0.2s;
+            z-index: 100;
+        }
+
+        .print-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            .print-btn {
+                display: none;
+            }
+            .cover {
+                height: 30vh; /* Portada más pequeña en impresión */
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Guardar como PDF</button>
+
+    <div class="page">
+        <!-- Portada -->
+        <div class="cover">
+            <h1>Sistema Integral<br>"Pargo Rojo"</h1>
+            <div class="subtitle">Propuesta de Transformación Digital</div>
+            <p style="margin-top: 2rem; font-size: 1.1rem; color: #64748b;">
+                Preparado para: <strong>Gerencia Pargo Rojo</strong><br>
+                Fecha: <strong>Enero 2026</strong>
+            </p>
+        </div>
+
+        <!-- Resumen -->
+        <h2>🌟 Resumen Ejecutivo</h2>
+        <p>
+            Esta solución no es solo una página web; es un <strong>Sistema Operativo Completo para Restaurantes</strong> diseñado para aumentar las ventas, eliminar errores operativos y fidelizar clientes. Transforma la gestión manual en una operación digital de clase mundial.
+        </p>
+
+        <!-- Beneficios -->
+        <h2>💎 ¿Por qué esta inversión se paga sola?</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>📈 Ventas Inmediatas</h3>
+                <ul>
+                    <li><strong>Menú QR:</strong> Pedidos más rápidos desde la mesa.</li>
+                    <li><strong>Venta 24/7:</strong> Reservas y pedidos online.</li>
+                    <li><strong>Marketing:</strong> Cupones promocionales.</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>⚡ Eficiencia Operativa</h3>
+                <ul>
+                    <li><strong>Cocina Digital (KDS):</strong> Cero errores en comandas.</li>
+                    <li><strong>Control de Inventario:</strong> Descuento automático.</li>
+                    <li><strong>Mejor Servicio:</strong> Meseros enfocados en el cliente.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Módulos -->
+        <h2>📱 Módulos Incluidos</h2>
+        <ul>
+            <li><strong>Experiencia del Cliente:</strong> Menú digital con fotos HD, carrito y pedidos QR mesa a mesa.</li>
+            <li><strong>Cocina (KDS):</strong> Pantalla en tiempo real para chefs con alertas sonoras.</li>
+            <li><strong>Facturación y Pagos:</strong> Integración Wompi (Nequi, Bancolombia, Tarjetas).</li>
+            <li><strong>Administración Total:</strong> Control de inventario, recetas, reportes de ventas y gestión de personal.</li>
+        </ul>
+
+        <!-- Comparativa -->
+        <h2>🎯 Diferenciadores Clave</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Característica</th>
+                    <th>Sistema Tradicional</th>
+                    <th>Sistema Pargo Rojo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Toma de Pedidos</td>
+                    <td>Papel y lápiz (Lento)</td>
+                    <td>Digital Instantáneo</td>
+                </tr>
+                <tr>
+                    <td>Menú</td>
+                    <td>Físico (Costoso)</td>
+                    <td>QR Actualizable</td>
+                </tr>
+                <tr>
+                    <td>Inventario</td>
+                    <td>Conteo Manual</td>
+                    <td>Automático Realtime</td>
+                </tr>
+                <tr>
+                    <td>Pagos</td>
+                    <td>Datáfono externo</td>
+                    <td>Integrado (Nequi/PSE)</td>
+                </tr>
+                <tr>
+                    <td>Control Dueño</td>
+                    <td>Presencial</td>
+                    <td>Desde cualquier lugar</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p><strong>Transformación Digital Pargo Rojo</strong><br>
+            Desarrollado con tecnología de punta para garantizar velocidad, seguridad y crecimiento.</p>
+        </div>
+    </div>
+
+</body>
+</html>
