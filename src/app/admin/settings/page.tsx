@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch" // Asumiendo que tienes un componente Switch o uso checkbox
+// import { Switch } from "@/components/ui/switch" // Asumiendo que tienes un componente Switch o uso checkbox
 import { Loader2, Save } from "lucide-react"
 
 // Si no tengo componente Switch, uso un checkbox simple estilizado

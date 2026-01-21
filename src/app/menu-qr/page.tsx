@@ -1,6 +1,8 @@
 "use client"
+export const dynamic = "force-dynamic"
 
-import { useEffect, useState } from "react"
+
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -22,7 +24,7 @@ type CartItem = {
     quantity: number
 }
 
-export default function MenuQRPage() {
+function MenuQRContent() {
     const searchParams = useSearchParams()
     const tableCode = searchParams.get('table')
 
@@ -31,7 +33,6 @@ export default function MenuQRPage() {
     const [cart, setCart] = useState<CartItem[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedCategory, setSelectedCategory] = useState<string>('all')
-    const [showCart, setShowCart] = useState(false)
 
     useEffect(() => {
         loadData()
@@ -245,3 +246,16 @@ export default function MenuQRPage() {
         </div>
     )
 }
+
+export default function MenuQRPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        }>
+            <MenuQRContent />
+        </Suspense>
+    )
+}
+

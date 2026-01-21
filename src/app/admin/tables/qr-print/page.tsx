@@ -1,13 +1,15 @@
 "use client"
+export const dynamic = "force-dynamic"
 
-import { useEffect, useRef, useState } from "react"
+
+import { useEffect, useRef, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 import QRCodeStyling from "qr-code-styling"
 import { Button } from "@/components/ui/button"
-import { Download, Printer } from "lucide-react"
+import { Download, Printer, Loader2 } from "lucide-react"
 
-export default function QRPrintPage() {
+function QRPrintContent() {
     const searchParams = useSearchParams()
     const tableId = searchParams.get('table')
     const [table, setTable] = useState<any>(null)
@@ -164,3 +166,16 @@ export default function QRPrintPage() {
         </>
     )
 }
+
+export default function QRPrintPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        }>
+            <QRPrintContent />
+        </Suspense>
+    )
+}
+
