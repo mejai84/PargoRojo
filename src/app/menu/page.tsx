@@ -238,29 +238,34 @@ function MenuContent() {
                                     <button
                                         key={category.id}
                                         onClick={() => handleCategorySelect(category)}
-                                        className={`group relative p-6 md:p-8 rounded-3xl bg-gradient-to-br ${getColor(category.slug)} border border-gray-100 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/30 text-left overflow-hidden`}
+                                        className="group relative h-48 md:h-64 rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
                                         style={{ animationDelay: `${index * 50}ms` }}
                                     >
-                                        {/* Decoración geométrica */}
-                                        <div className="absolute -top-4 -right-4 w-16 h-16 border-2 border-primary/10 rotate-45 group-hover:border-primary/30 transition-colors" />
+                                        {/* Imagen de Fondo / Icono */}
+                                        <div className="absolute inset-0 bg-white">
+                                            {category.image_url ? (
+                                                <Image
+                                                    src={category.image_url}
+                                                    alt={category.name}
+                                                    fill
+                                                    className="object-contain p-6 group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-50 text-6xl">
+                                                    {getIcon(category.slug)}
+                                                </div>
+                                            )}
+                                        </div>
 
-                                        {/* Icono */}
-                                        <span className="text-4xl md:text-5xl mb-4 block">
-                                            {getIcon(category.slug)}
-                                        </span>
-
-                                        {/* Nombre */}
-                                        <h3 className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-1">
-                                            {category.name}
-                                        </h3>
-
-                                        {/* Contador */}
-                                        <p className="text-sm text-gray-500">
-                                            {productCounts[category.id] || 0} {productCounts[category.id] === 1 ? 'plato' : 'platos'}
-                                        </p>
-
-                                        {/* Flecha */}
-                                        <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        {/* Overlay degradado */}
+                                        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6">
+                                            <h3 className="text-lg md:text-xl font-black text-white leading-tight mb-1 drop-shadow-md">
+                                                {category.name}
+                                            </h3>
+                                            <p className="text-xs font-bold text-gray-200 uppercase tracking-wider opacity-80">
+                                                {productCounts[category.id] || 0} opciones
+                                            </p>
+                                        </div>
                                     </button>
                                 ))}
                             </div>
@@ -306,18 +311,31 @@ function MenuContent() {
                             </div>
                         </div>
 
-                        {/* Navegación rápida entre categorías */}
-                        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+                        {/* Navegación rápida entre categorías (Grid 2 filas con scroll horizontal) */}
+                        <div className="grid grid-rows-2 grid-flow-col gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide auto-cols-max">
                             {categories.map(cat => (
                                 <button
                                     key={cat.id}
                                     onClick={() => handleCategorySelect(cat)}
-                                    className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all border text-sm ${selectedCategory.id === cat.id
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all border text-sm flex items-center gap-2 ${selectedCategory.id === cat.id
                                         ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
                                         : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
                                         }`}
                                 >
-                                    {getIcon(cat.slug)} {cat.name}
+                                    {/* Mini vista previa de imagen si existe, sino icono */}
+                                    {cat.image_url ? (
+                                        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-white">
+                                            <Image
+                                                src={cat.image_url}
+                                                alt=""
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <span>{getIcon(cat.slug)}</span>
+                                    )}
+                                    {cat.name}
                                 </button>
                             ))}
                         </div>

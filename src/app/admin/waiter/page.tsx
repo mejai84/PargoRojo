@@ -395,18 +395,32 @@ export default function WaiterPortalPage() {
                                         key={cat.id}
                                         onClick={() => setActiveCategory(cat.id)}
                                         className={cn(
-                                            "relative h-40 rounded-[2.5rem] border-2 p-6 text-left transition-all active:scale-95 group overflow-hidden",
-                                            categoryColors[cat.slug] || "bg-gray-50 border-gray-100"
+                                            "relative h-40 rounded-[2.5rem] border-2 p-0 text-left transition-all active:scale-95 group overflow-hidden bg-white hover:border-primary/50 shadow-sm hover:shadow-xl",
+                                            activeCategory === cat.id ? "border-primary ring-4 ring-primary/20" : "border-gray-100"
                                         )}
                                     >
-                                        <span className="text-4xl mb-4 block group-hover:scale-110 transition-transform duration-300">
-                                            {categoryIcons[cat.slug] || "🍽️"}
-                                        </span>
-                                        <h3 className="text-lg font-black text-gray-900 leading-tight">
+                                        {/* Imagen de Fondo / Icono */}
+                                        <div className="absolute inset-0 z-0">
+                                            {cat.image_url ? (
+                                                <Image
+                                                    src={cat.image_url}
+                                                    alt={cat.name}
+                                                    fill
+                                                    className="object-contain p-4 group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-4xl bg-gray-50">
+                                                    {categoryIcons[cat.slug] || "🍽️"}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Overlay degradado para texto */}
+                                        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent z-10" />
+
+                                        <h3 className="absolute bottom-4 left-4 right-4 text-center text-sm font-black text-white uppercase tracking-wider z-20 leading-tight drop-shadow-md">
                                             {cat.name}
                                         </h3>
-                                        {/* Decoración geométrica sutil */}
-                                        <div className="absolute -bottom-4 -right-4 w-12 h-12 border-2 border-primary/5 rounded-full" />
                                     </button>
                                 ))}
                             </div>

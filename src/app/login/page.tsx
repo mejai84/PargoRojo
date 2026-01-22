@@ -18,6 +18,15 @@ export default function LoginPage() {
                     </div>
 
                     <AuthForm />
+
+                    <div className="text-center w-full pt-4 border-t border-white/5">
+                        <p className="text-sm text-muted-foreground">
+                            ¿Aún no tienes cuenta?{' '}
+                            <Link href="/register" className="font-bold text-primary hover:underline">
+                                Regístrate aquí
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
