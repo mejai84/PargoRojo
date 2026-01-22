@@ -4,12 +4,13 @@
 import { useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Loader2, Mail, Lock } from "lucide-react"
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 export function AuthForm() {
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -61,14 +62,25 @@ export function AuthForm() {
                     <div className="relative">
                         <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Tu contraseña"
-                            className="w-full h-11 pl-10 rounded-xl bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground placeholder:text-muted-foreground/50"
+                            className="w-full h-11 pl-10 pr-10 rounded-xl bg-white/5 border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground placeholder:text-muted-foreground/50"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             disabled={loading}
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-5 w-5" />
+                            ) : (
+                                <Eye className="h-5 w-5" />
+                            )}
+                        </button>
                     </div>
                 </div>
 

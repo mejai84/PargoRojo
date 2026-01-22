@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - Pargo Rojo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #e11d48;
+            margin-top: 1.5em;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #e11d48;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #0f172a;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .module-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-left: 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.8em;
+            font-weight: bold;
+            background: #f1f5f9;
+            color: #475569;
+            margin-left: 10px;
+        }
+
+        .web-section {
+            border-left: 4px solid #3b82f6;
+            padding-left: 20px;
+            margin: 20px 0;
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .admin-section {
+            border-left: 4px solid #e11d48;
+            padding-left: 20px;
+            margin: 20px 0;
+            background: #fff1f2;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        @media print {
+            body {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .module-box {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📘 Manual de Usuario - Pargo Rojo</h1>
+
+    <p>Este documento describe las funcionalidades del sistema de gestión para el restaurante <strong>Pargo
+            Rojo</strong>. El sistema está dividido en dos grandes áreas.</p>
+
+    <div class="web-section">
+        <h2>🍽️ 1. Para el Cliente (Web Pública)</h2>
+        <p>Accesible desde cualquier dispositivo móvil o computador en la dirección web del sitio.</p>
+
+        <h3>📱 Menú Digital Interactivo</h3>
+        <ul>
+            <li><strong>Navegación Visual:</strong> Explora las categorías (Pescados, Carnes, Arroces, etc.) con
+                imágenes reales de alta calidad.</li>
+            <li><strong>Buscador:</strong> Encuentra platos específicos escribiendo su nombre.</li>
+            <li><strong>Detalle de Plato:</strong> Visualización clara de precios y descripciones.</li>
+        </ul>
+
+        <h3>📅 Reservas en Línea</h3>
+        <ul>
+            <li>Los clientes pueden solicitar una reserva indicando fecha, hora y número de personas.</li>
+        </ul>
+
+        <h3>👤 Zona de Clientes</h3>
+        <ul>
+            <li><strong>Registro:</strong> Nuevos usuarios pueden registrarse fácilmente para agilizar sus pedidos.</li>
+        </ul>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
+
+    <div class="admin-section">
+        <h2>👨‍🍳 2. Panel Administrativo (Operaciones)</h2>
+        <p>Área exclusiva para el personal (Meseros, Cocina, Caja, Admin). Requiere inicio de sesión.</p>
+
+        <div class="module-box">
+            <h3>📱 Portal de Meseros <span class="tag">/admin/waiter</span></h3>
+            <p>Herramienta principal para el salón.</p>
+            <ul>
+                <li><strong>Mapa de Mesas:</strong> Estado en tiempo real (Libre/Ocupada).</li>
+                <li><strong>Toma de Pedidos:</strong> Interfaz táctil rápida con fotos.</li>
+                <li><strong>Notas de Cocina:</strong> "Sin cebolla", "Término medio", etc.</li>
+                <li><strong>Solicitar Cuenta:</strong> Botón directo para notificar a caja.</li>
+            </ul>
+        </div>
+
+        <div class="module-box">
+            <h3>🍳 Pantalla de Cocina (KDS) <span class="tag">/admin/kitchen</span></h3>
+            <p>Reemplazo de las comandas de papel.</p>
+            <ul>
+                <li><strong>Cola Digital:</strong> Pedidos llegan ordenados automáticamente.</li>
+                <li><strong>Estados:</strong> Pendiente ➝ Preparando ➝ Listo.</li>
+                <li><strong>Notificación:</strong> Al marcar "Listo", el mesero sabe que puede recoger.</li>
+            </ul>
+        </div>
+
+        <div class="module-box">
+            <h3>💰 Caja y Facturación <span class="tag">/admin/pos</span></h3>
+            <ul>
+                <li><strong>Cobro Rápido:</strong> Ve las mesas que pidieron la cuenta.</li>
+                <li><strong>Métodos de Pago:</strong> Efectivo, Tarjeta, Transferencia.</li>
+                <li><strong>Liberación:</strong> Al pagar, la mesa queda disponible automáticamente.</li>
+            </ul>
+        </div>
+
+        <div class="module-box">
+            <h3>💸 Caja Menor <span class="tag">/admin/petty-cash</span></h3>
+            <ul>
+                <li><strong>Registro de Gastos:</strong> Insumos, transportes, adelantos.</li>
+                <li><strong>Firma Digital:</strong> Obligatoria para validar el egreso.</li>
+                <li><strong>Historial:</strong> Auditoría completa de movimientos.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 30px;">
+        <h2>🚀 Flujo de Trabajo Típico</h2>
+        <ol>
+            <li><strong>Llegada:</strong> Mesero asigna mesa en el sistema.</li>
+            <li><strong>Pedido:</strong> Mesero toma la orden en celular/tablet.</li>
+            <li><strong>Cocina:</strong> Chef ve el pedido en pantalla y lo prepara.</li>
+            <li><strong>Entrega:</strong> Mesero recibe alerta de "Listo" y sirve.</li>
+            <li><strong>Cierre:</strong> Cliente pide la cuenta ➝ Mesero da click en "Solicitar Cuenta".</li>
+            <li><strong>Pago:</strong> Cajero cobra y el sistema libera la mesa.</li>
+        </ol>
+    </div>
+
+    <p style="text-align: center; margin-top: 50px; font-size: 0.8em; color: #888;">&copy; 2026 Pargo Rojo - Sistema de
+        Gestión v1.0</p>
+
+</body>
+
+</html>
