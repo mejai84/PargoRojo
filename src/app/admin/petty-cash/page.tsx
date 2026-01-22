@@ -286,13 +286,18 @@ export default function PettyCashPage() {
         try {
             setLoading(true);
 
-            // Construimos el objeto con los campos mínimos garantizados en DB para evitar errores de esquema
+            // Construimos el objeto con todos los campos
             const voucherToSave = {
                 beneficiary_name: formData.beneficiary_name,
+                cargo: formData.cargo,
                 amount: formData.amount,
+                amount_in_words: formData.amount_in_words,
                 concept: formData.concept,
+                accounting_code: formData.accounting_code,
+                category: formData.category,
                 date: new Date().toISOString().split('T')[0],
-                status: 'paid'
+                status: 'paid',
+                signature_data: signature
             };
 
             const { data, error } = await supabase

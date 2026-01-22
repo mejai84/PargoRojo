@@ -595,13 +595,41 @@ export default function WaiterPortalPage() {
                             </div>
                             <div className="grid grid-cols-1 gap-3">
                                 <Button
-                                    className="h-16 rounded-2xl bg-gray-900 text-white font-black text-lg gap-3 shadow-xl"
+                                    className="h-16 rounded-2xl bg-primary text-white font-black text-lg gap-3 shadow-xl hover:bg-primary/90"
+                                    onClick={async () => {
+                                        try {
+                                            await supabase
+                                                .from('orders')
+                                                .update({ status: 'payment_pending' })
+                                                .eq('id', currentTableOrder.id)
+
+                                            // Actualizar mesa a 'cleaning' o mantener ocupada pero marcar visualmente?
+                                            // Por ahora mantenemos ocupada hasta que cajero libere o mesero limpie
+
+                                            setShowBill(false)
+                                            setView('tables')
+                                            setSelectedTable(null)
+                                            setCurrentTableOrder(null)
+                                            alert("¡Cuenta solicitada a caja! 💰")
+                                            fetchTables() // Refrescar estado si cambiara algo visual
+                                        } catch (e) {
+                                            alert("Error al solicitar cuenta")
+                                        }
+                                    }}
+                                >
+                                    <Receipt className="w-6 h-6" /> SOLICITAR CUENTA A CAJA
+                                </Button>
+
+                                <Button
+                                    variant="secondary"
+                                    className="h-14 rounded-2xl font-bold bg-white border border-gray-200"
                                     onClick={() => {
                                         window.print();
                                     }}
                                 >
-                                    <Receipt className="w-6 h-6" /> IMPRIMIR PRE-CUENTA
+                                    IMPRIMIR PRE-CUENTA
                                 </Button>
+
                                 <Button
                                     variant="ghost"
                                     className="font-bold text-gray-400"

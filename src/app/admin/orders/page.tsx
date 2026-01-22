@@ -42,7 +42,7 @@ interface OrderItem {
 interface Order {
     id: string
     created_at: string
-    status: 'pending' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled'
+    status: 'pending' | 'preparing' | 'ready' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'payment_pending'
     order_type: 'pickup' | 'delivery'
     total: number
     subtotal: number
@@ -194,6 +194,7 @@ export default function AdminOrdersPage() {
     )
 
     const activeProcessing = orders.filter(o => ['pending', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
+    const paymentPending = orders.filter(o => o.status === 'payment_pending')
     const completedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status))
 
     return (
@@ -228,7 +229,7 @@ export default function AdminOrdersPage() {
 
             {/* Tablero de Pedidos */}
             <div className="max-w-[1600px] mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Columna: En Producción */}
                     <div className="flex flex-col gap-4 h-[calc(100vh-200px)]">
                         <div className="flex items-center justify-between px-2 mb-2 shrink-0">
@@ -241,6 +242,25 @@ export default function AdminOrdersPage() {
                             {activeProcessing.length === 0 && (
                                 <div className="border-2 border-dashed border-gray-100 rounded-[2rem] h-32 flex items-center justify-center text-gray-300 font-bold">
                                     TODO AL DÍA
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Columna: POR COBRAR (NUEVO) */}
+                    <div className="flex flex-col gap-4 h-[calc(100vh-200px)]">
+                        <div className="flex items-center justify-between px-2 mb-2 shrink-0">
+                            <h2 className="text-xs font-black text-primary tracking-[0.2em] uppercase flex items-center gap-2">
+                                <Receipt className="w-4 h-4" /> Por Cobrar ({paymentPending.length})
+                            </h2>
+                        </div>
+                        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 pb-10">
+                            {paymentPending.map(order => (
+                                <OrderCard key={order.id} order={order} onView={() => setSelectedOrder(order)} />
+                            ))}
+                            {paymentPending.length === 0 && (
+                                <div className="border-2 border-dashed border-gray-100 rounded-[2rem] h-32 flex items-center justify-center text-gray-300 font-bold opacity-50">
+                                    SIN CUENTAS PENDIENTES
                                 </div>
                             )}
                         </div>
@@ -476,6 +496,30 @@ export default function AdminOrdersPage() {
                                     <CheckCircle2 className="w-6 h-6" /> MARCAR LISTO
                                 </Button>
                             )}
+                            {selectedOrder.status === 'payment_pending' && (
+                                <Button
+                                    className="h-16 flex-[2] bg-green-600 hover:bg-green-700 text-white font-black text-lg rounded-2xl shadow-lg shadow-green-500/10 gap-3"
+                                    onClick={async () => {
+                                        // 1. Imprimir
+                                        window.print()
+
+                                        // 2. Cobrar y cerrar
+                                        // Ojo: Podrías querer solo liberar mesa o marcar pagado
+                                        await supabase.from('orders').update({ status: 'delivered', payment_status: 'paid' }).eq('id', selectedOrder.id)
+
+                                        // 3. Liberar mesa si aplica?
+                                        if (selectedOrder.table_id) {
+                                            await supabase.from('tables').update({ status: 'available' }).eq('id', selectedOrder.table_id)
+                                        }
+
+                                        fetchOrders()
+                                        setSelectedOrder(null)
+                                        alert("¡Pago registrado y mesa liberada!")
+                                    }}
+                                >
+                                    <Receipt className="w-6 h-6" /> COBRAR E IMPRIMIR
+                                </Button>
+                            )}
                             <Button variant="outline" className="h-16 flex-1 rounded-2xl border-gray-200 font-bold" onClick={() => setSelectedOrder(null)}>
                                 CERRAR
                             </Button>
@@ -515,7 +559,8 @@ function OrderCard({ order, onView }: { order: Order; onView: () => void }) {
                             "w-2 h-2 rounded-full",
                             order.status === 'pending' ? 'bg-blue-500' :
                                 order.status === 'preparing' ? 'bg-orange-500 animate-pulse' :
-                                    'bg-green-500'
+                                    order.status === 'payment_pending' ? 'bg-red-500 animate-bounce' :
+                                        'bg-green-500'
                         )} />
                     </div>
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight group-hover:text-primary transition-colors">
