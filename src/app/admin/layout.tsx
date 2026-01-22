@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Users, Menu, ChefHat, BarChart3, Calendar, QrCode, Package, Tag } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Users, Menu, ChefHat, BarChart3, Calendar, QrCode, Package, Tag, Wallet, BadgeDollarSign, Printer, Utensils } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/admin", roles: ['admin', 'manager', 'cashier'] },
+    { icon: Utensils, label: "Portal Mesero", href: "/admin/waiter", roles: ['admin', 'manager', 'waiter'] },
     { icon: ShoppingBag, label: "Caja / Pedidos", href: "/admin/orders", roles: ['admin', 'manager', 'cashier', 'waiter'] },
     { icon: ChefHat, label: "Cocina (KDS)", href: "/admin/kitchen", roles: ['admin', 'manager', 'cook', 'chef'] },
     { icon: QrCode, label: "Mesas & QR", href: "/admin/tables", roles: ['admin', 'manager', 'waiter', 'cashier', 'cleaner'] },
@@ -20,8 +21,11 @@ const sidebarItems = [
     { icon: UtensilsCrossed, label: "Productos", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
     { icon: Users, label: "Clientes", href: "/admin/customers", roles: ['admin', 'manager', 'cashier'] },
     { icon: Users, label: "Empleados", href: "/admin/employees", roles: ['admin', 'manager'] },
+    { icon: BadgeDollarSign, label: "Nómina & Turnos", href: "/admin/payroll", roles: ['admin', 'manager'] },
+    { icon: Wallet, label: "Caja Menor", href: "/admin/petty-cash", roles: ['admin', 'manager', 'cashier'] },
     { icon: BarChart3, label: "Reportes", href: "/admin/reports", roles: ['admin', 'manager'] },
     { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
+    { icon: Printer, label: "Impresoras", href: "/admin/settings/printers", roles: ['admin', 'manager'] },
 ]
 
 import Image from "next/image"

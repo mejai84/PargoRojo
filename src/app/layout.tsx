@@ -19,8 +19,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="es" className="dark" suppressHydrationWarning>
-            <body className={`${outfit.className} bg-black text-white antialiased`}>
+        <html lang="es" className="light" suppressHydrationWarning>
+            <body className={`${outfit.className} bg-white text-gray-900 antialiased`}>
                 <CartProvider>
                     <div className="flex flex-col min-h-screen">
                         <main className="flex-1">

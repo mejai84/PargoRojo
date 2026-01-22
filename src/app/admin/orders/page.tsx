@@ -59,6 +59,10 @@ interface Order {
         phone: string
     }
     notes?: string
+    waiter_id?: string
+    table_id?: string
+    waiter?: { full_name: string }
+    tables?: { table_name: string }
 }
 
 export default function AdminOrdersPage() {
@@ -71,6 +75,9 @@ export default function AdminOrdersPage() {
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [newOrderItems, setNewOrderItems] = useState<(Product & { quantity: number })[]>([])
     const [customerName, setCustomerName] = useState("")
+    const [selectedTableId, setSelectedTableId] = useState<string>("")
+    const [tables, setTables] = useState<any[]>([])
+    const [currentUser, setCurrentUser] = useState<any>(null)
     const [searchTerm, setSearchTerm] = useState("")
 
     // Fetch orders real
@@ -83,7 +90,9 @@ export default function AdminOrdersPage() {
                 order_items (
                     *,
                     products (name)
-                )
+                ),
+                waiter:profiles!orders_waiter_id_fkey (full_name),
+                tables (table_name)
             `)
             .order('created_at', { ascending: false })
 
@@ -101,12 +110,32 @@ export default function AdminOrdersPage() {
         setProducts(data || [])
     }
 
+    const fetchInitialData = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
+            setCurrentUser(profile)
+        }
+
+        const { data: tablesData } = await supabase
+            .from('tables')
+            .select('*')
+            .eq('active', true)
+            .order('table_number', { ascending: true })
+        setTables(tablesData || [])
+    }
+
     useEffect(() => {
         fetchOrders()
         fetchProducts()
+        fetchInitialData()
         const interval = setInterval(() => {
-            setOrders(prev => [...prev])
-        }, 60000)
+            fetchOrders()
+        }, 30000)
         return () => clearInterval(interval)
     }, [])
 
@@ -118,13 +147,18 @@ export default function AdminOrdersPage() {
             const total = newOrderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
             const orderData = {
-                status: 'pending', // Podríamos poner 'preparing' directo si es presencial
-                order_type: 'pickup', // Asumimos presencial/pickup por defecto en manual
+                status: 'pending',
+                order_type: 'pickup',
                 total: total,
                 subtotal: total,
-                guest_info: { name: customerName || "Cliente Presencial", phone: "" },
+                guest_info: {
+                    name: customerName || (selectedTableId ? tables.find(t => t.id === selectedTableId)?.table_name : "Cliente Presencial"),
+                    phone: ""
+                },
                 payment_method: 'cash',
-                payment_status: 'pending'
+                payment_status: 'pending',
+                waiter_id: currentUser?.id,
+                table_id: selectedTableId || null
             }
 
             const { data: order, error } = await supabase.from('orders').insert([orderData]).select().single()
@@ -147,6 +181,18 @@ export default function AdminOrdersPage() {
             setSearchTerm("")
             fetchOrders()
             alert("Pedido creado correctamente ✅")
+
+            // Clear state
+            setNewOrderItems([])
+            setCustomerName("")
+            setSelectedTableId("")
+            setIsCreateOpen(false)
+            fetchOrders()
+
+            // Update table status if selected
+            if (selectedTableId) {
+                await supabase.from('tables').update({ status: 'occupied' }).eq('id', selectedTableId)
+            }
 
         } catch (e: any) {
             alert("Error al crear: " + e.message)
@@ -304,16 +350,38 @@ export default function AdminOrdersPage() {
                             <div className="p-6 flex flex-col h-full bg-white/5">
                                 <label className="text-sm font-bold uppercase text-muted-foreground mb-3">Detalles del Pedido</label>
 
-                                {/* Customer Input */}
-                                <div className="mb-6">
+                                {/* Waiter Label */}
+                                {currentUser && (
+                                    <div className="mb-4 flex items-center gap-2 text-xs text-primary font-bold uppercase tracking-wider bg-primary/10 w-fit px-3 py-1 rounded-full border border-primary/20">
+                                        <User className="w-3 h-3" /> Mesero: {currentUser.full_name}
+                                    </div>
+                                )}
+
+                                {/* Table & Customer Selection */}
+                                <div className="mb-6 space-y-4">
                                     <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                                        <label className="text-xs text-muted-foreground block mb-1">Cliente / Mesa</label>
+                                        <label className="text-xs text-muted-foreground block mb-2">Seleccionar Mesa</label>
+                                        <select
+                                            className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg p-3 outline-none focus:border-primary font-bold text-white appearance-none"
+                                            value={selectedTableId}
+                                            onChange={e => setSelectedTableId(e.target.value)}
+                                        >
+                                            <option value="" className="bg-[#1a1a1a] text-white">-- Sin Mesa (Para Llevar) --</option>
+                                            {tables.map(t => (
+                                                <option key={t.id} value={t.id} className="bg-[#1a1a1a] text-white">
+                                                    {t.table_name} - {t.location} ({t.status})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                                        <label className="text-xs text-muted-foreground block mb-1">Nombre del Cliente (Opcional)</label>
                                         <input
-                                            className="w-full bg-transparent border-none p-0 text-lg font-bold placeholder:text-muted-foreground/50 focus:ring-0"
-                                            placeholder="Ej: Mesa 4"
+                                            className="w-full bg-transparent border-none p-0 text-lg font-bold placeholder:text-muted-foreground/30 focus:ring-0"
+                                            placeholder="Nombre para el pedido..."
                                             value={customerName}
                                             onChange={e => setCustomerName(e.target.value)}
-                                            autoFocus
                                         />
                                     </div>
                                 </div>
@@ -400,6 +468,16 @@ export default function AdminOrdersPage() {
                                     <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">
                                         {selectedOrder.status}
                                     </span>
+                                    {selectedOrder.waiter && (
+                                        <span className="flex items-center gap-1 text-primary">
+                                            <User className="w-3 h-3" /> {selectedOrder.waiter.full_name}
+                                        </span>
+                                    )}
+                                    {selectedOrder.tables && (
+                                        <span className="bg-white/10 px-2 py-0.5 rounded text-[10px] uppercase font-bold">
+                                            {selectedOrder.tables.table_name}
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)}>
@@ -571,7 +649,11 @@ function OrderCard({ order, onView, customerName }: any) {
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <span className="font-bold text-lg">#{order.id.split('-')[0].toUpperCase()}</span>
-                    <div className="text-sm text-muted-foreground">{customerName}</div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        {order.tables?.table_name && <span className="text-primary font-bold">{order.tables.table_name}</span>}
+                        {order.tables?.table_name && customerName && <span>•</span>}
+                        <span>{customerName}</span>
+                    </div>
                 </div>
                 <span className="bg-white/5 px-2 py-1 rounded text-xs font-mono text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors whitespace-nowrap">
                     {elapsed}

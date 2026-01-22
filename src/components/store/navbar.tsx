@@ -100,7 +100,7 @@ export function Navbar() {
 
     return (
         <>
-            <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
+            <nav className="fixed top-0 w-full z-50 glass border-b border-gray-100">
                 <div className="container mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 group">
                         <Image
@@ -108,14 +108,14 @@ export function Navbar() {
                             alt="Pargo Rojo Logo"
                             width={48}
                             height={48}
-                            className="rounded-full border-2 border-white/10 group-hover:border-primary/50 transition-colors"
+                            className="rounded-full border-2 border-gray-100 group-hover:border-primary/50 transition-colors"
                         />
                         <span className="text-xl font-bold tracking-tighter text-gradient uppercase">
                             Pargo Rojo
                         </span>
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-4 text-sm font-medium text-muted-foreground">
+                    <div className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-600">
                         {navLinks.map((link) => (
                             <div
                                 key={link.href}
@@ -126,7 +126,7 @@ export function Navbar() {
                                 <Link
                                     href={link.href}
                                     className={cn(
-                                        "px-4 py-2 hover:text-foreground transition-colors flex items-center gap-1 rounded-full hover:bg-white/5",
+                                        "px-4 py-2 hover:text-gray-900 transition-colors flex items-center gap-1 rounded-full hover:bg-gray-50",
                                         isActive(link.href) && "text-primary hover:text-primary bg-primary/5"
                                     )}
                                 >
@@ -136,7 +136,7 @@ export function Navbar() {
 
                                 {link.hasDropdown && (
                                     <div className={cn(
-                                        "absolute top-full left-0 w-[600px] bg-background/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl transition-all duration-300 transform origin-top-left z-50 mt-1",
+                                        "absolute top-full left-0 w-[600px] bg-white backdrop-blur-xl border border-gray-100 rounded-3xl p-6 shadow-2xl transition-all duration-300 transform origin-top-left z-50 mt-1",
                                         isProductMenuOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-4 pointer-events-none"
                                     )}>
                                         <div className="grid grid-cols-2 gap-8">
@@ -147,9 +147,9 @@ export function Navbar() {
                                                         <Link
                                                             key={cat.id}
                                                             href={`/menu?category=${cat.id}`}
-                                                            className="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 transition-colors group/item"
+                                                            className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors group/item"
                                                         >
-                                                            <span className="text-foreground group-hover/item:text-primary transition-colors font-medium">{cat.name}</span>
+                                                            <span className="text-gray-900 group-hover/item:text-primary transition-colors font-medium">{cat.name}</span>
                                                             <ChevronRight className="w-4 h-4 opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1 transition-all" />
                                                         </Link>
                                                     ))}
@@ -162,18 +162,18 @@ export function Navbar() {
                                                         <Link
                                                             key={prod.id}
                                                             href={`/producto/${prod.id}`}
-                                                            className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors group/item"
+                                                            className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group/item"
                                                         >
-                                                            <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-white/5">
+                                                            <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-gray-100">
                                                                 <Image src={prod.image_url || "/images/placeholder.png"} alt={prod.name} fill className="object-cover" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-foreground font-bold text-sm group-hover/item:text-primary transition-colors">{prod.name}</div>
-                                                                <div className="text-xs text-muted-foreground">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(prod.price)}</div>
+                                                                <div className="text-gray-900 font-bold text-sm group-hover/item:text-primary transition-colors">{prod.name}</div>
+                                                                <div className="text-xs text-gray-500">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(prod.price)}</div>
                                                             </div>
                                                         </Link>
                                                     ))}
-                                                    <Link href="/menu" className="mt-2 block text-center p-3 border border-primary/20 rounded-xl text-primary font-bold hover:bg-primary/10 transition-colors">
+                                                    <Link href="/menu" className="mt-2 block text-center p-3 border border-primary/20 rounded-xl text-primary font-bold hover:bg-primary/5 transition-colors">
                                                         Ver Carta Completa
                                                     </Link>
                                                 </div>
@@ -198,35 +198,35 @@ export function Navbar() {
                         {/* User Button */}
                         {user ? (
                             <Link href="/cuenta">
-                                <Button variant="ghost" size="icon" className="hover:bg-white/5 rounded-full">
+                                <Button variant="ghost" size="icon" className="hover:bg-gray-50 rounded-full text-gray-700">
                                     <User className="w-5 h-5" />
                                 </Button>
                             </Link>
                         ) : (
                             <Link href="/login">
-                                <Button variant="ghost" size="sm" className="hidden md:flex hover:bg-white/5 rounded-full">
+                                <Button variant="ghost" size="sm" className="hidden md:flex hover:bg-gray-50 rounded-full text-gray-700">
                                     Inicia Sesión
                                 </Button>
                             </Link>
                         )}
 
-                        <Button variant="ghost" size="icon" className="relative group hover:bg-white/5 rounded-full" onClick={toggleCart}>
+                        <Button variant="ghost" size="icon" className="relative group hover:bg-gray-50 rounded-full text-gray-700" onClick={toggleCart}>
                             <ShoppingCart className="w-5 h-5 group-hover:text-primary transition-colors" />
                             {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-[10px] text-white rounded-full flex items-center justify-center font-bold animate-in zoom-in">
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-[10px] text-white rounded-full flex items-center justify-center font-bold animate-in zoom-in">
                                     {cartCount}
                                 </span>
                             )}
                         </Button>
                         <Link href="/menu" className="hidden md:block">
-                            <Button className="font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-transform bg-primary hover:bg-primary/90">
+                            <Button className="font-bold rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-transform bg-primary hover:bg-primary/90">
                                 Hacer Pedido
                             </Button>
                         </Link>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="md:hidden hover:bg-white/5 rounded-full"
+                            className="md:hidden hover:bg-gray-50 rounded-full text-gray-700"
                             onClick={() => setIsMenuOpen(true)}
                         >
                             <Menu className="w-6 h-6" />
@@ -237,17 +237,17 @@ export function Navbar() {
 
             {/* Mobile Menu Drawer */}
             <div className={cn(
-                "fixed inset-0 z-[60] bg-background/98 backdrop-blur-xl transition-all duration-500 md:hidden",
+                "fixed inset-0 z-[60] bg-white transition-all duration-500 md:hidden",
                 isMenuOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
             )}>
-                <div className="flex flex-col h-full bg-background/50">
-                    <div className="h-20 flex items-center justify-between px-6 border-b border-white/5">
+                <div className="flex flex-col h-full">
+                    <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100">
                         <div className="flex items-center gap-3">
                             <Utensils className="w-6 h-6 text-primary" />
-                            <span className="text-xl font-bold tracking-tight">CARTA PARGO ROJO</span>
+                            <span className="text-xl font-bold tracking-tight text-gray-900">CARTA PARGO ROJO</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5" onClick={() => setIsMenuOpen(false)}>
-                            <X className="w-7 h-7" />
+                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-gray-50" onClick={() => setIsMenuOpen(false)}>
+                            <X className="w-7 h-7 text-gray-700" />
                         </Button>
                     </div>
 
@@ -263,18 +263,18 @@ export function Navbar() {
                                         "flex items-center justify-between p-5 rounded-2xl text-xl font-bold transition-all border",
                                         isActive(link.href)
                                             ? "bg-primary/10 text-primary border-primary/20"
-                                            : "bg-white/5 text-foreground border-transparent active:scale-95"
+                                            : "bg-gray-50 text-gray-900 border-transparent active:scale-95"
                                     )}
                                 >
                                     {link.label}
-                                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                                    <ChevronRight className="w-5 h-5 text-gray-400" />
                                 </Link>
                             ))}
                             {isAdmin && (
                                 <Link
                                     href="/admin"
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-4 p-5 rounded-2xl text-xl font-bold bg-secondary text-white shadow-xl shadow-secondary/20 mt-2 active:scale-95 transition-transform"
+                                    className="flex items-center gap-4 p-5 rounded-2xl text-xl font-bold bg-primary text-white shadow-xl shadow-primary/20 mt-2 active:scale-95 transition-transform"
                                 >
                                     <ShieldCheck className="w-7 h-7" />
                                     Panel Administración
@@ -286,7 +286,7 @@ export function Navbar() {
                         <div className="space-y-5">
                             <div className="flex items-center justify-between px-2">
                                 <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Recomendados</h3>
-                                <Link href="/menu" onClick={() => setIsMenuOpen(false)} className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">VER TODO</Link>
+                                <Link href="/menu" onClick={() => setIsMenuOpen(false)} className="text-xs font-bold text-gray-500 hover:text-primary transition-colors">VER TODO</Link>
                             </div>
                             <div className="grid gap-3">
                                 {products.map((product) => (
@@ -294,17 +294,17 @@ export function Navbar() {
                                         key={product.id}
                                         href={`/producto/${product.id}`}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-primary/50 transition-all group active:bg-white/10"
+                                        className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-primary/50 transition-all group active:bg-gray-100"
                                     >
                                         <div className="w-14 h-14 relative rounded-xl overflow-hidden bg-primary/10">
                                             <Image src={product.image_url || "/images/placeholder.png"} alt={product.name} fill className="object-cover" />
                                         </div>
                                         <div className="flex-1">
-                                            <div className="font-bold text-lg group-hover:text-primary transition-colors">{product.name}</div>
+                                            <div className="font-bold text-lg text-gray-900 group-hover:text-primary transition-colors">{product.name}</div>
                                             <div className="text-primary font-bold">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.price)}</div>
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                            <ChevronRight className="w-5 h-5 text-gray-400" />
                                         </div>
                                     </Link>
                                 ))}
@@ -312,16 +312,16 @@ export function Navbar() {
                         </div>
                     </div>
 
-                    <div className="p-8 border-t border-white/5 bg-white/[0.02]">
+                    <div className="p-8 border-t border-gray-100 bg-gray-50">
                         {!user ? (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                                <Button className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20">
+                                <Button className="w-full h-16 text-lg font-bold rounded-2xl shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90">
                                     Inicia Sesión
                                 </Button>
                             </Link>
                         ) : (
                             <Link href="/cuenta" onClick={() => setIsMenuOpen(false)}>
-                                <Button variant="outline" className="w-full h-16 text-lg font-bold rounded-2xl border-white/10 hover:bg-white/5">
+                                <Button variant="outline" className="w-full h-16 text-lg font-bold rounded-2xl border-gray-200 hover:bg-gray-100 text-gray-900">
                                     Mi Cuenta
                                 </Button>
                             </Link>

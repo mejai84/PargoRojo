@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación de Plataforma - Pargo Rojo</title>
+    <style>
+        :root {
+            --primary: #c0392b;
+            --secondary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f5f6fa;
+            --text: #2f3640;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 3rem;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -3rem auto 4rem;
+            padding: 0 2rem;
+        }
+
+        .module-card {
+            background: var(--white);
+            border-radius: 15px;
+            margin-bottom: 4rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .module-info {
+            padding: 2.5rem;
+        }
+
+        .module-info h2 {
+            color: var(--primary);
+            margin-top: 0;
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .module-image {
+            width: 100%;
+            display: block;
+            border-top: 1px solid #eee;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .module-image:hover {
+            opacity: 0.95;
+        }
+
+        .screenshot-container {
+            background: #000;
+            padding: 10px;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Pargo Rojo</h1>
+        <p>Ecosistema de Administración y Ventas Digitales</p>
+    </header>
+
+    <div class="container">
+        <!-- Módulo 1: Página Principal -->
+        <div class="module-card">
+            <div class="module-info">
+                <h2>Página Principal y Menú Digital</h2>
+                <p>La vitrina digital de Pargo Rojo. Diseñada para capturar la esencia del restaurante, permitiendo a
+                    los clientes explorar el menú, realizar pedidos en línea y gestionar reservas desde cualquier
+                    dispositivo con una interfaz fluida y moderna.</p>
+            </div>
+            <div class="screenshot-container">
+                <img src="screenshots/home.png" alt="Página Principal">
+            </div>
+        </div>
+
+        <!-- Módulo 2: Cocina -->
+        <div class="module-card">
+            <div class="module-info">
+                <h2>Módulo de Cocina (KDS)</h2>
+                <p>El corazón de la operación. Este panel permite al personal de cocina visualizar los pedidos en tiempo
+                    real, cambiar sus estados (En preparación, Listo) y garantizar que cada plato salga a tiempo y con
+                    la calidad esperada.</p>
+            </div>
+            <div class="screenshot-container">
+                <img src="screenshots/kitchen.png" alt="Módulo de Cocina">
+            </div>
+        </div>
+
+        <!-- Módulo 3: Pedidos -->
+        <div class="module-card">
+            <div class="module-info">
+                <h2>Gestión de Pedidos y Caja</h2>
+                <p>Control administrativo total sobre las ventas. Permite rastrear cada pedido, verificar estados de
+                    pago y mantener un historial organizado para la toma de decisiones financieras y operativas.</p>
+            </div>
+            <div class="screenshot-container">
+                <img src="screenshots/orders.png" alt="Gestión de Pedidos">
+            </div>
+        </div>
+
+        <!-- Módulo 4: Reservas -->
+        <div class="module-card">
+            <div class="module-info">
+                <h2>Módulo de Reservas</h2>
+                <p>Gestión inteligente de la mesa. Los administradores pueden visualizar el calendario de reservas,
+                    confirmar disponibilidad y asegurar una atención personalizada para cada cliente que elige Pargo
+                    Rojo.</p>
+            </div>
+            <div class="screenshot-container">
+                <img src="screenshots/reservations.png" alt="Módulo de Reservas">
+            </div>
+        </div>
+
+        <!-- Módulo 5: Inventario -->
+        <div class="module-card">
+            <div class="module-info">
+                <h2>Sistema de Inventario</h2>
+                <p>Control riguroso de insumos y materia prima. Ayuda a prevenir quiebres de stock, gestionar
+                    proveedores y mantener la rentabilidad del negocio bajo control.</p>
+            </div>
+            <div class="screenshot-container">
+                <img src="screenshots/inventory.png" alt="Sistema de Inventario">
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Pargo Rojo - Desarrollo de Software Premium</p>
+    </footer>
+
+</body>
+
+</html>

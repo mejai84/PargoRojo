@@ -24,41 +24,38 @@
 }
 
 :root {
-  /* Pargo Rojo Brand Colors - Modern Dark Mode */
-  --background: #121214;
-  /* Matte Charcoal */
-  --foreground: #FFFFFF;
+  /* Pargo Rojo Brand Colors - Modern Coral Light Mode */
+  --background: #FFFFFF;
+  --foreground: #1a1a2e;
 
-  --card: #1C1C1F;
-  /* Slightly lighter for depth */
-  --card-foreground: #FFFFFF;
+  --card: #FFFFFF;
+  --card-foreground: #1a1a2e;
 
-  --popover: #1C1C1F;
-  --popover-foreground: #FFFFFF;
+  --popover: #FFFFFF;
+  --popover-foreground: #1a1a2e;
 
-  --primary: #EF4444;
-  /* Pargo Red (Bright) */
+  --primary: #FF6B6B;
+  /* Coral moderno */
   --primary-foreground: #FFFFFF;
 
-  --secondary: #F59E0B;
-  /* Gran Rafa Gold */
+  --secondary: #1a1a2e;
+  /* Azul oscuro elegante */
   --secondary-foreground: #FFFFFF;
 
-  --muted: #27272A;
-  --muted-foreground: #A1A1AA;
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
 
-  --accent: #F59E0B;
+  --accent: #FF6B6B;
   --accent-foreground: #FFFFFF;
 
-  --destructive: #991B1B;
+  --destructive: #dc3545;
   --destructive-foreground: #FFFFFF;
 
-  --border: #27272A;
-  --input: #27272A;
-  --ring: #EF4444;
+  --border: #e9ecef;
+  --input: #e9ecef;
+  --ring: #FF6B6B;
 
   --radius: 1rem;
-  /* More modern rounded corners */
 }
 
 body {
@@ -68,15 +65,46 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism utility - Modo claro */
 .glass {
-  background: rgba(26, 26, 26, 0.6);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #EF4444, #F59E0B);
+  background: linear-gradient(135deg, #FF6B6B, #ee5a5a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Elementos geométricos decorativos */
+.geometric-accent {
+  position: relative;
+}
+
+.geometric-accent::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #FF6B6B;
+  opacity: 0.3;
+  transform: rotate(45deg);
+}
+
+/* Sombras suaves para cards */
+.card-shadow {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Hover effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.15);
 }

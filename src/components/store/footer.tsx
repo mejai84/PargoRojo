@@ -5,7 +5,7 @@ import { Shield, Instagram, Facebook, MapPin, Phone, Mail } from "lucide-react"
 
 export function Footer() {
     return (
-        <footer className="w-full bg-card/30 border-t border-white/5 pt-16 pb-8">
+        <footer className="w-full bg-gray-50 border-t border-gray-100 pt-16 pb-8">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Logo & Info */}
@@ -18,16 +18,16 @@ export function Footer() {
                                 height={40}
                                 className="rounded-full"
                             />
-                            <span className="text-xl font-bold tracking-tighter">Pargo Rojo</span>
+                            <span className="text-xl font-bold tracking-tighter text-gray-900">Pargo Rojo</span>
                         </Link>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
+                        <p className="text-gray-600 text-sm leading-relaxed">
                             Lo mejor en comida de mar, Pescados y Mariscos. Espectaculares asados en Caucasia, Antioquia.
                         </p>
                         <div className="flex items-center gap-4">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all">
+                            <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-gray-600">
                                 <Instagram className="w-5 h-5" />
                             </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all">
+                            <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-gray-600">
                                 <Facebook className="w-5 h-5" />
                             </a>
                         </div>
@@ -35,8 +35,8 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-wider text-sm">Navegación</h4>
-                        <ul className="space-y-4 text-sm text-muted-foreground">
+                        <h4 className="font-bold uppercase tracking-wider text-sm text-gray-900">Navegación</h4>
+                        <ul className="space-y-4 text-sm text-gray-600">
                             <li><Link href="/menu" className="hover:text-primary transition-colors">Nuestra Carta</Link></li>
                             <li><Link href="/combos" className="hover:text-primary transition-colors">Combos Especiales</Link></li>
                             <li><Link href="/nosotros" className="hover:text-primary transition-colors">Sobre Nosotros</Link></li>
@@ -46,8 +46,8 @@ export function Footer() {
 
                     {/* Contact */}
                     <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-wider text-sm">Contacto</h4>
-                        <ul className="space-y-4 text-sm text-muted-foreground">
+                        <h4 className="font-bold uppercase tracking-wider text-sm text-gray-900">Contacto</h4>
+                        <ul className="space-y-4 text-sm text-gray-600">
                             <li className="flex items-center gap-3">
                                 <MapPin className="w-4 h-4 text-primary" />
                                 <span>C.Cial. Cauca Centro, Caucasia</span>
@@ -65,26 +65,26 @@ export function Footer() {
 
                     {/* Admin Access (Restricted) */}
                     <div className="space-y-6">
-                        <h4 className="font-bold uppercase tracking-wider text-sm">Personal</h4>
-                        <p className="text-xs text-muted-foreground">
+                        <h4 className="font-bold uppercase tracking-wider text-sm text-gray-900">Personal</h4>
+                        <p className="text-xs text-gray-600">
                             Si eres parte del equipo de Pargo Rojo, accede aquí para gestionar pedidos y productos.
                         </p>
                         <Link
                             href="/admin"
-                            className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-bold hover:bg-white/5 transition-all group"
+                            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all group text-gray-700"
                         >
                             <Shield className="w-4 h-4 group-hover:text-primary transition-colors" />
-                            Acceso Staff
+                            Acceso Personal
                         </Link>
                     </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+                <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
                     <p>© {new Date().getFullYear()} PARGO ROJO. Todos los derechos reservados.</p>
                     <div className="flex gap-6">
-                        <a href="#" className="hover:text-foreground">Privacidad</a>
-                        <a href="#" className="hover:text-foreground">Términos</a>
-                        <a href="#" className="hover:text-foreground">Cookies</a>
+                        <a href="#" className="hover:text-gray-900">Privacidad</a>
+                        <a href="#" className="hover:text-gray-900">Términos</a>
+                        <a href="#" className="hover:text-gray-900">Cookies</a>
                     </div>
                 </div>
             </div>
