@@ -4,25 +4,63 @@ import { Navbar } from "@/components/store/navbar"
 import { ProductCard } from "@/components/store/product-card"
 import { supabase } from "@/lib/supabase/client"
 import { useEffect, useState, Suspense } from "react"
-import { Search, Loader2 } from "lucide-react"
-import { useSearchParams } from "next/navigation"
+import { Search, Loader2, ChevronLeft, ArrowRight, Utensils } from "lucide-react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+
+// Iconos para cada categoría
+const categoryIcons: { [key: string]: string } = {
+    "pescados-y-mariscos": "🐟",
+    "ricuras-region": "🍲",
+    "cortes-gruesos": "🥩",
+    "especialidades-brasa": "🔥",
+    "cerdo": "🐷",
+    "arroces": "🍚",
+    "pollos": "🍗",
+    "pastas": "🍝",
+    "comida-montanera": "🏔️",
+    "lasanas": "🧀",
+    "comidas-rapidas": "🍔",
+    "menu-infantil": "👶",
+    "entradas": "🥗",
+    "asados": "🔥",
+    "desayunos": "☀️",
+    "adicionales-bebidas": "🍹",
+}
+
+// Colores de fondo para las categorías
+const categoryColors: { [key: string]: string } = {
+    "pescados-y-mariscos": "from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100",
+    "ricuras-region": "from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100",
+    "cortes-gruesos": "from-red-50 to-rose-50 hover:from-red-100 hover:to-rose-100",
+    "especialidades-brasa": "from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100",
+    "cerdo": "from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100",
+    "arroces": "from-yellow-50 to-amber-50 hover:from-yellow-100 hover:to-amber-100",
+    "pollos": "from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100",
+    "pastas": "from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100",
+    "comida-montanera": "from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100",
+    "lasanas": "from-red-50 to-orange-50 hover:from-red-100 hover:to-orange-100",
+    "comidas-rapidas": "from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100",
+    "menu-infantil": "from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100",
+    "entradas": "from-green-50 to-lime-50 hover:from-green-100 hover:to-lime-100",
+    "asados": "from-red-50 to-amber-50 hover:from-red-100 hover:to-amber-100",
+    "desayunos": "from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100",
+    "adicionales-bebidas": "from-teal-50 to-cyan-50 hover:from-teal-100 hover:to-cyan-100",
+}
 
 function MenuContent() {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const [products, setProducts] = useState<any[]>([])
     const [categories, setCategories] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
-    const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "all")
-
-    useEffect(() => {
-        const cat = searchParams.get("category")
-        if (cat) setActiveCategory(cat)
-    }, [searchParams])
+    const [selectedCategory, setSelectedCategory] = useState<any | null>(null)
+    const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({})
 
     const fetchData = async () => {
         setLoading(true)
-        console.log("Iniciando carga de datos...");
 
         try {
             // Fetch Categories
@@ -30,40 +68,47 @@ function MenuContent() {
                 .from('categories')
                 .select('*')
                 .eq('is_active', true)
-                .is('deleted_at', null)
                 .order('order_position')
 
-            if (catError) console.error("Error cargando categorías:", catError);
+            if (catError) console.error("Error cargando categorías:", catError)
             if (catData && catData.length > 0) {
                 setCategories(catData)
-            } else {
-                const { categories: localCats } = await import("@/lib/data")
-                setCategories(localCats)
+
+                // Contar productos por categoría
+                const counts: { [key: string]: number } = {}
+                for (const cat of catData) {
+                    const { count } = await supabase
+                        .from('products')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('category_id', cat.id)
+                        .eq('is_available', true)
+                    counts[cat.id] = count || 0
+                }
+                setProductCounts(counts)
             }
 
             // Fetch Products
             const { data, error } = await supabase
                 .from('products')
                 .select('*')
-                .is('deleted_at', null)
                 .eq('is_available', true)
                 .order('name')
 
-            if (error) console.error("Error cargando productos:", error);
+            if (error) console.error("Error cargando productos:", error)
 
             if (data && data.length > 0) {
-                console.log(`${data.length} productos cargados desde Supabase`);
                 setProducts(data)
-            } else {
-                console.warn("No se encontraron productos en Supabase, usando datos locales...");
-                const { products: localProducts } = await import("@/lib/data")
-                setProducts(localProducts)
             }
+
+            // Check URL params for category
+            const catParam = searchParams.get("category")
+            if (catParam && catData) {
+                const found = catData.find(c => c.id === catParam || c.slug === catParam)
+                if (found) setSelectedCategory(found)
+            }
+
         } catch (err) {
-            console.error("Error crítico en fetchData:", err);
-            const { products: localProducts, categories: localCats } = await import("@/lib/data")
-            setProducts(localProducts)
-            setCategories(localCats)
+            console.error("Error crítico en fetchData:", err)
         }
 
         setLoading(false)
@@ -73,96 +118,242 @@ function MenuContent() {
         fetchData()
     }, [])
 
+    // Filtrar productos por categoría seleccionada y búsqueda
     const filteredProducts = products.filter(product => {
         const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        const matchesCategory = activeCategory === "all" || product.category_id === activeCategory
+        const matchesCategory = selectedCategory ? product.category_id === selectedCategory.id : true
         return matchesSearch && matchesCategory
     })
 
+    // Handler para seleccionar categoría
+    const handleCategorySelect = (category: any) => {
+        setSelectedCategory(category)
+        setSearchTerm("")
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    // Handler para volver a categorías
+    const handleBackToCategories = () => {
+        setSelectedCategory(null)
+        setSearchTerm("")
+    }
+
+    // Función para obtener icono
+    const getIcon = (slug: string) => {
+        return categoryIcons[slug] || "🍽️"
+    }
+
+    // Función para obtener color
+    const getColor = (slug: string) => {
+        return categoryColors[slug] || "from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200"
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex flex-col">
+                <Navbar />
+                <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                    <p className="text-gray-500 animate-pulse font-medium text-lg">Cargando nuestra carta...</p>
+                </div>
+            </div>
+        )
+    }
+
     return (
-        <div className="min-h-screen bg-background pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20">
             <Navbar />
 
-            <div className="pt-32 container mx-auto px-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
-                    <div className="space-y-4">
-                        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Nuestra <span className="text-gradient">Carta</span></h1>
-                        <p className="text-muted-foreground text-lg max-w-xl">
-                            Desde los clásicos de la casa hasta nuestras creaciones más especiales.
-                            Pescado fresco del día, mariscos seleccionados y el mejor sazón de la costa.
-                        </p>
-                    </div>
+            <div className="pt-28 container mx-auto px-6">
 
-                    <div className="relative w-full md:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Buscar en el menú..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all text-lg"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
+                {/* NIVEL 1: Vista de Categorías */}
+                {!selectedCategory ? (
+                    <>
+                        {/* Header */}
+                        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-5 duration-500">
+                            <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-4">
+                                Menú Completo
+                            </span>
+                            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+                                ¿Qué deseas <span className="text-gradient">comer hoy</span>?
+                            </h1>
+                            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                                Explora nuestras categorías y descubre los mejores sabores de la cocina colombiana
+                            </p>
+                        </div>
 
-                {/* Categories Filter - Sticky implementation */}
-                <div className="sticky top-20 z-30 bg-background/80 backdrop-blur-md -mx-6 px-6 py-4 border-b border-white/5 mb-8">
-                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide no-scrollbar">
-                        <button
-                            onClick={() => setActiveCategory("all")}
-                            className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === "all"
-                                ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                                : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10"
-                                }`}
-                        >
-                            Todos
-                        </button>
-                        {categories.map(cat => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setActiveCategory(cat.id)}
-                                className={`px-6 py-2.5 rounded-full whitespace-nowrap font-bold transition-all border ${activeCategory === cat.id
-                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
-                                    : "bg-white/5 text-muted-foreground border-white/5 hover:bg-white/10"
-                                    }`}
-                            >
-                                {cat.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                        {/* Buscador Global */}
+                        <div className="max-w-xl mx-auto mb-12">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar en todo el menú..."
+                                    className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-lg shadow-sm text-gray-900 placeholder-gray-400"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                {/* Products Grid */}
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                        <p className="text-muted-foreground animate-pulse font-medium">Cocinando la carta...</p>
-                    </div>
-                ) : filteredProducts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                        <span className="text-6xl">🍔</span>
-                        <h3 className="text-2xl font-bold">No encontramos lo que buscas</h3>
-                        <p className="text-muted-foreground">Prueba con otro término o categoría.</p>
-                        <button
-                            onClick={() => { setSearchTerm(""); setActiveCategory("all"); }}
-                            className="text-primary font-bold hover:underline"
-                        >
-                            Ver todo el menú
-                        </button>
-                    </div>
+                        {/* Si hay búsqueda, mostrar productos filtrados */}
+                        {searchTerm ? (
+                            <div className="animate-in fade-in duration-300">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900">
+                                        Resultados para "{searchTerm}"
+                                    </h2>
+                                    <button
+                                        onClick={() => setSearchTerm("")}
+                                        className="text-primary font-bold hover:underline"
+                                    >
+                                        Limpiar búsqueda
+                                    </button>
+                                </div>
+                                {filteredProducts.length === 0 ? (
+                                    <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+                                        <span className="text-6xl mb-4 block">🔍</span>
+                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No encontramos resultados</h3>
+                                        <p className="text-gray-500">Intenta con otro término de búsqueda</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {filteredProducts.map(product => (
+                                            <ProductCard
+                                                key={product.id}
+                                                product={{
+                                                    ...product,
+                                                    image: product.image_url || product.image
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            /* Grid de Categorías */
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-5 duration-700">
+                                {categories.map((category, index) => (
+                                    <button
+                                        key={category.id}
+                                        onClick={() => handleCategorySelect(category)}
+                                        className={`group relative p-6 md:p-8 rounded-3xl bg-gradient-to-br ${getColor(category.slug)} border border-gray-100 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:border-primary/30 text-left overflow-hidden`}
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        {/* Decoración geométrica */}
+                                        <div className="absolute -top-4 -right-4 w-16 h-16 border-2 border-primary/10 rotate-45 group-hover:border-primary/30 transition-colors" />
+
+                                        {/* Icono */}
+                                        <span className="text-4xl md:text-5xl mb-4 block">
+                                            {getIcon(category.slug)}
+                                        </span>
+
+                                        {/* Nombre */}
+                                        <h3 className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-1">
+                                            {category.name}
+                                        </h3>
+
+                                        {/* Contador */}
+                                        <p className="text-sm text-gray-500">
+                                            {productCounts[category.id] || 0} {productCounts[category.id] === 1 ? 'plato' : 'platos'}
+                                        </p>
+
+                                        {/* Flecha */}
+                                        <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-gray-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-in fade-in duration-500">
-                        {filteredProducts.map(product => (
-                            <ProductCard
-                                key={product.id}
-                                product={{
-                                    ...product,
-                                    image: product.image_url || product.image
-                                }}
-                            />
-                        ))}
+                    /* NIVEL 2: Vista de Productos de la Categoría */
+                    <div className="animate-in fade-in slide-in-from-right-5 duration-500">
+                        {/* Header con botón de volver */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={handleBackToCategories}
+                                    className="rounded-full border-gray-200 hover:border-primary hover:text-primary"
+                                >
+                                    <ChevronLeft className="w-5 h-5 mr-1" />
+                                    Volver
+                                </Button>
+                                <div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-3xl">{getIcon(selectedCategory.slug)}</span>
+                                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                            {selectedCategory.name}
+                                        </h1>
+                                    </div>
+                                    <p className="text-gray-500 mt-1">
+                                        {productCounts[selectedCategory.id] || 0} {productCounts[selectedCategory.id] === 1 ? 'plato disponible' : 'platos disponibles'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Buscador dentro de categoría */}
+                            <div className="relative w-full md:w-80">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder={`Buscar en ${selectedCategory.name}...`}
+                                    className="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-gray-900 placeholder-gray-400"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Navegación rápida entre categorías */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+                            {categories.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => handleCategorySelect(cat)}
+                                    className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all border text-sm ${selectedCategory.id === cat.id
+                                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                                        : "bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary"
+                                        }`}
+                                >
+                                    {getIcon(cat.slug)} {cat.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Grid de Productos */}
+                        {filteredProducts.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+                                <span className="text-6xl mb-4 block">🍽️</span>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                    {searchTerm ? `No hay resultados para "${searchTerm}"` : "No hay productos en esta categoría"}
+                                </h3>
+                                <p className="text-gray-500 mb-4">
+                                    {searchTerm ? "Intenta con otro término" : "Pronto agregaremos más opciones"}
+                                </p>
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm("")}
+                                        className="text-primary font-bold hover:underline"
+                                    >
+                                        Ver todos los productos
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredProducts.map(product => (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={{
+                                            ...product,
+                                            image: product.image_url || product.image
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -173,8 +364,8 @@ function MenuContent() {
 export default function MenuPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
             </div>
         }>
             <MenuContent />
