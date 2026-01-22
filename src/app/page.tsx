@@ -79,7 +79,7 @@ export default function Home() {
             <div className="relative z-10 transform group-hover:scale-105 transition-transform duration-500 ease-out">
               <div className="w-full max-w-[550px] aspect-square bg-white rounded-[3rem] border border-gray-100 shadow-2xl shadow-gray-200/50 flex items-center justify-center relative overflow-hidden">
                 <Image
-                  src="/hero-pargo.png"
+                  src="/images/hero-pargo.png"
                   alt="Pargo Rojo Gran Rafa"
                   fill
                   className="object-cover"
