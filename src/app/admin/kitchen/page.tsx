@@ -66,8 +66,40 @@ export default function KitchenPage() {
 
     useEffect(() => {
         fetchOrders()
-        const interval = setInterval(fetchOrders, 10000)
-        return () => clearInterval(interval)
+
+        // Realtime subscription for instant orders
+        const channel = supabase
+            .channel('kitchen-orders')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'orders'
+            }, (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    // Play notification sound
+                    const audio = new Audio('/sounds/new-order.mp3')
+                    audio.play().catch(e => console.log("Audio play blocked by browser"))
+                }
+                fetchOrders()
+            })
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'order_items'
+            }, () => {
+                fetchOrders()
+            })
+            .subscribe()
+
+        // Auto-refresh timer for elapsed time
+        const interval = setInterval(() => {
+            setOrders(prev => [...prev]) // Trigger re-render for time calculation
+        }, 10000)
+
+        return () => {
+            supabase.removeChannel(channel)
+            clearInterval(interval)
+        }
     }, [])
 
     const updateStatus = async (id: string, newStatus: string) => {
@@ -138,28 +170,39 @@ export default function KitchenPage() {
                 border: 'border-orange-500',
                 headerBg: 'bg-orange-500',
                 bodyBg: 'bg-white',
-                label: 'PREPARANDO',
+                label: 'MARCHANDO',
                 icon: Flame,
                 textColor: 'text-orange-700'
             }
         }
 
-        if (minutes > 15) {
+        if (minutes > 20) {
             return {
-                border: 'border-red-500',
-                headerBg: 'bg-red-500',
-                bodyBg: 'bg-red-50',
+                border: 'border-rose-600 ring-2 ring-rose-500/20',
+                headerBg: 'bg-rose-600',
+                bodyBg: 'bg-rose-50',
+                label: '¡CRÍTICO!',
+                icon: Bell,
+                textColor: 'text-rose-700'
+            }
+        }
+
+        if (minutes > 10) {
+            return {
+                border: 'border-amber-500',
+                headerBg: 'bg-amber-500',
+                bodyBg: 'bg-amber-50/30',
                 label: 'DEMORADO',
                 icon: AlertTriangle,
-                textColor: 'text-red-700'
+                textColor: 'text-amber-700'
             }
         }
 
         return {
             border: 'border-gray-200',
-            headerBg: 'bg-gray-800',
+            headerBg: 'bg-[#1a1a1a]', // Dark mode headers for fresh orders
             bodyBg: 'bg-white',
-            label: 'PENDIENTE',
+            label: 'NUEVO',
             icon: Clock,
             textColor: 'text-gray-600'
         }
@@ -235,17 +278,24 @@ export default function KitchenPage() {
                                     )}
                                 >
                                     {/* Order Header */}
-                                    <div className={cn("p-4 flex justify-between items-center text-white", styles.headerBg)}>
+                                    <div className={cn(
+                                        "p-4 flex justify-between items-center text-white transition-colors duration-500",
+                                        styles.headerBg,
+                                        minutes > 15 && "animate-pulse"
+                                    )}>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black tracking-widest uppercase opacity-80">{order.tables?.table_name || 'MOSTRADOR'}</span>
-                                            <span className="text-2xl font-black">#{order.id.split('-')[0].toUpperCase()}</span>
+                                            <span className="text-2xl font-black italic">#{order.id.split('-')[0].toUpperCase()}</span>
                                         </div>
                                         <div className="text-right flex flex-col items-end">
-                                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-black/20 rounded-full text-[10px] font-bold mb-1">
+                                            <div className="flex items-center gap-1.5 px-3 py-1 bg-black/20 backdrop-blur-md rounded-full text-[10px] font-black mb-1">
                                                 <Icon className="w-3 h-3" />
                                                 {styles.label}
                                             </div>
-                                            <span className="text-xl font-bold font-mono">{minutes}m</span>
+                                            <span className={cn(
+                                                "text-xl font-black italic font-mono",
+                                                minutes > 15 ? "text-yellow-300" : "text-white"
+                                            )}>{minutes}m</span>
                                         </div>
                                     </div>
 
