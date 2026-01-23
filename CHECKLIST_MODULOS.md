@@ -71,13 +71,13 @@ Gestión de turnos y flujos de efectivo por usuario.
 
 | Funcionalidad | Estado | Observaciones |
 | :--- | :---: | :--- |
-| **Gestión de Turnos** | 🏗️ | Implementando flujo: Apertura -> Operación -> Arqueo -> Cierre. |
-| - Apertura de caja | ❌ | Pendiente: Registro de saldo inicial por usuario. |
-| - Arqueo de caja | 🏗️ | Reporte de diferencias sistema vs físico en desarrollo. |
-| - Cierre de caja | ❌ | Pendiente: Resumen irreversible y reporte final. |
-| **Movimientos de Efectivo** | ✅ | Registro de Egresos funcionando en Petty Cash. |
-| - Entradas / Salidas | 🏗️ | Integración de petty cash con el saldo del turno actual. |
-| - Diferenciación medio pago | 🏗️ | Soporte para Efectivo, Tarjeta, Transferencia, QR. |
+| **Gestión de Turnos** | ✅ | Flujo integrado: Apertura -> Operación -> Arqueo -> Cierre. |
+| - Apertura de caja | ✅ | Registro de saldo inicial por medio de pago habilitado. |
+| - Arqueo de caja | ✅ | Reporte automático de diferencias sistema vs físico. |
+| - Cierre de caja | ✅ | Cierre irreversible con resumen final y bloqueo contable. |
+| **Movimientos de Efectivo** | ✅ | Soporte total para múltiples medios de pago. |
+| - Entradas / Salidas | ✅ | Registro detallado de ingresos y egresos (Petty Cash). |
+| - Diferenciación medio pago | ✅ | Soporte para Efectivo, Tarjeta, Transferencia y QR centralizado. |
 
 ### 💰 Especificación de Caja Profesional
 1. **Estados de Caja:** 🔴 Cerrada (solo historial), 🟢 Abierta (operación), 🟠 En Arqueo (bloqueo para conteo).
@@ -149,8 +149,8 @@ Para completar al 100% los módulos base e intermedios propuestos:
 6. **Tickets PRO (PDF):** ✅ Generación de ticket térmico integrada en el historial de Caja.
 7. **Dashboard de Estadísticas:** ✅ Interfaz `/admin/dashboard` terminada con gráficas Recharts.
 8. **Loyalty System (Puntos):** ✅ Buscador de clientes y visualización de puntos en Caja.
-9. **Inventario Avanzado:** 🏗️ Pendiente descuento automático de insumos por venta (Recetas).
+9. **Inventario Avanzado:** ✅ Descuento automático de insumos por venta (Recetas) activo. ✅ Dashboard de stock en tiempo real.
 
 ---
 *Documento generado el: 23 de enero de 2026*
-*Estado del proyecto: **85% Funcionalidad Base Completada***
+*Estado del proyecto: **98% Funcionalidad Base Completada***
