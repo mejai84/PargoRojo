@@ -74,16 +74,22 @@ export default function AnalyticsDashboard() {
     const COLORS = ['#ff6b35', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#ec4899']
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 selection:bg-primary selection:text-black">
-            <div className="max-w-7xl mx-auto space-y-12">
+        <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 selection:bg-primary selection:text-black relative overflow-hidden">
+            {/* Mesh Gradients for Premium Feel */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+            <div className="max-w-7xl mx-auto space-y-12 relative z-10">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
-                            <TrendingUp className="w-10 h-10 text-primary" />
-                            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Estadísticas <span className="text-primary">Globales</span></h1>
+                            <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                                <TrendingUp className="w-8 h-8 text-primary" />
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">Estadísticas <span className="text-primary">Globales</span></h1>
                         </div>
-                        <p className="text-gray-500 font-medium italic">Rendimiento comercial de Pargo Rojo - Gran Rafa</p>
+                        <p className="text-gray-400 font-medium italic pl-14">Rendimiento comercial de Pargo Rojo - Gran Rafa</p>
                     </div>
 
                     <div className="flex gap-2">
@@ -136,7 +142,7 @@ export default function AnalyticsDashboard() {
                 {/* Main Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Ventas Diarias */}
-                    <div className="lg:col-span-2 bg-[#111] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl space-y-8">
+                    <div className="lg:col-span-2 bg-[#111]/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl space-y-8">
                         <div className="flex justify-between items-center">
                             <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-primary" /> Histórico de Ventas (30d)
@@ -171,7 +177,7 @@ export default function AnalyticsDashboard() {
                     </div>
 
                     {/* Ventas por Categoría */}
-                    <div className="bg-[#111] border border-white/5 p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center">
+                    <div className="bg-[#111]/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center">
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] mb-12 self-start flex items-center gap-2">
                             <ShoppingBag className="w-4 h-4 text-primary" /> Por Categoría
                         </h3>
@@ -244,13 +250,13 @@ export default function AnalyticsDashboard() {
 
 function KPICard({ title, value, icon, trend, color }: any) {
     return (
-        <div className="bg-[#111] border border-white/5 p-8 rounded-[2rem] shadow-2xl space-y-4 relative overflow-hidden group">
-            <div className={`absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all ${color}`}>
+        <div className="bg-[#111]/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2rem] shadow-2xl space-y-4 relative overflow-hidden group hover:border-white/10 transition-all duration-500">
+            <div className={`absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:opacity-30 transition-all duration-700 ${color}`}>
                 {icon}
             </div>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">{title}</p>
             <div className="flex flex-col">
-                <span className="text-3xl font-black tracking-tighter italic">{value}</span>
+                <span className="text-4xl font-black tracking-tighter italic">{value}</span>
                 <span className={`text-[10px] font-bold mt-2 ${color}`}>{trend}</span>
             </div>
         </div>

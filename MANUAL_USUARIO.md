@@ -1,79 +1,124 @@
-# 📘 Manual de Usuario - Plataforma Pargo Rojo
-
-Este documento describe las funcionalidades del sistema de gestión para el restaurante **Pargo Rojo**. El sistema está dividido en dos grandes áreas: la **Web Pública** (para clientes) y el **Panel Administrativo** (para empleados).
+> **Versión:** 1.8 - Pargo OS Enterprise Edition | **Documento:** Fuente Única de Verdad | **Actualizado:** 24 Ene 2026 (18:35)
 
 ---
 
-## 🍽️ 1. Para el Cliente (Web Pública)
+## 1. INTRODUCCIÓN GENERAL DEL SISTEMA
+Pargo Rojo es una plataforma POS modular en modelo SaaS diseñada para la gestión integral de establecimientos de alimentos, bebidas y retail. El sistema centraliza la operación financiera, administrativa y de producción, garantizando una trazabilidad total desde el ingreso de un pedido hasta el arqueo final de caja.
 
-Accesible desde cualquier dispositivo móvil o computador.
-
-### **Menú Digital Interactivo**
-- **Navegación Visual:** Explora las categorías (Pescados, Carnes, Arroces, etc.) con imágenes de alta calidad.
-- **Buscador:** Encuentra platos específicos escribiendo su nombre o ingredientes.
-- **Detalle de Plato:** Al hacer clic en una categoría, se ven todos los platos disponibles.
-
-### **Reservas en Línea**
-- Los clientes pueden solicitar una reserva indicando fecha, hora y número de personas.
-- Reciben confirmación visual si la reserva es exitosa.
-
-### **Zona de Clientes**
-- **Registro:** Nuevos usuarios pueden crear cuenta fácilmente.
-- **Historial:** (Próximamente) Ver sus pedidos anteriores y estado.
+### 🎯 Objetivos de la Plataforma
+- **Optimización Operativa:** Reducción de tiempos de comunicación entre salón y cocina.
+- **Control Financiero Estricto:** Seguimiento en tiempo real de flujos de efectivo y gastos operativos.
+- **Inteligencia de Negocios:** Generación automática de métricas para la toma de decisiones estratégicas.
 
 ---
 
-## 👨‍🍳 2. Panel Administrativo (Operaciones)
+## 2. CONCEPTOS BÁSICOS Y FLUJO OPERATIVO
+El sistema opera bajo un flujo circular que garantiza que cada transacción afecte correctamente al inventario y a la caja.
 
-Accesible para el personal autorizado (Administradores, Meseros, Cocineros, Cajeros).
-
-### **📱 Portal de Meseros (`/admin/waiter`)**
-Es la herramienta principal para la operación en salón.
-- **Mapa de Mesas:** Vista en tiempo real de mesas Libres (Blanco) y Ocupadas (Naranja).
-- **Toma de Pedidos:**
-  - Interfaz táctil con fotos de los platos.
-  - Buscador rápido de productos.
-  - **Observaciones:** Permite añadir notas a cada plato (ej: "Sin cebolla", "Término medio").
-- **Gestión de Cuentas:**
-  - Ver el consumo total de una mesa en tiempo real.
-  - **Solicitar Cuenta:** Botón para notificar a caja que la mesa desea pagar.
-
-### **🍳 Pantalla de Cocina - KDS (`/admin/kitchen`)**
-Reemplaza las chits de papel.
-- **Cola de Pedidos:** Los pedidos llegan automáticamente ordenados por hora de llegada.
-- **Estados:**
-  - **Pendiente:** Nuevo pedido recibido.
-  - **Preparando:** El cocinero marca que inició la elaboración.
-  - **Listo:** Notifica al mesero que puede recoger el plato.
-- **Filtros:** Se puede filtrar por estación (Cocina Caliente, Fría, Parrilla, Bebidas).
-
-### **💰 Caja y Facturación (`/admin/pos`)**
-Modulo para el Cajero.
-- **Cobro de Pedidos:** Ve las mesas que han pedido la cuenta.
-- **Métodos de Pago:** Registra pagos en Efectivo, Tarjeta o Transferencia.
-- **Liberación de Mesa:** Una vez pagado, la mesa cambia automáticamente a "Libre" en el sistema.
-
-### **💸 Caja Menor (`/admin/petty-cash`)**
-Gestión de gastos operativos diarios.
-- **Registro de Gastos:** Compras de insumos, pagos de transporte, adelantos, etc.
-- **Firma Digital:** El beneficiario debe firmar en la pantalla (tablet/celular) para guardar el comprobante.
-- **Historial e Impresión:** Consulta de todos los movimientos y reimpresión de recibos.
-
-### **👥 Gestión de Personal (`/admin/employees`)**
-- **Directorio:** Lista de todos los empleados.
-- **Roles:** Asignación de permisos (Mesero, Cocinero, Admin, etc.).
-
-### **⚙️ Configuración y Menú**
-- **Gestión de Productos:** Crear, editar precios, subir fotos y activar/desactivar platos agotados.
-- **Mesas:** Configurar el número y nombre de las mesas del restaurante.
+### Ciclo Diario de Operación
+1.  **Apertura de Jornada:** Inicio de turno (Shift) y apertura de sesión de caja física con saldo base.
+2.  **Gestión de Ventas:** Recepción de pedidos vía Menú QR, Portal de Meseros o Venta Directa en Caja.
+3.  **Producción KDS:** Procesamiento de comandas en tiempo real por estaciones.
+4.  **Control Adjudicado:** Registro de egresos y movimientos de caja menor durante el turno.
+5.  **Cierre y Auditoría:** Arqueo de efectivo físico contra sistema y generación de reportes de cierre.
 
 ---
 
-## 🚀 Flujo de Trabajo Típico
+## 3. ROLES DE USUARIO (RBAC)
+El sistema utiliza un Control de Acceso Basado en Roles (RBAC) para proteger la integridad de los datos:
 
-1. **Llegada:** El cliente llega, el **Mesero** asigna una mesa en el sistema (la marca como ocupada al iniciar pedido).
-2. **Pedido:** El Mesero toma la orden en la tablet/celular y envía a cocina.
-3. **Preparación:** En **Cocina** aparece el pedido. El Chef lo marca "En preparación" y luego "Listo".
-4. **Entrega:** El Mesero recibe la alerta (estado Listo) y lleva la comida.
-5. **Cierre:** El cliente pide la cuenta. El Mesero presiona "Solicitar Cuenta".
-6. **Pago:** El **Cajero** ve la solicitud, recibe el dinero y finaliza la orden. La mesa queda libre.
+| Rol | Atribuciones Principales | Responsabilidad |
+| :--- | :--- | :--- |
+| **Administrador** | Acceso total a configuraciones, nómina y reportes financieros. | Auditoría y Estrategia. |
+| **Cajero** | Gestión de turnos, facturación, arqueos y movimientos de caja. | Responsabilidad de Valores. |
+| **Mesero** | Gestión de mesas, toma de comandas y solicitudes de cuenta. | Atención al Cliente. |
+| **Cocina** | Gestión de producción, control de disponibilidad de productos. | Eficiencia de Producción. |
+| **Repartidor** | Seguimiento de envíos, actualización de estados de delivery. | Cumplimiento de Entregas. |
+
+---
+
+## 4. DESCRIPCIÓN DETALLADA DE MÓDULOS
+
+### 🏰 4.1. Command Center & Pargo Bot (IA)
+El centro neurálgico del sistema permite monitorear la salud del establecimiento bajo la arquitectura Pargo OS Enterprise.
+- **Pargo Bot (Asistente IA):** Motor de inteligencia artificial que responde consultas en lenguaje natural sobre ventas, stock y productos top directamente en el dashboard.
+- **KPIs en Tiempo Real:** Visualización instantánea de ventas brutas, flujo de caja y ocupación activa del local.
+- **Navegación Estructurada:** Sidebar inteligente agrupado por departamentos.
+
+### 🗺️ 4.2. Visual Floor Manager (Mapas 2D)
+Gestión visual del salón mediante planos interactivos.
+- **Diseño Drag & Drop:** Permite a la administración organizar el mobiliario, definir formas de mesa (circulares, cuadradas) y rotarlas según el plano real.
+- **Operación Táctica:** Los meseros ven el plano en tiempo real, permitiendo identificar mesas ocupadas (rojo) y libres al instante.
+- **Geometría Dinámica:** Soporte para mesas de diferentes tamaños y orientaciones.
+
+### 💰 4.3. Módulo de Ventas y Motor de Caja (POS Engine)
+El corazón financiero del sistema. Permite un control estricto del efectivo.
+- **Sesiones de Caja:** Cada cajero es responsable de su sesión. No se pueden procesar ventas sin una caja abierta.
+- **Movimientos:** Registro de depósitos (entradas) o retiros (salidas) con justificación obligatoria.
+- **Arqueo Parcial:** Permite verificar la existencia de efectivo en cualquier momento del turno sin cerrarlo.
+
+### 🍳 4.2. Cocina - Sistema KDS (Kitchen Display System)
+Monitor táctil que reemplaza las comandas de papel.
+- **Flujo Kanban:** Visualización en 3 columnas: **RECIBIDAS**, **PREPARANDO** y **LISTAS**.
+- **Cronómetro Automático:** Indica el tiempo de espera por pedido. Alertas visuales Cambian a naranja (>10 min) o rojo (>20 min).
+- **Estaciones:** Filtrado inteligente para que cada área (Parrilla, Bebidas, Entradas) vea solo lo que le corresponde.
+
+### 💸 4.3. Caja Menor (Petty Cash)
+Control de gastos operativos menores.
+- **Comprobantes Digitales:** Generación de recibos con numeración consecutiva.
+- **Firma Biométrica:** Captura de firma digital del beneficiario directamente en el dispositivo.
+- **Traducción Automática:** Conversión de valores numéricos a letras para validez contable.
+
+### 📊 4.4. Reportes y Analítica
+Inteligencia en tiempo real para gerencia.
+- **KPIs Principales:** Utilidad neta (Ventas - Gastos de Caja Menor), Ticket promedio y Tiempo de preparación.
+- **Vendedores Top:** Ranking de eficiencia del personal de servicio.
+- **Ranking de Productos:** Identificación de los artículos con mayor rotación y margen.
+
+### 🥘 4.5. Inventario Avanzado (Supply Chain)
+Sistema de control de materias primas y costeo.
+- **Libro de Recetas:** Fichas técnicas que vinculan productos de venta con ingredientes. Cada venta descuenta automáticamente la porción configurada.
+- **Entradas Formales:** Módulo para registrar compras a proveedores, actualizando el stock y el costo unitario del insumo.
+- **Gestión de Mermas:** Registro de pérdidas por caducidad o daños, permitiendo auditar el impacto económico de los desperdicios.
+- **Directorio de Proveedores:** Base de datos de aliados estratégicos por categoría (Pescados, Fruber, etc.).
+
+---
+
+## 5. PROCEDIMIENTOS DIARIOS PASO A PASO
+
+### 🟢 5.1. Al Iniciar el Día (Cajero)
+1.  Inicie sesión y diríjase a **Control de Caja**.
+2.  Presione **ABRIR CAJA**.
+3.  Ingrese el efectivo inicial (Monto de Apertura).
+4.  Verifique que el estado cambie a **SESIÓN ACTIVA**.
+
+### 🍽️ 5.2. Durante la Venta (Mesero / Cocina)
+1.  **Toma:** El mesero asigna productos a la mesa y envía a cocina.
+2.  **Producción:** Cocina recibe el pedido. Presiona **MARCHAR** para cambiar a naranja (Preparando).
+3.  **Finalización:** Cocina presiona **LISTO**. El pedido pasa a verde y el mesero recibe el aviso.
+4.  **Entrega:** Una vez servido, se presiona **ENTREGAR** para liberar espacio en el monitor.
+
+### 🔴 5.3. Al Finalizar el Día (Cajero / Admin)
+1.  Asegúrese de que todos los pedidos pendientes estén facturados o cerrados.
+2.  Diríjase a **Cerrar Caja**.
+3.  Realice el conteo físico del dinero.
+4.  Ingrese el valor en **Efectivo Contado**.
+5.  El sistema guardará la **Diferencia** automáticamente para auditoría.
+
+---
+
+## 6. CASOS COMUNES Y SOLUCIONES
+
+- **"El producto se agotó en la mitad del turno":** En el monitor KDS o en el Menú de Admin, presione el botón de "Estado" junto al producto para marcarlo como **AGOTADO**. Desaparecerá inmediatamente del menú de pedidos.
+- **"Se ingresó mal un gasto en Caja Menor":** Los comprobantes de caja menor son inmutables por seguridad. Se debe realizar un **Depósito de Caja** en el módulo POS para reversar el monto y crear un nuevo comprobante correcto, dejando nota en la auditoría.
+
+---
+
+## 7. BUENAS PRÁCTICAS OPERATIVAS
+- **Sincronización:** Refresque el monitor KDS al menos una vez por hora (aunque es automático, asegura la conexión con Supabase).
+- **Justificación:** Nunca registre un retiro de caja con el campo "Descripción" vacío. Esto facilita la auditoría mensual.
+- **Seguridad:** No comparta contraseñas. Cada acción queda grabada con el nombre del usuario en los logs de auditoría.
+
+---
+> **Aviso de Actualización:** Cada vez que el equipo de desarrollo implemente una nueva funcionalidad (Ej. Inventario Avanzado o Reservas), este manual se actualizará en las secciones correspondientes.
+

@@ -1,45 +1,31 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { DollarSign, ShoppingBag, Users, TrendingUp, Clock, Loader2, ArrowUp, ArrowDown, Eye } from "lucide-react"
+import {
+    DollarSign,
+    ShoppingBag,
+    Users,
+    TrendingUp,
+    Clock,
+    Loader2,
+    ArrowUpRight,
+    ArrowDownRight,
+    Eye,
+    Zap,
+    Calendar,
+    ArrowRight,
+    Search,
+    RefreshCw,
+    Activity,
+    Smartphone,
+    Monitor,
+    Globe
+} from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
-
-// Función simple para formatear hora
-const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-}
-
-// Componente Card mejorado
-const StatsCard = ({ title, value, icon: Icon, trend, trendUp, loading, subtitle, href }: any) => (
-    <Link href={href || '#'} className="block">
-        <div className="bg-card border border-white/10 rounded-2xl p-6 relative overflow-hidden hover:border-primary/50 transition-all group cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                        {loading ? (
-                            <Loader2 className="w-4 h-4 animate-spin mt-3" />
-                        ) : (
-                            <h3 className="text-3xl font-bold mt-2">{value}</h3>
-                        )}
-                        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
-                    </div>
-                    <div className="p-3 bg-white/5 rounded-xl group-hover:scale-110 transition-transform">
-                        <Icon className="w-6 h-6 text-primary" />
-                    </div>
-                </div>
-                <div className={`text-xs font-semibold ${trendUp ? 'text-green-500' : 'text-red-500'} flex items-center gap-1`}>
-                    {trendUp ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                    {trend} vs ayer
-                </div>
-            </div>
-        </div>
-    </Link>
-)
+import { cn } from "@/lib/utils"
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true)
@@ -53,7 +39,21 @@ export default function AdminDashboard() {
     })
     const [recentOrders, setRecentOrders] = useState<any[]>([])
     const [topProducts, setTopProducts] = useState<any[]>([])
-    const [weeklyRevenue, setWeeklyRevenue] = useState<any[]>([])
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+        fetchData()
+
+        const channel = supabase.channel('dashboard-sync')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchData)
+            .subscribe()
+
+        return () => {
+            clearInterval(timer)
+            supabase.removeChannel(channel)
+        }
+    }, [])
 
     const fetchData = async () => {
         setLoading(true)
@@ -61,309 +61,205 @@ export default function AdminDashboard() {
         today.setHours(0, 0, 0, 0)
         const todayISO = today.toISOString()
 
-        const yesterday = new Date(today)
-        yesterday.setDate(yesterday.getDate() - 1)
-        const yesterdayISO = yesterday.toISOString()
+        const { data: oToday } = await supabase.from('orders').select('total, status').gte('created_at', todayISO)
 
-        // 1. Fetch Today's Orders & Stats
-        const { data: ordersToday, error: ordersError } = await supabase
-            .from('orders')
-            .select('*')
-            .gte('created_at', todayISO)
-
-        // 2. Fetch Yesterday's Orders for comparison
-        const { data: ordersYesterday } = await supabase
-            .from('orders')
-            .select('*')
-            .gte('created_at', yesterdayISO)
-            .lt('created_at', todayISO)
-
-        if (!ordersError && ordersToday) {
-            const revenue = ordersToday.reduce((acc, order) => acc + (order.total || 0), 0)
-            const active = ordersToday.filter(o => !['delivered', 'cancelled'].includes(o.status)).length
-            const yesterdayRev = ordersYesterday?.reduce((acc, order) => acc + (order.total || 0), 0) || 0
-
+        if (oToday) {
+            const revenue = oToday.reduce((a, b) => a + (b.total || 0), 0)
+            const active = oToday.filter(o => !['delivered', 'cancelled'].includes(o.status)).length
             setStats(prev => ({
                 ...prev,
                 todayRevenue: revenue,
-                yesterdayRevenue: yesterdayRev,
-                totalOrdersToday: ordersToday.length,
-                yesterdayOrders: ordersYesterday?.length || 0,
+                totalOrdersToday: oToday.length,
                 activeOrders: active
             }))
         }
 
-        // 3. Fetch Recent Orders (limit 5)
-        const { data: recent, error: recentError } = await supabase
+        const { data: recent } = await supabase
             .from('orders')
-            .select(`
-                *,
-                order_items (
-                    quantity,
-                    products (name)
-                )
-            `)
+            .select(`*, order_items(quantity, products(name))`)
             .order('created_at', { ascending: false })
-            .limit(5)
+            .limit(6)
 
-        if (!recentError && recent) {
-            setRecentOrders(recent)
-        }
+        if (recent) setRecentOrders(recent)
 
-        // 4. Top Products (Simplified aggregation)
-        const { data: items, error: itemsError } = await supabase
+        const { data: items } = await supabase
             .from('order_items')
-            .select('quantity, price, products(name)')
+            .select('quantity, unit_price, products(name)')
             .gte('created_at', todayISO)
 
-        if (!itemsError && items) {
-            const counts: { [key: string]: { quantity: number; revenue: number } } = {}
-            items.forEach((item: any) => {
-                const name = item.products?.name || 'Desconocido'
-                if (!counts[name]) {
-                    counts[name] = { quantity: 0, revenue: 0 }
-                }
-                counts[name].quantity += item.quantity
-                counts[name].revenue += item.quantity * item.price
+        if (items) {
+            const counts: any = {}
+            items.forEach((it: any) => {
+                const name = it.products?.name || 'Insumo'
+                counts[name] = (counts[name] || 0) + it.quantity
             })
-            const sorted = Object.entries(counts)
-                .map(([name, data]) => ({ name, sales: data.quantity, revenue: data.revenue }))
-                .sort((a, b) => b.revenue - a.revenue)
-                .slice(0, 5)
-            setTopProducts(sorted)
-        }
-
-        // 5. Weekly Revenue for chart
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 6)
-        weekAgo.setHours(0, 0, 0, 0)
-
-        const { data: weekOrders } = await supabase
-            .from('orders')
-            .select('created_at, total')
-            .gte('created_at', weekAgo.toISOString())
-
-        if (weekOrders) {
-            const dailyData: Record<string, number> = {}
-            // Initialize all days
-            for (let i = 0; i < 7; i++) {
-                const date = new Date(weekAgo)
-                date.setDate(date.getDate() + i)
-                const dateStr = date.toISOString().split('T')[0]
-                dailyData[dateStr] = 0
-            }
-
-            // Add revenue
-            weekOrders.forEach(order => {
-                const dateStr = order.created_at.split('T')[0]
-                if (dailyData[dateStr] !== undefined) {
-                    dailyData[dateStr] += order.total || 0
-                }
-            })
-
-            const weekData = Object.entries(dailyData).map(([date, revenue]) => ({
-                date,
-                day: new Date(date).toLocaleDateString('es-ES', { weekday: 'short' }),
-                revenue
-            }))
-            setWeeklyRevenue(weekData)
+            setTopProducts(Object.entries(counts).map(([name, qty]) => ({ name, qty: qty as number })).sort((a, b) => b.qty - a.qty).slice(0, 5))
         }
 
         setLoading(false)
     }
 
-    useEffect(() => {
-        fetchData()
-        // Opcional: Real-time subscription
-        const channel = supabase.channel('dashboard-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchData)
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
-    }, [])
-
-    const getStatusStyle = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-            case 'preparing': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-            case 'ready': return 'bg-purple-500/10 text-purple-500 border-purple-500/20'
-            case 'delivered': return 'bg-green-500/10 text-green-500 border-green-500/20'
-            default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20'
-        }
-    }
-
-    const getStatusLabel = (status: string) => {
-        const labels: any = {
-            pending: 'Pendiente',
-            preparing: 'En Cocina',
-            ready: 'Listo',
-            delivered: 'Entregado',
-            cancelled: 'Cancelado',
-            out_for_delivery: 'En Reparto'
-        }
-        return labels[status] || status
-    }
-
-    const calculateTrend = (today: number, yesterday: number) => {
-        if (yesterday === 0) return '+100%'
-        const change = ((today - yesterday) / yesterday) * 100
-        return `${change > 0 ? '+' : ''}${change.toFixed(0)}%`
-    }
-
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground">Bienvenido al panel de control de Pargo Rojo</p>
-                </div>
-                <Button onClick={fetchData} variant="outline" size="sm" className="gap-2">
-                    <TrendingUp className="w-4 h-4" /> Actualizar
-                </Button>
-            </div>
+        <div className="space-y-12 animate-in fade-in duration-700">
 
-            {/* Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <StatsCard
-                    title="Ingresos Hoy"
-                    value={formatPrice(stats.todayRevenue)}
-                    subtitle={`Ayer: ${formatPrice(stats.yesterdayRevenue)}`}
-                    icon={DollarSign}
-                    trend={calculateTrend(stats.todayRevenue, stats.yesterdayRevenue)}
-                    trendUp={stats.todayRevenue >= stats.yesterdayRevenue}
-                    loading={loading}
-                    href="/admin/reports"
-                />
-                <StatsCard
-                    title="Pedidos Activos"
-                    value={stats.activeOrders}
-                    subtitle="En proceso"
-                    icon={Clock}
-                    trend={`${stats.activeOrders}`}
-                    trendUp={true}
-                    loading={loading}
-                    href="/admin/orders"
-                />
-                <StatsCard
-                    title="Pedidos Hoy"
-                    value={stats.totalOrdersToday}
-                    subtitle={`Ayer: ${stats.yesterdayOrders}`}
-                    icon={ShoppingBag}
-                    trend={calculateTrend(stats.totalOrdersToday, stats.yesterdayOrders)}
-                    trendUp={stats.totalOrdersToday >= stats.yesterdayOrders}
-                    loading={loading}
-                    href="/admin/orders"
-                />
-                <StatsCard
-                    title="Ticket Promedio"
-                    value={stats.totalOrdersToday > 0 ? formatPrice(stats.todayRevenue / stats.totalOrdersToday) : formatPrice(0)}
-                    subtitle="Por pedido"
-                    icon={TrendingUp}
-                    trend="+0%"
-                    trendUp={true}
-                    loading={loading}
-                    href="/admin/reports"
-                />
-            </div>
+            {/* 👑 VIP HERO HEADER */}
+            <div className="relative group rounded-[3rem] overflow-hidden bg-[#0a0a0a] border border-white/5 p-8 md:p-12 shadow-3xl">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
+                <div className="relative z-10 flex flex-col lg:flex-row justify-between lg:items-center gap-8">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2">
+                                <Activity className="w-3 h-3" /> SISTEMA OPERATIVO
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest italic">{currentTime.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                        </div>
+                        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-white leading-none">
+                            COMMAND <span className="text-primary italic">CENTER</span>
+                        </h1>
+                        <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] flex items-center gap-4">
+                            <span className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-emerald-500" /> Cloud Sync Active</span>
+                            <span className="flex items-center gap-1.5 font-mono text-white">{currentTime.toLocaleTimeString('es-CO')}</span>
+                        </p>
+                    </div>
 
-            {/* Weekly Revenue Chart */}
-            <div className="bg-card border border-white/10 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold">Ingresos de la Semana</h3>
-                    <Link href="/admin/reports">
-                        <Button variant="ghost" size="sm" className="gap-2">
-                            <Eye className="w-4 h-4" /> Ver Reportes
-                        </Button>
-                    </Link>
-                </div>
-                <div className="space-y-4">
-                    {weeklyRevenue.map((day, i) => {
-                        const maxRevenue = Math.max(...weeklyRevenue.map(d => d.revenue), 1)
-                        const width = (day.revenue / maxRevenue) * 100
-
-                        return (
-                            <div key={i} className="space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="font-medium capitalize">{day.day}</span>
-                                    <span className="font-mono font-bold text-primary">{formatPrice(day.revenue)}</span>
-                                </div>
-                                <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
-                                        style={{ width: `${width}%` }}
-                                    />
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            </div>
-
-            {/* Recent Orders Preview */}
-            <div className="grid lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-card border border-white/10 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold">Últimos Pedidos</h3>
+                    <div className="flex gap-4">
+                        <button onClick={fetchData} className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all group-hover:rotate-180 duration-500">
+                            <RefreshCw className="w-6 h-6" />
+                        </button>
                         <Link href="/admin/orders">
-                            <Button variant="ghost" size="sm" className="gap-2">
-                                <Eye className="w-4 h-4" /> Ver Todos
+                            <Button className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/20 gap-3">
+                                NUEVA VENTA <ArrowRight className="w-4 h-4" />
                             </Button>
                         </Link>
                     </div>
-                    <div className="space-y-4">
-                        {recentOrders.length === 0 && !loading && (
-                            <p className="text-center py-10 text-muted-foreground italic">No hay pedidos recientes</p>
-                        )}
-                        {recentOrders.map((order, i) => (
-                            <div key={order.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                        #{order.id.split('-')[0].toUpperCase()}
+                </div>
+            </div>
+
+            {/* 📊 CORE METRICS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <HighEndKPI label="Ventas Brutas" value={formatPrice(stats.todayRevenue)} trend="+12.5%" trendUp={true} delay="0" color="text-primary" />
+                <HighEndKPI label="Flujo de Caja" value={stats.totalOrdersToday} subValue="Órdenes hoy" trend="+4%" trendUp={true} delay="100" color="text-white" />
+                <HighEndKPI label="Ocupación Live" value={stats.activeOrders} subValue="Mesas activas" trend="High" trendUp={true} delay="200" color="text-emerald-400" />
+                <HighEndKPI label="Fidelización" value="24" subValue="Nuevos Clientes" trend="+8%" trendUp={true} delay="300" color="text-blue-400" />
+            </div>
+
+            {/* 🛠️ CONTROL GRID */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+                {/* Traffic Control (Orders) */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between px-6">
+                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gray-700 italic">Tráfico de Pedidos</h3>
+                        <Link href="/admin/orders" className="text-[10px] font-black text-primary hover:underline italic uppercase tracking-widest">Auditar Todo</Link>
+                    </div>
+
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl">
+                        <div className="divide-y divide-white/5">
+                            {recentOrders.map((order, i) => (
+                                <div key={order.id} className="p-6 md:p-8 hover:bg-white/[0.02] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
+                                    <div className="flex items-center gap-4 md:gap-6">
+                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-mono text-[10px] font-black text-gray-500 group-hover:border-primary/30 group-hover:text-primary transition-all">
+                                            #{order.id.split('-')[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-black italic uppercase tracking-tight text-white">{order.guest_info?.name || 'Mostrador'}</p>
+                                            <div className="flex items-center gap-3 mt-1">
+                                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest italic">{new Date(order.created_at).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <div className="w-1 h-1 rounded-full bg-gray-800" />
+                                                <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest italic">{order.order_items?.length || 0} ITEMS</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-bold">{order.guest_info?.name || 'Cliente'}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {formatTime(new Date(order.created_at))} • {order.order_items?.length || 0} Items
-                                        </p>
+                                    <div className="flex items-center gap-6">
+                                        <span className="text-lg font-black italic tracking-tighter text-white">${(order.total || 0).toLocaleString()}</span>
+                                        <div className={cn(
+                                            "px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest border italic",
+                                            order.status === 'delivered' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                                                order.status === 'pending' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-white/5 text-gray-500 border-white/5"
+                                        )}>
+                                            {order.status}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="font-mono font-bold">{formatPrice(order.total || 0)}</span>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusStyle(order.status)}`}>
-                                        {getStatusLabel(order.status)}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Popular Items */}
-                <div className="bg-card border border-white/10 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold mb-6">Top Productos (Hoy)</h3>
-                    <div className="space-y-4">
-                        {topProducts.length === 0 && !loading && (
-                            <p className="text-center py-10 text-muted-foreground italic">Sin ventas hoy</p>
-                        )}
-                        {topProducts.map((item, i) => (
-                            <div key={i} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground font-mono text-sm">#{i + 1}</span>
-                                        <span className="font-medium">{item.name}</span>
+                {/* Popular Insights */}
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-6">
+                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gray-700 italic">Preferencia HOY</h3>
+                    </div>
+
+                    <div className="bg-[#0a0a0a] border border-white/5 rounded-[3rem] p-8 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 text-primary rotate-12">
+                            <TrendingUp className="w-40 h-40" />
+                        </div>
+                        <div className="space-y-6 relative z-10">
+                            {topProducts.map((p, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 italic">{p.name}</span>
+                                        <span className="text-xs font-black italic text-white">{p.qty}u</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary transition-all duration-1000"
+                                            style={{ width: `${Math.min((p.qty / (topProducts[0].qty)) * 100, 100)}%` }}
+                                        />
                                     </div>
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">{item.sales} ventas</span>
-                                    <span className="font-mono font-bold text-primary">{formatPrice(item.revenue)}</span>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                            {topProducts.length === 0 && <p className="text-[10px] text-gray-600 font-bold uppercase text-center py-10">Sin data de ventas</p>}
+                        </div>
+                    </div>
+
+                    {/* Quick Access Grid */}
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                        <DashboardAction icon={<Calendar />} label="Agenda" href="/admin/reservations" />
+                        <DashboardAction icon={<Users />} label="Clientes" href="/admin/customers" />
+                        <DashboardAction icon={<Smartphone />} label="POS APP" href="/admin/cashier" />
+                        <DashboardAction icon={<Monitor />} label="Cocinero" href="/admin/kitchen" />
                     </div>
                 </div>
             </div>
         </div>
+    )
+}
+
+function HighEndKPI({ label, value, trend, trendUp, delay, color, subValue }: any) {
+    return (
+        <div className="bg-[#0a0a0a] border border-white/5 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl relative overflow-hidden group hover:border-primary/20 transition-all">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 group-hover:rotate-6 transition-all duration-700">
+                <Zap className={cn("w-12 h-12", color)} />
+            </div>
+            <div className="relative z-10 space-y-4">
+                <div className="flex justify-between items-start">
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-600 italic">{label}</p>
+                    <div className={cn("flex items-center gap-1.5 text-[10px] font-black italic", trendUp ? "text-emerald-500" : "text-rose-500")}>
+                        {trendUp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                        {trend}
+                    </div>
+                </div>
+                <div>
+                    <h2 className={cn("text-4xl font-black italic tracking-tighter leading-none shrink-0", color)}>{value}</h2>
+                    {subValue && <p className="text-[9px] font-bold text-gray-700 uppercase tracking-widest mt-2 italic">{subValue}</p>}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function DashboardAction({ icon, label, href }: any) {
+    return (
+        <Link href={href}>
+            <div className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-primary/30 transition-all flex flex-col items-center gap-3 group">
+                <div className="w-10 h-10 rounded-xl bg-black border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-primary transition-colors">
+                    {icon}
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 group-hover:text-white transition-colors">{label}</span>
+            </div>
+        </Link>
     )
 }

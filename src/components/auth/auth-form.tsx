@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { DemoUsers } from "./demo-users"
 
 export function AuthForm() {
     const [loading, setLoading] = useState(false)
@@ -108,6 +109,12 @@ export function AuthForm() {
                     {message.text}
                 </div>
             )}
+
+            <DemoUsers onSelect={(e, p) => {
+                setEmail(e)
+                setPassword(p)
+                // Opcional: Podríamos hacer submit de una vez, pero mejor que el usuario lo vea
+            }} />
         </div>
     )
 }

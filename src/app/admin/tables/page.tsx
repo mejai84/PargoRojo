@@ -1,11 +1,32 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Plus, QrCode, Download, Edit, Trash2, MapPin, Users, Loader2, ArrowLeft } from "lucide-react"
+import {
+    Plus,
+    QrCode,
+    Download,
+    Edit,
+    Trash2,
+    MapPin,
+    Users,
+    Loader2,
+    ArrowLeft,
+    LayoutGrid,
+    Map as MapIcon,
+    Save,
+    RefreshCw,
+    X,
+    Maximize2,
+    RotateCcw,
+    Circle,
+    Square as SquareIcon,
+    Flame
+} from "lucide-react"
 import Link from "next/link"
 import QRCodeStyling from "qr-code-styling"
+import { cn } from "@/lib/utils"
 
 type Table = {
     id: string
@@ -18,18 +39,45 @@ type Table = {
     active: boolean
     parent_table_id?: string
     is_merged?: boolean
+    x_pos: number
+    y_pos: number
+    width: number
+    height: number
+    rotation: number
+    shape: 'rectangle' | 'circle' | 'square'
 }
 
 export default function TablesAdminPage() {
     const [tables, setTables] = useState<Table[]>([])
     const [loading, setLoading] = useState(true)
+    const [isVisualView, setIsVisualView] = useState(false)
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState<string | null>(null)
+    const [savingLayout, setSavingLayout] = useState(false)
+    const [activeZone, setActiveZone] = useState<string>("TODAS")
+    const [isHeatmapMode, setIsHeatmapMode] = useState(false)
+    const [tableSales, setTableSales] = useState<Record<string, number>>({})
+
+    // Layout Editor State
+    const [draggedTableId, setDraggedTableId] = useState<string | null>(null)
+    const [offset, setOffset] = useState({ x: 0, y: 0 })
+    const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         loadTables()
+
+        // 🚀 Realtime Subscription
+        const channel = supabase.channel('tables-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, () => {
+                loadTables()
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [])
 
     const loadTables = async () => {
@@ -39,9 +87,107 @@ export default function TablesAdminPage() {
             .order('table_number', { ascending: true })
 
         if (!error && data) {
-            setTables(data)
+            setTables(data as Table[])
         }
         setLoading(false)
+    }
+
+    const saveLayout = async () => {
+        setSavingLayout(true)
+        try {
+            const updates = tables.map(t => ({
+                id: t.id,
+                x_pos: t.x_pos,
+                y_pos: t.y_pos,
+                width: t.width,
+                height: t.height,
+                rotation: t.rotation,
+                shape: t.shape
+            }))
+
+            for (const update of updates) {
+                await supabase.from('tables').update(update).eq('id', update.id)
+            }
+            alert("¡Plano de sala guardado exitosamente! 🏰")
+        } catch (error) {
+            alert("Error al guardar diseño")
+        }
+        setSavingLayout(false)
+    }
+
+    const handleMouseDown = (e: React.MouseEvent, tableId: string) => {
+        if (!isVisualView) return
+        e.preventDefault()
+        const table = tables.find(t => t.id === tableId)
+        if (!table) return
+
+        setDraggedTableId(tableId)
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+        setOffset({
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        })
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!draggedTableId || !containerRef.current) return
+
+        const containerRect = containerRef.current.getBoundingClientRect()
+        const x = e.clientX - containerRect.left - offset.x
+        const y = e.clientY - containerRect.top - offset.y
+
+        // 📏 GRID SNAP: 20px
+        const snappedX = Math.round(x / 20) * 20
+        const snappedY = Math.round(y / 20) * 20
+
+        setTables(prev => prev.map(t =>
+            t.id === draggedTableId
+                ? { ...t, x_pos: Math.max(0, snappedX), y_pos: Math.max(0, snappedY) }
+                : t
+        ))
+    }
+
+    const handleMouseUp = () => {
+        setDraggedTableId(null)
+    }
+
+    const loadHeatmapData = async () => {
+        const { data: sales } = await supabase
+            .from('orders')
+            .select('table_id, total')
+            .not('table_id', 'is', null)
+
+        const salesMap: Record<string, number> = {}
+        sales?.forEach(order => {
+            if (order.table_id) {
+                salesMap[order.table_id] = (salesMap[order.table_id] || 0) + (order.total || 0)
+            }
+        })
+        setTableSales(salesMap)
+    }
+
+    const toggleHeatmap = async () => {
+        if (!isHeatmapMode) {
+            await loadHeatmapData()
+        }
+        setIsHeatmapMode(!isHeatmapMode)
+    }
+
+    const getHeatColor = (tableId: string) => {
+        const revenue = tableSales[tableId] || 0
+        if (revenue === 0) return "bg-blue-500/10 border-blue-500/20 text-blue-500"
+
+        const maxRevenue = Math.max(...Object.values(tableSales), 1)
+        const intensity = (revenue / maxRevenue) * 100
+
+        if (intensity > 80) return "bg-rose-600 border-rose-400 text-white shadow-[0_0_20px_rgba(225,29,72,0.5)]"
+        if (intensity > 50) return "bg-orange-500 border-orange-300 text-white"
+        if (intensity > 20) return "bg-amber-400 border-amber-200 text-black"
+        return "bg-emerald-500/40 border-emerald-400/50 text-emerald-100"
+    }
+
+    const updateTableDimension = (id: string, field: 'width' | 'height' | 'rotation', value: number) => {
+        setTables(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t))
     }
 
     const generateQRCode = (table: Table) => {
@@ -51,400 +197,361 @@ export default function TablesAdminPage() {
             type: "svg",
             data: `${window.location.origin}/menu-qr?table=${table.qr_code}`,
             image: "/images/logo.jpg",
-            dotsOptions: {
-                color: "#ff6b35",
-                type: "rounded"
-            },
-            backgroundOptions: {
-                color: "#000000",
-            },
-            imageOptions: {
-                crossOrigin: "anonymous",
-                margin: 10,
-                imageSize: 0.4
-            },
-            cornersSquareOptions: {
-                color: "#ff6b35",
-                type: "extra-rounded"
-            },
-            cornersDotOptions: {
-                color: "#ff6b35",
-                type: "dot"
-            }
+            dotsOptions: { color: "#ff6b35", type: "rounded" },
+            backgroundOptions: { color: "#000000" },
+            imageOptions: { crossOrigin: "anonymous", margin: 10, imageSize: 0.4 },
+            cornersSquareOptions: { color: "#ff6b35", type: "extra-rounded" },
+            cornersDotOptions: { color: "#ff6b35", type: "dot" }
         })
-
-        qrCode.download({
-            name: `mesa-${table.table_number}-qr`,
-            extension: "png"
-        })
-    }
-
-    const downloadAllQRCodes = () => {
-        tables.forEach((table, index) => {
-            setTimeout(() => generateQRCode(table), index * 500)
-        })
-    }
-
-    const updateTableStatus = async (tableId: string, status: string) => {
-        await supabase
-            .from('tables')
-            .update({ status })
-            .eq('id', tableId)
-
-        loadTables()
+        qrCode.download({ name: `mesa-${table.table_number}-qr`, extension: "png" })
     }
 
     const deleteTable = async (table: Table) => {
-        if (!confirm(`¿Estás seguro de que quieres eliminar la ${table.table_name}? Esta acción no se puede deshacer.`)) return
-
+        if (!confirm(`¿Estás seguro de que quieres eliminar la ${table.table_name}?`)) return
         setIsDeleting(table.id)
-        const { error } = await supabase
-            .from('tables')
-            .delete()
-            .eq('id', table.id)
-
-        if (error) {
-            alert("Error al eliminar la mesa: " + error.message)
-        } else {
-            loadTables()
-        }
+        const { error } = await supabase.from('tables').delete().eq('id', table.id)
+        if (!error) loadTables()
         setIsDeleting(null)
     }
 
     const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!selectedTable) return
-
         const formData = new FormData(e.currentTarget)
-        const { error } = await supabase
-            .from('tables')
-            .update({
-                table_number: parseInt(formData.get('table_number') as string),
-                table_name: formData.get('table_name'),
-                capacity: parseInt(formData.get('capacity') as string),
-                location: formData.get('location'),
-                parent_table_id: formData.get('parent_table_id') || null,
-                is_merged: !!formData.get('parent_table_id'),
-                active: formData.get('active') === 'on'
-            })
-            .eq('id', selectedTable.id)
+        const { error } = await supabase.from('tables').update({
+            table_number: parseInt(formData.get('table_number') as string),
+            table_name: formData.get('table_name'),
+            capacity: parseInt(formData.get('capacity') as string),
+            location: formData.get('location'),
+            shape: formData.get('shape'),
+            active: formData.get('active') === 'on'
+        }).eq('id', selectedTable.id)
 
-        if (error) {
-            alert("Error al actualizar la mesa: " + error.message)
-        } else {
-            setIsEditModalOpen(false)
-            setSelectedTable(null)
-            loadTables()
-        }
+        if (!error) { setIsEditModalOpen(false); setSelectedTable(null); loadTables(); }
     }
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'available': return 'bg-green-500/20 text-green-500 border-green-500/30'
-            case 'occupied': return 'bg-red-500/20 text-red-500 border-red-500/30'
-            case 'reserved': return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30'
-            case 'cleaning': return 'bg-blue-500/20 text-blue-500 border-blue-500/30'
-            default: return 'bg-gray-500/20 text-gray-500 border-gray-500/30'
-        }
-    }
-
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'available': return 'Disponible'
-            case 'occupied': return 'Ocupada'
-            case 'reserved': return 'Reservada'
-            case 'cleaning': return 'Limpieza'
-            default: return status
-        }
-    }
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        )
-    }
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-black"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>
 
     return (
-        <div className="min-h-screen bg-background p-6">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
+        <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-primary">
+            <div className="max-w-[1600px] mx-auto space-y-10">
+
+                {/* 🔝 ENTERPRISE HEADER */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="flex items-center gap-6">
                         <Link href="/admin">
-                            <Button variant="outline" size="icon">
-                                <ArrowLeft className="w-5 h-5" />
+                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all">
+                                <ArrowLeft className="w-6 h-6" />
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-3xl font-bold">Gestión de Mesas</h1>
-                            <p className="text-muted-foreground">Administra las mesas y códigos QR</p>
+                            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none">Gestión de <span className="text-primary">Mesas</span></h1>
+                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
+                                <LayoutGrid className="w-3 h-3" /> Control físico y digital del salón
+                            </p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <Button onClick={downloadAllQRCodes} variant="outline" className="gap-2">
-                            <Download className="w-4 h-4" />
-                            Descargar QR
-                        </Button>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Zone Switcher */}
+                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 mr-4 font-black italic">
+                            {["TODAS", "Interior", "Terraza", "Barra", "Salon VIP"].map(zone => (
+                                <button
+                                    key={zone}
+                                    onClick={() => setActiveZone(zone)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-[8px] uppercase tracking-widest transition-all",
+                                        activeZone === zone ? "bg-primary text-black" : "text-gray-500 hover:text-white"
+                                    )}
+                                >
+                                    {zone}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 mr-4 font-black italic">
+                            <button
+                                onClick={() => setIsVisualView(false)}
+                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", !isVisualView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}
+                            >
+                                LISTA
+                            </button>
+                            <button
+                                onClick={() => setIsVisualView(true)}
+                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", isVisualView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}
+                            >
+                                DISEÑO 2D
+                            </button>
+                        </div>
+                        {isVisualView && (
+                            <Button
+                                onClick={toggleHeatmap}
+                                className={cn(
+                                    "h-14 px-8 rounded-2xl font-black uppercase text-[10px] tracking-widest italic transition-all gap-3",
+                                    isHeatmapMode ? "bg-orange-600 text-white shadow-xl shadow-orange-600/30" : "bg-white/5 border border-white/10 text-gray-400 hover:text-white"
+                                )}
+                            >
+                                <Flame className={cn("w-5 h-5", isHeatmapMode && "animate-pulse")} /> MAPA DE CALOR
+                            </Button>
+                        )}
+                        {isVisualView && (
+                            <Button onClick={saveLayout} disabled={savingLayout} className="h-14 px-8 bg-emerald-500 text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all gap-3">
+                                {savingLayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} GUARDAR PLANO
+                            </Button>
+                        )}
                         <Button
-                            className="gap-2"
                             onClick={() => setIsAddModalOpen(true)}
+                            className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/20 gap-3"
                         >
-                            <Plus className="w-4 h-4" />
-                            Nueva Mesa
+                            <Plus className="w-5 h-5" /> NUEVA MESA
                         </Button>
                     </div>
                 </div>
 
-                {/* Modal para Nueva Mesa */}
-                {isAddModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                        <div className="bg-card border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-300">
-                            <h2 className="text-2xl font-bold mb-6 text-white uppercase tracking-tighter">Agregar Nueva Mesa</h2>
-                            <form className="space-y-4" onSubmit={async (e) => {
-                                e.preventDefault()
-                                try {
-                                    const formData = new FormData(e.currentTarget)
-                                    const table_number = parseInt(formData.get('table_number') as string)
-
-                                    // Check if number exists
-                                    const { data: existing } = await supabase.from('tables').select('id').eq('table_number', table_number).single()
-                                    if (existing) {
-                                        alert("El número de mesa ya existe.")
-                                        return
-                                    }
-
-                                    const { error } = await supabase.from('tables').insert([{
-                                        table_number,
-                                        table_name: formData.get('table_name'),
-                                        capacity: parseInt(formData.get('capacity') as string),
-                                        location: formData.get('location'),
-                                        parent_table_id: formData.get('parent_table_id') || null,
-                                        is_merged: !!formData.get('parent_table_id'),
-                                        qr_code: `TABLE-${table_number}-${Date.now()}`,
-                                        status: 'available',
-                                        active: true
-                                    }])
-
-                                    if (error) throw error
-
-                                    setIsAddModalOpen(false)
-                                    loadTables()
-                                } catch (error: any) {
-                                    console.error(error)
-                                    alert("Error al crear mesa: " + (error.message || "Error desconocido. Verifique los permisos RLS."))
-                                }
-                            }}>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Número de Mesa</label>
-                                    <input name="table_number" type="number" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary" />
+                {/* 🗺️ VISUAL FLOOR MANAGER ENGINE */}
+                {isVisualView ? (
+                    <div className="space-y-6 animate-in zoom-in-95 duration-500">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-4">
+                            <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase italic">
+                                    <MapIcon className="w-4 h-4 text-primary" /> {isHeatmapMode ? "Analizando facturación por punto físico" : "Arrastra las mesas para organizar el salón"}
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Nombre Comercial</label>
-                                    <input name="table_name" type="text" placeholder="ej: Mesa 1, VIP 2" required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary" />
+                                <div className="flex items-center gap-4">
+                                    {!isHeatmapMode ? (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
+                                                <span className="text-[8px] font-black uppercase text-gray-600">Libre</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-rose-500/20 border border-rose-500/40" />
+                                                <span className="text-[8px] font-black uppercase text-gray-600">Ocupada</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-rose-600" />
+                                                <span className="text-[8px] font-black uppercase text-rose-500">Popular</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded-full bg-blue-500/40" />
+                                                <span className="text-[8px] font-black uppercase text-blue-500">Frío</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-muted-foreground">Capacidad</label>
-                                        <input name="capacity" type="number" defaultValue={4} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-muted-foreground">Ubicación</label>
-                                        <select name="location" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white">
-                                            <option value="Interior" className="bg-slate-900">Interior</option>
-                                            <option value="Terraza" className="bg-slate-900">Terraza</option>
-                                            <option value="Barra" className="bg-slate-900">Barra</option>
-                                            <option value="Salon VIP" className="bg-slate-900">Salón VIP</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Unir con (Mesa Principal)</label>
-                                    <select name="parent_table_id" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white">
-                                        <option value="" className="bg-slate-900">-- Ninguna (Mesa Independiente) --</option>
-                                        {tables.filter(t => !t.is_merged).map(t => (
-                                            <option key={t.id} value={t.id} className="bg-slate-900">{t.table_name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="flex gap-4 pt-4">
-                                    <Button type="button" variant="ghost" className="flex-1" onClick={() => setIsAddModalOpen(false)}>Cancelar</Button>
-                                    <Button type="submit" className="flex-1 font-bold">Guardar Mesa</Button>
-                                </div>
-                            </form>
+                            </div>
+                            <div className="text-[9px] font-black text-primary uppercase italic tracking-widest bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+                                GRID SNAP: 20PX ACTIVADO
+                            </div>
                         </div>
-                    </div>
-                )}
-                {/* Modal para Editar Mesa */}
-                {isEditModalOpen && selectedTable && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                        <div className="bg-card border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-300">
-                            <h2 className="text-2xl font-bold mb-6 text-white uppercase tracking-tighter">Editar {selectedTable.table_name}</h2>
-                            <form className="space-y-4" onSubmit={handleEditSubmit}>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Número de Mesa</label>
-                                    <input name="table_number" type="number" defaultValue={selectedTable.table_number} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Nombre Comercial</label>
-                                    <input name="table_name" type="text" defaultValue={selectedTable.table_name} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-muted-foreground">Capacidad</label>
-                                        <input name="capacity" type="number" defaultValue={selectedTable.capacity} required className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-muted-foreground">Ubicación</label>
-                                        <select name="location" defaultValue={selectedTable.location} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white">
-                                            <option value="Interior" className="bg-slate-900">Interior</option>
-                                            <option value="Terraza" className="bg-slate-900">Terraza</option>
-                                            <option value="Barra" className="bg-slate-900">Barra</option>
-                                            <option value="Salon VIP" className="bg-slate-900">Salón VIP</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-white">Unir con (Mesa Principal)</label>
-                                    <select name="parent_table_id" defaultValue={selectedTable.parent_table_id || ""} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:border-primary text-white">
-                                        <option value="" className="bg-slate-900">-- Ninguna (Mesa Independiente) --</option>
-                                        {tables.filter(t => t.id !== selectedTable.id && !t.parent_table_id).map(t => (
-                                            <option key={t.id} value={t.id} className="bg-slate-900">{t.table_name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="flex items-center gap-2 py-2">
-                                    <input type="checkbox" name="active" defaultChecked={selectedTable.active} id="active-check" className="w-4 h-4 accent-primary" />
-                                    <label htmlFor="active-check" className="text-sm text-white">Mesa Activa (visible en el sistema)</label>
-                                </div>
-                                <div className="flex gap-4 pt-4">
-                                    <Button type="button" variant="ghost" className="flex-1" onClick={() => { setIsEditModalOpen(false); setSelectedTable(null); }}>Cancelar</Button>
-                                    <Button type="submit" className="flex-1 font-bold">Actualizar Mesa</Button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="p-6 rounded-2xl bg-card border border-white/10">
-                        <div className="text-sm text-muted-foreground mb-1">Total Mesas</div>
-                        <div className="text-3xl font-bold">{tables.length}</div>
-                    </div>
-                    <div className="p-6 rounded-2xl bg-green-500/10 border border-green-500/20">
-                        <div className="text-sm text-green-600 mb-1">Disponibles</div>
-                        <div className="text-3xl font-bold text-green-500">
-                            {tables.filter(t => t.status === 'available').length}
-                        </div>
-                    </div>
-                    <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20">
-                        <div className="text-sm text-red-600 mb-1">Ocupadas</div>
-                        <div className="text-3xl font-bold text-red-500">
-                            {tables.filter(t => t.status === 'occupied').length}
-                        </div>
-                    </div>
-                    <div className="p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
-                        <div className="text-sm text-yellow-600 mb-1">Reservadas</div>
-                        <div className="text-3xl font-bold text-yellow-500">
-                            {tables.filter(t => t.status === 'reserved').length}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tables Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {tables.map(table => (
                         <div
-                            key={table.id}
-                            className="p-6 rounded-2xl bg-card border border-white/10 hover:border-white/20 transition-all"
+                            ref={containerRef}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseUp}
+                            className="relative w-full h-[750px] bg-[#050505] rounded-[3.5rem] border border-white/5 overflow-hidden shadow-3xl pattern-grid"
                         >
-                            <div className="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 className="text-xl font-bold mb-1">
-                                        {table.table_name}
-                                        {table.parent_table_id && (
-                                            <span className="ml-2 text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full uppercase tracking-widest">Unida</span>
+                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+                            {tables
+                                .filter(t => activeZone === "TODAS" || t.location === activeZone)
+                                .map(table => (
+                                    <div
+                                        key={table.id}
+                                        onMouseDown={(e) => handleMouseDown(e, table.id)}
+                                        style={{
+                                            left: table.x_pos,
+                                            top: table.y_pos,
+                                            width: table.width,
+                                            height: table.height,
+                                            transform: `rotate(${table.rotation}deg)`,
+                                        }}
+                                        className={cn(
+                                            "absolute cursor-move transition-all duration-500 flex items-center justify-center font-black italic select-none group border-2 z-10",
+                                            table.shape === 'circle' ? "rounded-full" : "rounded-3xl",
+                                            isHeatmapMode ? getHeatColor(table.id) : (
+                                                table.status === 'occupied' ? "bg-rose-500/10 border-rose-500/40 text-rose-500 shadow-lg shadow-rose-500/10" :
+                                                    table.status === 'reserved' ? "bg-amber-500/10 border-amber-500/40 text-amber-500" :
+                                                        "bg-emerald-500/5 border-white/5 text-gray-500"
+                                            ),
+                                            draggedTableId === table.id && "z-50 ring-4 ring-primary/40 shadow-2xl opacity-80 cursor-grabbing",
+                                            !isHeatmapMode && "hover:border-primary/50"
                                         )}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <MapPin className="w-4 h-4" />
-                                        {table.location}
-                                        {table.parent_table_id && (
-                                            <span className="text-xs text-primary italic"> (→ Mesa {tables.find(t => t.id === table.parent_table_id)?.table_number})</span>
-                                        )}
+                                    >
+                                        <div className="text-center relative z-10">
+                                            <p className={cn("text-2xl font-black tracking-tighter leading-none", isHeatmapMode && "text-white")}>{table.table_number}</p>
+                                            <p className="text-[8px] uppercase tracking-widest mt-1 opacity-40 group-hover:opacity-100">
+                                                {isHeatmapMode ? `$${(tableSales[table.id] || 0).toLocaleString()}` : `${table.capacity} PAX`}
+                                            </p>
+                                        </div>
+
+                                        {/* Action Buttons for table tweaks */}
+                                        <div className="absolute -top-14 left-1/2 -translate-x-1/2 hidden group-hover:flex bg-black border border-white/10 rounded-2xl p-1 gap-1 shadow-3xl z-50 animate-in slide-in-from-bottom-2 duration-300">
+                                            <button onClick={(e) => { e.stopPropagation(); updateTableDimension(table.id, 'rotation', (table.rotation + 45) % 360) }} title="Rotar" className="w-10 h-10 rounded-xl hover:bg-white hover:text-black flex items-center justify-center transition-all"><RotateCcw className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); updateTableDimension(table.id, 'width', table.width + 20) }} title="Aumentar Ancho" className="w-10 h-10 rounded-xl hover:bg-white hover:text-black flex items-center justify-center transition-all"><Maximize2 className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); updateTableDimension(table.id, 'height', table.height + 20) }} title="Aumentar Alto" className="w-10 h-10 rounded-xl hover:bg-white hover:text-black flex items-center justify-center transition-all rotate-90"><Maximize2 className="w-4 h-4" /></button>
+                                            <div className="w-px h-6 bg-white/10 self-center mx-1" />
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedTable(table); setIsEditModalOpen(true); }} className="w-10 h-10 rounded-xl hover:bg-primary hover:text-black flex items-center justify-center transition-all"><Edit className="w-4 h-4" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); deleteTable(table); }} className="w-10 h-10 rounded-xl hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    </div>
+                ) : (
+                    /* 📋 CLASSIC LIST VIEW (STYLIZED) */
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-700">
+                        {tables
+                            .filter(t => activeZone === "TODAS" || t.location === activeZone)
+                            .map(table => (
+                                <div key={table.id} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 space-y-6 hover:border-primary/20 transition-all group relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-8 opacity-5 text-primary group-hover:scale-125 transition-all">
+                                        <QrCode className="w-12 h-12" />
+                                    </div>
+
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">{table.table_name}</h3>
+                                            <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-2 italic flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary" /> {table.location}</p>
+                                        </div>
+                                        <div className={cn(
+                                            "px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest border italic",
+                                            table.status === 'available' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                        )}>
+                                            {table.status}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 text-[10px] font-black text-gray-500 uppercase tracking-widest italic">
+                                        <Users className="w-4 h-4 text-primary" /> CAPACIDAD: {table.capacity} PERSONAS
+                                    </div>
+
+                                    <div className="pt-4 flex gap-2">
+                                        <Button onClick={() => generateQRCode(table)} variant="ghost" className="flex-1 h-12 bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-white hover:text-black transition-all gap-2">
+                                            <QrCode className="w-3.5 h-3.5" /> QR
+                                        </Button>
+                                        <Button onClick={() => { setSelectedTable(table); setIsEditModalOpen(true); }} variant="ghost" className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl hover:bg-primary hover:text-black transition-all flex items-center justify-center">
+                                            <Edit className="w-4 h-4" />
+                                        </Button>
+                                        <Button onClick={() => deleteTable(table)} variant="ghost" className="w-12 h-12 bg-rose-500/10 border border-rose-500/10 rounded-xl text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center">
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
                                     </div>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(table.status)}`}>
-                                    {getStatusLabel(table.status)}
-                                </span>
-                            </div>
+                            ))}
+                    </div>
+                )}
+            </div>
 
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                                <Users className="w-4 h-4" />
-                                Capacidad: {table.capacity} personas
+            {/* MODALS (Simplified for the demo) */}
+            {isAddModalOpen && (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl">
+                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8 text-white">Nueva <span className="text-primary">Mesa</span></h2>
+                        <form className="space-y-6" onSubmit={async (e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const tNum = parseInt(formData.get('table_number') as string);
+                            await supabase.from('tables').insert({
+                                table_number: tNum,
+                                table_name: formData.get('table_name'),
+                                capacity: parseInt(formData.get('capacity') as string),
+                                location: formData.get('location'),
+                                shape: formData.get('shape'),
+                                qr_code: `TABLE-${tNum}-${Date.now()}`,
+                                status: 'available'
+                            });
+                            setIsAddModalOpen(false); loadTables();
+                        }}>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input name="table_number" type="number" placeholder="N° MESA" required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
+                                <input name="table_name" placeholder="NOMBRE (ej: VIP 1)" required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-bold italic" />
                             </div>
-
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={() => generateQRCode(table)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 gap-2"
-                                >
-                                    <QrCode className="w-4 h-4" />
-                                    QR
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                        setSelectedTable(table)
-                                        setIsEditModalOpen(true)
-                                    }}
-                                    className="gap-2"
-                                >
-                                    <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        deleteTable(table);
-                                    }}
-                                    disabled={isDeleting === table.id}
-                                    className="gap-2 text-red-500 hover:bg-red-500/10 border-red-500/20"
-                                >
-                                    {isDeleting === table.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 pointer-events-none" />}
-                                </Button>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input name="capacity" type="number" defaultValue={4} placeholder="PAX" className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
+                                <select name="location" className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black uppercase italic tracking-widest">
+                                    <option value="Interior">Interior</option>
+                                    <option value="Terraza">Terraza</option>
+                                    <option value="Barra">Barra</option>
+                                </select>
                             </div>
-
-                            {/* Quick Status Change */}
-                            <div className="mt-4 pt-4 border-t border-white/10">
-                                <div className="text-xs text-muted-foreground mb-2">Cambiar estado:</div>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                        onClick={() => updateTableStatus(table.id, 'available')}
-                                        className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-500 hover:bg-green-500/30"
-                                    >
-                                        Disponible
-                                    </button>
-                                    <button
-                                        onClick={() => updateTableStatus(table.id, 'occupied')}
-                                        className="px-2 py-1 rounded text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30"
-                                    >
-                                        Ocupada
-                                    </button>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Geometría de Mesa</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="rectangle" className="hidden" defaultChecked />
+                                        <SquareIcon className="w-6 h-6" />
+                                        <span className="text-[8px] font-black uppercase">Rectang.</span>
+                                    </label>
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="circle" className="hidden" />
+                                        <Circle className="w-6 h-6" />
+                                        <span className="text-[8px] font-black uppercase">Circular</span>
+                                    </label>
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="square" className="hidden" />
+                                        <div className="w-6 h-6 border-2 border-white rounded-md" />
+                                        <span className="text-[8px] font-black uppercase">Cuadrada</span>
+                                    </label>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                            <div className="flex gap-4 pt-6">
+                                <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => setIsAddModalOpen(false)}>CANCELAR</Button>
+                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl">GUARDAR</Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </div >
+            )}
+
+            {isEditModalOpen && selectedTable && (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl">
+                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8 text-white">Editar <span className="text-primary">{selectedTable.table_name}</span></h2>
+                        <form className="space-y-6" onSubmit={handleEditSubmit}>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input name="table_number" type="number" defaultValue={selectedTable.table_number} required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
+                                <input name="table_name" defaultValue={selectedTable.table_name} required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-bold italic" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input name="capacity" type="number" defaultValue={selectedTable.capacity} className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
+                                <select name="location" defaultValue={selectedTable.location} className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black uppercase italic tracking-widest">
+                                    <option value="Interior">Interior</option>
+                                    <option value="Terraza">Terraza</option>
+                                    <option value="Barra">Barra</option>
+                                </select>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Geometría de Mesa</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="rectangle" className="hidden" defaultChecked={selectedTable.shape === 'rectangle'} />
+                                        <SquareIcon className="w-6 h-6" />
+                                        <span className="text-[8px] font-black uppercase">Rectang.</span>
+                                    </label>
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="circle" className="hidden" defaultChecked={selectedTable.shape === 'circle'} />
+                                        <Circle className="w-6 h-6" />
+                                        <span className="text-[8px] font-black uppercase">Circular</span>
+                                    </label>
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                        <input type="radio" name="shape" value="square" className="hidden" defaultChecked={selectedTable.shape === 'square'} />
+                                        <div className="w-6 h-6 border-2 border-white rounded-md" />
+                                        <span className="text-[8px] font-black uppercase">Cuadrada</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 pt-6">
+                                <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => { setIsEditModalOpen(false); setSelectedTable(null); }}>CANCELAR</Button>
+                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl">ACTUALIZAR</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }

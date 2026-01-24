@@ -19,6 +19,7 @@ import {
     ChefHat,
     DollarSign,
     Box,
+    Users,
     Loader2
 } from "lucide-react"
 import Link from "next/link"
@@ -125,7 +126,7 @@ export default function InventoryPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <Link href="/admin/inventory/movements">
                             <Button variant="ghost" className="h-14 px-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white hover:text-black font-black uppercase text-[10px] tracking-widest italic gap-2 transition-all">
                                 <History className="w-4 h-4" /> MOVIMIENTOS
@@ -133,12 +134,25 @@ export default function InventoryPage() {
                         </Link>
                         <Link href="/admin/inventory/recipes">
                             <Button variant="ghost" className="h-14 px-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white hover:text-black font-black uppercase text-[10px] tracking-widest italic gap-2 transition-all">
-                                <ChefHat className="w-4 h-4" /> GESTIONAR RECETAS
+                                <ChefHat className="w-4 h-4" /> RECETAS
                             </Button>
                         </Link>
-                        <Button className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/10 gap-2">
-                            <Plus className="w-5 h-5" /> NUEVO ITEM
-                        </Button>
+                        <Link href="/admin/inventory/suppliers">
+                            <Button variant="ghost" className="h-14 px-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white hover:text-black font-black uppercase text-[10px] tracking-widest italic gap-2 transition-all">
+                                <Users className="w-4 h-4" /> PROVEEDORES
+                            </Button>
+                        </Link>
+                        <div className="h-10 w-px bg-white/10 mx-2" />
+                        <Link href="/admin/inventory/purchases/new">
+                            <Button className="h-14 px-8 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white hover:text-black transition-all shadow-xl shadow-emerald-500/10 gap-2">
+                                <TrendingUp className="w-5 h-5" /> ENTRADA STOCK
+                            </Button>
+                        </Link>
+                        <Link href="/admin/inventory/waste/new">
+                            <Button className="h-14 px-8 bg-rose-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white hover:text-black transition-all shadow-xl shadow-rose-500/10 gap-2">
+                                <TrendingDown className="w-5 h-5" /> REGISTRAR MERMA
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 

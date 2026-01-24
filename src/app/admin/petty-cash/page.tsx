@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Plus, Search, Printer, Trash2, Loader2, X, FileText, CheckCircle } from "lucide-react"
+import { Plus, Search, Printer, Trash2, Loader2, X, FileText, CheckCircle, Wallet, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 type Employee = {
     id: string
@@ -342,299 +343,312 @@ export default function PettyCashPage() {
     )
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Caja Menor</h1>
-                    <p className="text-muted-foreground">Gestión de gastos menores y comprobantes de egreso.</p>
-                </div>
-                <Button onClick={() => {
-                    setShowSuccess(false);
-                    setIsModalOpen(true);
-                }} className="bg-primary text-black hover:bg-white font-black h-12 px-8 rounded-xl shadow-lg shadow-primary/20 gap-2 transition-all hover:scale-105">
-                    <Plus className="w-5 h-5" /> NUEVO COMPROBANTE
-                </Button>
-            </div>
+        <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 font-sans selection:bg-primary selection:text-black relative overflow-hidden">
+            {/* Mesh Gradients for Premium Feel */}
+            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-            {/* Vouchers Table */}
-            <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-                <div className="p-6 border-b border-white/10 bg-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="text-xl font-bold flex items-center gap-2 text-white">
-                        <FileText className="w-5 h-5 text-primary" /> Historial de Movimientos
-                    </h2>
-                    <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por beneficiario o concepto..."
-                            className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-2 outline-none focus:border-primary transition-all text-white"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+            <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                            <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                                <Wallet className="w-8 h-8 text-primary" />
+                            </div>
+                            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Control de <span className="text-primary">Caja Menor</span></h1>
+                        </div>
+                        <p className="text-gray-400 font-medium italic pl-14">Gestión de gastos operativos y comprobantes de egreso</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Link href="/admin">
+                            <Button variant="ghost" className="rounded-2xl h-14 font-black uppercase text-xs tracking-widest gap-2">
+                                <ArrowLeft className="w-4 h-4" /> VOLVER
+                            </Button>
+                        </Link>
+                        <Button onClick={() => {
+                            setShowSuccess(false);
+                            setIsModalOpen(true);
+                        }} className="bg-primary text-black hover:bg-white font-black h-14 px-8 rounded-2xl shadow-xl shadow-primary/20 gap-2 transition-all hover:scale-[1.02] uppercase text-xs tracking-widest italic">
+                            <Plus className="w-5 h-5" /> NUEVO COMPROBANTE
+                        </Button>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-sm text-muted-foreground border-b border-white/5 bg-white/5">
-                                <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]"># Número</th>
-                                <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Fecha</th>
-                                <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Beneficiario</th>
-                                <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Concepto / Categoría</th>
-                                <th className="px-6 py-4 font-bold text-right uppercase tracking-widest text-[10px]">Monto</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {filteredVouchers.map((voucher) => (
-                                <tr key={voucher.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="px-6 py-4 font-mono text-primary font-bold">
-                                        {String(voucher.voucher_number).padStart(4, '0')}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-400">{voucher.date}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-white">{voucher.beneficiary_name}</div>
-                                        <div className="text-xs text-muted-foreground">{voucher.cargo}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="max-w-xs truncate text-gray-300">{voucher.concept}</div>
-                                        <span className="text-[10px] uppercase font-black px-2 py-0.5 bg-primary/10 rounded-lg border border-primary/20 text-primary">
-                                            {voucher.category || 'Otros'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2 items-center">
+                {/* Vouchers Table */}
+                <div className="bg-[#111]/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                    <div className="p-8 border-b border-white/10 bg-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2 text-white">
+                            <FileText className="w-5 h-5 text-primary" /> Historial de Movimientos
+                        </h2>
+                        <div className="relative w-full md:w-96">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                            <input
+                                type="text"
+                                placeholder="Buscar por beneficiario o concepto..."
+                                className="w-full bg-black/60 border border-white/10 rounded-2xl pl-12 pr-4 py-4 outline-none focus:border-primary transition-all text-sm font-medium"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/5 bg-white/2">
+                                    <th className="px-8 py-5"># Número</th>
+                                    <th className="px-8 py-5">Fecha</th>
+                                    <th className="px-8 py-5">Beneficiario</th>
+                                    <th className="px-8 py-5">Concepto / Categoría</th>
+                                    <th className="px-8 py-5 text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {filteredVouchers.map((voucher) => (
+                                    <tr key={voucher.id} className="hover:bg-white/5 transition-colors group">
+                                        <td className="px-8 py-6 font-mono text-primary font-black italic">
+                                            #{String(voucher.voucher_number).padStart(4, '0')}
+                                        </td>
+                                        <td className="px-8 py-6 text-xs font-bold text-gray-500">{voucher.date}</td>
+                                        <td className="px-8 py-6">
+                                            <div className="font-black text-white uppercase italic text-sm">{voucher.beneficiary_name}</div>
+                                            <div className="text-[10px] text-gray-500 font-black tracking-widest uppercase">{voucher.cargo}</div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="max-w-xs truncate text-sm font-medium text-gray-300 mb-1">{voucher.concept}</div>
+                                            <span className="text-[9px] uppercase font-black px-2 py-0.5 bg-primary/10 rounded-lg border border-primary/20 text-primary italic">
+                                                {voucher.category || 'Otros'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <div className="flex justify-end gap-3 items-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-10 w-10 text-primary hover:bg-primary hover:text-black opacity-0 group-hover:opacity-100 transition-all rounded-xl"
+                                                    onClick={() => handlePrint(voucher)}
+                                                >
+                                                    <Printer className="w-5 h-5" />
+                                                </Button>
+                                                <div className="py-2 px-4 bg-rose-500/10 text-rose-500 rounded-xl font-black border border-rose-500/20 italic text-lg tracking-tighter">
+                                                    -${voucher.amount.toLocaleString('es-CO')}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredVouchers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="px-8 py-20 text-center text-gray-500 italic text-sm">
+                                            No se encontraron comprobantes registrados.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Modal para Nuevo Comprobante */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-[#0a0a0a] w-full max-w-4xl rounded-[3rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col max-h-[95vh]">
+                            <div className="p-10 border-b border-white/10 flex justify-between items-center bg-white/5 relative z-10">
+                                <div>
+                                    <h1 className="text-3xl font-black text-primary tracking-tighter uppercase italic">Nuevo Comprobante</h1>
+                                    <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] font-black">Caja Menor & Gastos Operativos</p>
+                                </div>
+                                <Button variant="ghost" size="icon" className="rounded-2xl h-12 w-12 hover:bg-rose-500/20 hover:text-rose-500" onClick={() => {
+                                    setIsModalOpen(false);
+                                    setShowSuccess(false);
+                                }}>
+                                    <X className="w-6 h-6" />
+                                </Button>
+                            </div>
+
+                            <div className="p-10 overflow-y-auto custom-scrollbar relative z-10">
+                                {showSuccess ? (
+                                    <div className="text-center py-12 space-y-8 animate-in zoom-in-95 duration-500">
+                                        <div className="w-32 h-32 bg-primary/20 text-primary rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-primary/30 shadow-2xl shadow-primary/20">
+                                            <CheckCircle className="w-16 h-16" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-5xl font-black text-white uppercase tracking-tighter italic">¡Éxito!</h2>
+                                            <p className="text-gray-400 mt-2 font-medium italic">El comprobante #{lastSavedVoucher?.voucher_number} ha sido guardado exitosamente.</p>
+                                        </div>
+                                        <div className="flex flex-col gap-4 pt-6 max-w-sm mx-auto">
+                                            <Button
+                                                onClick={() => handlePrint(lastSavedVoucher)}
+                                                className="h-20 text-xl font-black bg-primary text-black hover:bg-white gap-3 rounded-[1.5rem] shadow-2xl transition-all uppercase italic tracking-[0.1em]"
+                                            >
+                                                <Printer className="w-6 h-6" /> IMPRIMIR TICKET
+                                            </Button>
                                             <Button
                                                 variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-primary hover:bg-primary hover:text-black opacity-0 group-hover:opacity-100 transition-all"
-                                                onClick={() => handlePrint(voucher)}
+                                                onClick={() => {
+                                                    setIsModalOpen(false);
+                                                    setShowSuccess(false);
+                                                }}
+                                                className="h-14 font-black rounded-2xl text-gray-500 hover:text-white uppercase text-xs tracking-widest italic"
                                             >
-                                                <Printer className="w-4 h-4" />
+                                                TERMINAR Y VOLVER
                                             </Button>
-                                            <div className="py-1 px-3 bg-red-500/10 text-red-500 rounded-lg font-black border border-red-500/20">
-                                                -${voucher.amount.toLocaleString('es-CO')}
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredVouchers.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground italic">
-                                        No se encontraron comprobantes registrados.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Modal para Nuevo Comprobante */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-[#0a0a0a] w-full max-w-4xl rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh] border shadow-primary/5">
-                        <div className="p-8 border-b border-white/10 flex justify-between items-center bg-white/5">
-                            <div>
-                                <h1 className="text-3xl font-black text-primary tracking-tighter uppercase italic">Nuevo Comprobante</h1>
-                                <p className="text-muted-foreground text-xs uppercase tracking-widest font-bold">Caja Menor & Gastos Operativos</p>
-                            </div>
-                            <Button variant="ghost" size="icon" className="rounded-full hover:bg-red-500/20 hover:text-red-500" onClick={() => {
-                                setIsModalOpen(false);
-                                setShowSuccess(false);
-                            }}>
-                                <X className="w-6 h-6" />
-                            </Button>
-                        </div>
-
-                        <div className="p-8 overflow-y-auto custom-scrollbar">
-                            {showSuccess ? (
-                                <div className="text-center py-12 space-y-6 animate-in zoom-in-95">
-                                    <div className="w-24 h-24 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/30 shadow-lg shadow-primary/20">
-                                        <CheckCircle className="w-12 h-12" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter">¡Registrado!</h2>
-                                        <p className="text-muted-foreground mt-2 font-medium">El comprobante #{lastSavedVoucher?.voucher_number} ha sido guardado exitosamente.</p>
-                                    </div>
-                                    <div className="flex flex-col gap-3 pt-4 max-w-sm mx-auto">
-                                        <Button
-                                            onClick={() => handlePrint(lastSavedVoucher)}
-                                            className="h-16 text-lg font-black bg-primary text-black hover:bg-white gap-3 rounded-2xl shadow-xl transition-all"
-                                        >
-                                            <Printer className="w-6 h-6" /> IMPRIMIR AHORA
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => {
-                                                setIsModalOpen(false);
-                                                setShowSuccess(false);
-                                            }}
-                                            className="h-14 font-bold rounded-2xl text-muted-foreground hover:text-white"
-                                        >
-                                            Cerrar Ventana
-                                        </Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="space-y-4">
-                                        {/* Fila 1: Beneficiario */}
-                                        <div className="grid md:grid-cols-2 gap-4 p-5 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Seleccionar Perfil</label>
-                                                <select
-                                                    className="w-full bg-black border border-white/10 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold text-white appearance-none h-14"
-                                                    value={selectedEmployeeId}
-                                                    onChange={(e) => handleEmployeeSelect(e.target.value)}
-                                                >
-                                                    <option value="other" className="bg-[#1a1a1a] text-white">Externo / Otro</option>
-                                                    {employees.map(emp => (
-                                                        <option key={emp.id} value={emp.id} className="bg-[#1a1a1a] text-white">
-                                                            {emp.full_name} ({emp.role})
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Nombre del Beneficiario</label>
-                                                <input
-                                                    required
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all font-black text-white h-14 placeholder:text-gray-600"
-                                                    placeholder="NOMBRE COMPLETO"
-                                                    value={formData.beneficiary_name}
-                                                    onChange={e => setFormData({ ...formData, beneficiary_name: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Fila 2: Valor y Monto en letras */}
-                                        <div className="grid md:grid-cols-3 gap-4 p-5 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
-                                            <div className="md:col-span-1 space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-2 italic">Valor Numérico ($)</label>
-                                                <input
-                                                    required
-                                                    type="number"
-                                                    className="w-full bg-black border-2 border-primary/20 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-primary transition-all font-black text-2xl text-primary h-14"
-                                                    placeholder="0"
-                                                    value={formData.amount || ""}
-                                                    onChange={e => {
-                                                        const val = parseFloat(e.target.value) || 0;
-                                                        setFormData({
-                                                            ...formData,
-                                                            amount: val,
-                                                            amount_in_words: numeroALetras(val)
-                                                        })
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Cantidad en Letras</label>
-                                                <input
-                                                    required
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 outline-none font-bold text-[10px] text-gray-400 h-14 uppercase tracking-tighter italic"
-                                                    placeholder="GENERACIÓN AUTOMÁTICA..."
-                                                    value={formData.amount_in_words}
-                                                    readOnly
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Fila 3: Concepto y Categoría */}
-                                        <div className="grid md:grid-cols-2 gap-4 p-5 bg-white/5 rounded-3xl border border-white/10 shadow-inner">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Concepto del Gasto</label>
-                                                <input
-                                                    required
-                                                    list="concepts-list"
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all font-bold h-14 placeholder:text-gray-600"
-                                                    placeholder="MOTIVO DEL EGRESO..."
-                                                    value={formData.concept}
-                                                    onChange={e => setFormData({ ...formData, concept: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Categoría Contable</label>
-                                                <select
-                                                    className="w-full bg-black border border-white/10 rounded-2xl px-4 py-4 outline-none focus:ring-2 focus:ring-primary/50 transition-all font-black text-white h-14"
-                                                    value={formData.category}
-                                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                                >
-                                                    <option value="Limpieza">Limpieza</option>
-                                                    <option value="Comida / Insumos">Comida / Insumos</option>
-                                                    <option value="Reparaciones">Reparaciones</option>
-                                                    <option value="Servicios Públicos">Servicios Públicos</option>
-                                                    <option value="Nómina">Nómina</option>
-                                                    <option value="Otros">Otros</option>
-                                                </select>
-                                            </div>
                                         </div>
                                     </div>
-
-                                    <datalist id="concepts-list">
-                                        {EXPENSE_CONCEPTS.map(c => (
-                                            <option key={c} value={c} />
-                                        ))}
-                                    </datalist>
-
-                                    {/* FIRMA DIGITAL */}
-                                    <div className="p-6 bg-[#1a1a1a] rounded-3xl border-2 border-dashed border-primary/20 shadow-2xl">
-                                        <div className="flex justify-between items-center mb-4 px-2">
-                                            <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em] italic">Firma del Beneficiario</h3>
-                                            {signature && (
-                                                <Button type="button" variant="ghost" size="sm" className="text-red-500 text-[10px] font-black hover:bg-red-500/10" onClick={clearSignature}>
-                                                    <Trash2 className="w-3 h-3 mr-2" /> REPETIR FIRMA
-                                                </Button>
-                                            )}
-                                        </div>
-                                        <div className="relative bg-white rounded-3xl overflow-hidden shadow-inner h-56 md:h-64">
-                                            <canvas
-                                                ref={canvasRef}
-                                                className="w-full h-full cursor-crosshair touch-none"
-                                                onMouseDown={startDrawing}
-                                                onMouseMove={draw}
-                                                onMouseUp={stopDrawing}
-                                                onMouseOut={stopDrawing}
-                                                onTouchStart={startDrawing}
-                                                onTouchMove={draw}
-                                                onTouchEnd={stopDrawing}
-                                            />
-                                            {!signature && (
-                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-                                                    <span className="text-4xl font-black text-black uppercase italic tracking-[0.5em] -rotate-12">FIRME AQUÍ</span>
+                                ) : (
+                                    <form onSubmit={handleSubmit} className="space-y-10">
+                                        <div className="space-y-6">
+                                            {/* Fila 1: Beneficiario */}
+                                            <div className="grid md:grid-cols-2 gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/5">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2 italic">Seleccionar Operador</label>
+                                                    <select
+                                                        className="w-full bg-black/60 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white appearance-none h-16 shadow-inner"
+                                                        value={selectedEmployeeId}
+                                                        onChange={(e) => handleEmployeeSelect(e.target.value)}
+                                                    >
+                                                        <option value="other" className="bg-[#1a1a1a] text-white">Externo / Proveedor</option>
+                                                        {employees.map(emp => (
+                                                            <option key={emp.id} value={emp.id} className="bg-[#1a1a1a] text-white">
+                                                                {emp.full_name.toUpperCase()} ({emp.role.toUpperCase()})
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2 italic">Nombre del Beneficiario</label>
+                                                    <input
+                                                        required
+                                                        className="w-full bg-black/60 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-black text-white h-16 placeholder:text-gray-700 uppercase italic"
+                                                        placeholder="Nombre Completo"
+                                                        value={formData.beneficiary_name}
+                                                        onChange={e => setFormData({ ...formData, beneficiary_name: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
 
-                                    <Button
-                                        type="submit"
-                                        disabled={loading || !signature || !formData.beneficiary_name || formData.amount <= 0}
-                                        className={cn(
-                                            "w-full h-24 text-2xl font-black uppercase tracking-[0.2em] transition-all rounded-[2.5rem] shadow-2xl italic",
-                                            (!signature || loading || !formData.beneficiary_name || formData.amount <= 0)
-                                                ? "bg-gray-800 text-gray-500 cursor-not-allowed grayscale"
-                                                : "bg-primary text-black hover:bg-white hover:scale-[1.02] shadow-primary/30"
-                                        )}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <Loader2 className="w-8 h-8 animate-spin mr-4" />
-                                                PROCESANDO...
-                                            </>
-                                        ) : (
-                                            "GUARDAR Y FINALIZAR"
-                                        )}
-                                    </Button>
-                                </form>
-                            )}
+                                            {/* Fila 2: Valor y Monto en letras */}
+                                            <div className="grid md:grid-cols-3 gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/5">
+                                                <div className="md:col-span-1 space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary ml-2 italic">Monto a Retirar ($)</label>
+                                                    <input
+                                                        required
+                                                        type="number"
+                                                        className="w-full bg-black border-2 border-primary/30 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-black text-4xl text-primary h-20 text-center italic"
+                                                        placeholder="0"
+                                                        value={formData.amount || ""}
+                                                        onChange={e => {
+                                                            const val = parseFloat(e.target.value) || 0;
+                                                            setFormData({
+                                                                ...formData,
+                                                                amount: val,
+                                                                amount_in_words: numeroALetras(val)
+                                                            })
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="md:col-span-2 space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2 italic">Valor en Letras</label>
+                                                    <div className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 flex items-center h-20 text-gray-400 font-bold uppercase italic tracking-tighter text-sm">
+                                                        {formData.amount_in_words || "Cero Pesos"}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Fila 3: Concepto y Categoría */}
+                                            <div className="grid md:grid-cols-2 gap-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/5">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2 italic">Concepto del Gasto</label>
+                                                    <input
+                                                        required
+                                                        list="concepts-list"
+                                                        className="w-full bg-black/60 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold h-16 placeholder:text-gray-700 italic"
+                                                        placeholder="Motivo del egreso..."
+                                                        value={formData.concept}
+                                                        onChange={e => setFormData({ ...formData, concept: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-2 italic">Categoría Contable</label>
+                                                    <select
+                                                        className="w-full bg-black/60 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-black text-white h-16"
+                                                        value={formData.category}
+                                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                                    >
+                                                        <option value="Limpieza">Limpieza & Aseo</option>
+                                                        <option value="Comida / Insumos">Insumos Cocina</option>
+                                                        <option value="Reparaciones">Mantenimiento</option>
+                                                        <option value="Servicios Públicos">Servicios Públicos</option>
+                                                        <option value="Nómina">Adelantos Nómina</option>
+                                                        <option value="Otros">Otros Gastos</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <datalist id="concepts-list">
+                                            {EXPENSE_CONCEPTS.map(c => (
+                                                <option key={c} value={c} />
+                                            ))}
+                                        </datalist>
+
+                                        {/* FIRMA DIGITAL */}
+                                        <div className="p-10 bg-[#111] rounded-[3rem] border-2 border-dashed border-white/10 shadow-inner">
+                                            <div className="flex justify-between items-center mb-6 px-2">
+                                                <h3 className="text-xs font-black text-primary uppercase tracking-[0.4em] italic">Firma del Beneficiario</h3>
+                                                {signature && (
+                                                    <Button type="button" variant="ghost" size="sm" className="text-rose-500 text-[10px] font-black hover:bg-rose-500/10 uppercase tracking-widest gap-2" onClick={clearSignature}>
+                                                        <Trash2 className="w-4 h-4" /> BORRAR
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            <div className="relative bg-white rounded-[2rem] overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.1)] h-64 md:h-72 ring-8 ring-black/20">
+                                                <canvas
+                                                    ref={canvasRef}
+                                                    className="w-full h-full cursor-crosshair touch-none"
+                                                    onMouseDown={startDrawing}
+                                                    onMouseMove={draw}
+                                                    onMouseUp={stopDrawing}
+                                                    onMouseOut={stopDrawing}
+                                                    onTouchStart={startDrawing}
+                                                    onTouchMove={draw}
+                                                    onTouchEnd={stopDrawing}
+                                                />
+                                                {!signature && (
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.05]">
+                                                        <span className="text-6xl font-black text-black uppercase italic tracking-[0.5em] -rotate-12 translate-y-4">FIRME AQUÍ</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="submit"
+                                            disabled={loading || !signature || !formData.beneficiary_name || formData.amount <= 0}
+                                            className={cn(
+                                                "w-full h-24 text-3xl font-black uppercase tracking-[0.2em] transition-all rounded-[2.5rem] shadow-2xl italic",
+                                                (!signature || loading || !formData.beneficiary_name || formData.amount <= 0)
+                                                    ? "bg-gray-800 text-gray-500 cursor-not-allowed opacity-50"
+                                                    : "bg-primary text-black hover:bg-white hover:scale-[1.02] shadow-primary/30 active:scale-95"
+                                            )}
+                                        >
+                                            {loading ? (
+                                                <div className="flex items-center gap-4">
+                                                    <Loader2 className="w-10 h-10 animate-spin" />
+                                                    PROCESANDO
+                                                </div>
+                                            ) : (
+                                                "EMITIR COMPROBANTE"
+                                            )}
+                                        </Button>
+                                    </form>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            <style jsx global>{`
+                <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 6px;
                 }
@@ -649,6 +663,7 @@ export default function PettyCashPage() {
                     background: var(--primary);
                 }
             `}</style>
+            </div>
         </div>
     )
 }

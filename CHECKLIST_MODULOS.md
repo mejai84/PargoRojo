@@ -98,8 +98,9 @@ Lo que hace al sistema premium y competitivo.
 | **Comandas desde móvil (Meseros)** | ✅ | Módulo `/admin/waiter` optimizado para tablets/móviles. |
 | **Análisis y BI (Dashboard)** | ✅ | Gráficos de tendencias, ranking de productos y meseros. |
 | **Seguridad** | ✅ | Protección de rutas y base de datos (Supabase Auth/RLS). |
-| **Control de Reservas** | ✅ | Módulo completo con calendario y gestión de estados. |
 | **Fidelización (Puntos/Cupones)** | ✅ | Sistema de "Puntos Gran Rafa" y gestión de cupones. |
+| **Pargo Bot (IA Assistant)** | ✅ | Asistente de consultas inteligente (Ventas, Stock, Productos). |
+| **Mapas Interactivos Sala** | ✅ | Visualización 2D Draggable integrada en Admin y Mesero. |
 
 ---
 
@@ -118,8 +119,17 @@ Para completar al 100% los módulos base e intermedios propuestos:
 7. **Tickets PRO (PDF):** ✅ Generación de ticket térmico integrada en el historial de Caja.
 8. **Dashboard de Estadísticas:** ✅ Interfaz `/admin/dashboard` terminada con gráficas Recharts.
 9. **Loyalty System (Puntos):** ✅ Buscador de clientes y visualización de puntos en Caja.
-10. **Inventario Avanzado:** ✅ Descuento automático de insumos por venta (Recetas) activo. ✅ Dashboard de stock en tiempo real.
-11. **Delivery Avanzado:** ✅ Configuración RBAC, Gestión Drivers, Checkout Dinámico, Pickup.
+10. **Pargo Bot Core:** ✅ Motor de análisis en lenguaje natural para métricas clave.
+11. **Inventario Avanzado:** ✅ Control de stock automático, alertas de insumos críticos, proveedores, compras y mermas funcional.
+12. **Módulo de Reservas y Clientes:** ✅ Gestión de ocupación, historial de visitas y notificaciones WhatsApp.
+13. **Visual Floor Manager (Premium):** ✅ Mapa interactivo 2D del restaurante con soporte para múltiples zonas (Interior, Terraza, etc.), Grid Snap y Realtime.
+14. **Documentación:** ✅ Manual de Usuario Vivo v1.7 (Pargo OS Enterprise).
+15. **IA Analytics (Pargo Bot):** ✅ Asistente de consultas inteligente con predicciones de ventas (tendencias 7 días), análisis de MVP de staff y ticket promedio.
+16. **NPS & WhatsApp Feedback Loop:** 🏗️ Encuestas de satisfacción automáticas post-servicio.
+17. **KDS Multiestación Inteligente:** 🏗️ Despacho coordinado por tipos de producto (Fríos/Calientes).
+18. **Biometría de Seguridad:** 🏗️ Autorización de operaciones críticas mediante PIN/Biometría.
+19. **Resiliencia Offline-First:** ✅ Capacidad de toma de pedidos sin internet con sincronización atómica automática al restaurar conexión.
+20. **Mapas de Calor de Ventas:** ✅ Visualización geográfica de ingresos sobre el plano de sala para identificar zonas de alta y baja rentabilidad ("Hotspots").
 
 ### 🧪 TAREAS DE QA Y VALIDACIÓN (PRIORIDAD ALTA)
 - [x] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja. (Implementado técnica y visualmente)
@@ -207,4 +217,17 @@ create table audits (
 *   `GET /reports/z-cut` (Cierre Z)
 
 ---
-*Especificación técnica agregada el: 24 de enero de 2026*
+
+## 7. 💎 IDEAS PREMIUM "TOP" (HOJA DE RUTA ROBUSTA)
+
+Para elevar Pargo Rojo a un nivel de competencia internacional (Enterprise Grade):
+
+1.  **Visual Floor Manager:** Un diseñador de arrastrar y soltar (Drag & Drop) para que el dueño dibuje su salón real y vea el estado de las mesas en un plano arquitectónico.
+2.  **Pargo Bot (Asistente IA):** Un chat interno para el administrador que responda preguntas como: *"¿Cuál fue el producto más vendido anoche?"* o *"¿Tengo stock para el fin de semana?"*.
+3.  **Customer Experience Loop:** Envío automático de mensaje por WhatsApp 30 minutos después de la entrega para calificar el servicio y ganar puntos extra.
+4.  **KDS Estación Fría/Caliente:** Separación automática de comandas. El monitor de bebidas solo ve bebidas, el de parrilla solo carnes, sincronizados perfectamente.
+5.  **Biometría Facial / PIN:** Para autorizar descuentos o cancelaciones críticas de parte de un supervisor sin necesidad de llaves físicas.
+6.  **Modo Offline Resiliente:** Uso de IndexDB para que el POS no se detenga si el internet falla 1 hora.
+
+---
+*Especificación técnica actualizada el: 24 de enero de 2026 (Pargo OS Enterprise)*
