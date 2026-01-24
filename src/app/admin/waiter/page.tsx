@@ -102,6 +102,7 @@ export default function WaiterPortalPage() {
     const [transferTargetTableId, setTransferTargetTableId] = useState<string>("")
     const [transferProductItemId, setTransferProductItemId] = useState<string>("")
     const [isTransferring, setIsTransferring] = useState(false)
+    const [showReviewModal, setShowReviewModal] = useState(false)
 
     useEffect(() => {
         loadInitialData()
@@ -185,6 +186,20 @@ export default function WaiterPortalPage() {
         setProductNotes("")
     }
 
+    const updateCartQuantity = (productId: string, notes: string | undefined, delta: number) => {
+        setCart(prev => prev.map(item => {
+            if (item.product_id === productId && item.notes === notes) {
+                const newQty = Math.max(1, item.quantity + delta)
+                return { ...item, quantity: newQty }
+            }
+            return item
+        }))
+    }
+
+    const removeFromCart = (productId: string, notes: string | undefined) => {
+        setCart(prev => prev.filter(item => !(item.product_id === productId && item.notes === notes)))
+    }
+
     const handleTransferTable = async () => {
         if (!selectedTable || !transferTargetTableId || !currentTableOrder) return
         setIsTransferring(true)
@@ -250,7 +265,7 @@ export default function WaiterPortalPage() {
             }
             const itemsToInsert = cart.map(item => ({ order_id: orderId, product_id: item.product_id, quantity: item.quantity, unit_price: item.price, customizations: item.notes ? { notes: item.notes } : null }))
             await supabase.from('order_items').insert(itemsToInsert)
-            setCart([]); setSelectedTable(null); setCurrentTableOrder(null); setView('tables'); fetchMyOrders()
+            setCart([]); setSelectedTable(null); setCurrentTableOrder(null); setView('tables'); fetchMyOrders(); setShowReviewModal(false);
         } catch (e) { }
         finally { setSubmitting(false) }
     }
@@ -530,17 +545,79 @@ export default function WaiterPortalPage() {
             {/* 🚀 ENTERPRISE FLOATING CART */}
             {cart.length > 0 && view === 'order' && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 z-50">
-                    <div className="bg-primary text-black p-8 rounded-[2.5rem] shadow-3xl flex items-center justify-between animate-in slide-in-from-bottom-10">
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 italic">TOTAL COMANDA</p>
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black italic tracking-tighter">${cart.reduce((a, b) => a + (b.price * b.quantity), 0).toLocaleString()}</span>
-                                <span className="text-xs font-black uppercase tracking-widest opacity-60 italic">{cart.reduce((a, b) => a + b.quantity, 0)} ITEMS</span>
+                    <button
+                        onClick={() => setShowReviewModal(true)}
+                        className="w-full bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-3xl flex items-center justify-between animate-in slide-in-from-bottom-10 hover:bg-black transition-all group"
+                    >
+                        <div className="flex items-center gap-6">
+                            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-black font-black italic shadow-lg shadow-primary/20">
+                                {cart.reduce((a, b) => a + b.quantity, 0)}
+                            </div>
+                            <div className="text-left">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 italic">REVISAR PEDIDO</p>
+                                <p className="text-2xl font-black italic tracking-tighter text-primary">${cart.reduce((a, b) => a + (b.price * b.quantity), 0).toLocaleString()}</p>
                             </div>
                         </div>
-                        <Button onClick={submitOrder} disabled={submitting} className="h-16 px-10 bg-black text-white rounded-2xl font-black text-xl italic tracking-tighter hover:bg-white hover:text-black transition-all gap-4">
-                            {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Flame className="w-6 h-6" />} DESPACHAR
-                        </Button>
+                        <div className="flex items-center gap-4">
+                            <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:mr-2 transition-all">VER RESUMEN</span>
+                            <ArrowRight className="w-5 h-5 text-primary" />
+                        </div>
+                    </button>
+                </div>
+            )}
+
+            {/* 📋 REVIEW ORDER MODAL */}
+            {showReviewModal && (
+                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-[3rem] shadow-3xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div>
+                                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-900">Resumen de <span className="text-primary italic">Comanda</span></h2>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">{selectedTable?.table_name}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setShowReviewModal(false)} className="h-12 w-12 rounded-2xl bg-white border border-slate-200">
+                                <X className="w-6 h-6" />
+                            </Button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar max-h-[50vh]">
+                            {cart.map((item, idx) => (
+                                <div key={`${item.product_id}-${idx}`} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 group transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex flex-col items-center">
+                                            <button onClick={() => updateCartQuantity(item.product_id, item.notes, 1)} className="p-1 hover:text-primary transition-colors"><Plus className="w-4 h-4" /></button>
+                                            <span className="font-black italic text-lg text-slate-900">{item.quantity}</span>
+                                            <button onClick={() => updateCartQuantity(item.product_id, item.notes, -1)} className="p-1 hover:text-primary transition-colors"><Minus className="w-4 h-4" /></button>
+                                        </div>
+                                        <div>
+                                            <p className="font-black italic uppercase text-slate-900 leading-none mb-1">{item.name}</p>
+                                            {item.notes && <p className="text-[10px] text-primary font-bold italic">Nota: {item.notes}</p>}
+                                            <p className="text-[10px] text-slate-400 font-bold italic">${(item.price * item.quantity).toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.product_id, item.notes)} className="h-10 w-10 text-rose-500 hover:bg-rose-50 rounded-xl">
+                                        <Trash2 className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-10 bg-slate-50 border-t border-slate-100">
+                            <div className="flex justify-between items-end mb-8">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-1">Total a Pagar</p>
+                                    <p className="text-5xl font-black italic tracking-tighter text-slate-900 leading-none">${cart.reduce((a, b) => a + (b.price * b.quantity), 0).toLocaleString()}</p>
+                                </div>
+                                <Button
+                                    onClick={submitOrder}
+                                    disabled={submitting}
+                                    className="h-20 px-12 bg-primary text-black rounded-3xl font-black text-2xl italic tracking-tighter uppercase shadow-xl shadow-primary/20 hover:scale-105 transition-all gap-4 flex"
+                                >
+                                    {submitting ? <Loader2 className="w-8 h-8 animate-spin" /> : <Flame className="w-8 h-8" />}
+                                    DESPACHAR A COCINA
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

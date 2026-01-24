@@ -14,7 +14,7 @@ Estos son imprescindibles para la operación diaria.
 | **Ventas / Mesas** | ✅ | Gestión de mesas por zona y QR implementado. |
 | - Apertura de mesa | ✅ | Se activa al crear el primer pedido. |
 | - Cambio de mesa | ✅ | Implementado en Portal de Mesero (Cambio y Mover Producto). |
-| - Unir / dividir mesas | ✅ | Soporte para unir mesas (parent_table_id). Dividir pendiente. |
+| - Unir / dividir mesas | 🏗️ | Soporte para unir mesas. Dividir pendiente de UI. |
 | - Estado de mesa (libre, ocupada, etc.) | ✅ | Estados: Disponible, Ocupada, Reservada, Limpieza. |
 | - Consumo por mesa/cliente | ✅ | Visible en el detalle del pedido. |
 | **Caja (Turnos)** | ✅ | Sistema completo de Apertura, Arqueo y Cierre Irreversible. |
@@ -31,7 +31,7 @@ Estos son imprescindibles para la operación diaria.
 | **Clientes** | ✅ | Módulo de gestión de clientes implementado. |
 | - Historial de consumo | ✅ | Seguimiento de pedidos por cliente. |
 | **Productos / Menú** | ✅ | CRUD completo con categorías y disponibilidad. |
-| - Variantes / Extras / Combos | 🏗️ | Estructura base lista, falta UI compleja para modificadores. |
+| - Variantes / Extras / Combos | 🏗️ | Estructura base lista; falta UI para modificadores complejos. |
 | **Inventario** | ✅ | Sistema avanzado de control de insumos. |
 | - Stock en tiempo real | ✅ | Actualización automática. |
 | - Alertas de stock mínimo | ✅ | Indicadores visuales y filtros críticos. |
