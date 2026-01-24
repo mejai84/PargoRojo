@@ -1,6 +1,6 @@
-# 🍔 POZU 2.0 - Sistema de Gestión de Restaurante
+# 🚩 PARGO ROJO OS - Sistema de Operación Gastronómica Industrial
 
-Sistema completo de pedidos online y gestión administrativa para restaurante de hamburguesas artesanales en Asturias.
+Ecosistema completo de control transaccional, gestión de inventarios y fidelización para la cadena de restaurantes Pargo Rojo.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.3-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
@@ -75,8 +75,8 @@ Sistema completo de pedidos online y gestión administrativa para restaurante de
 
 1. **Clonar el repositorio:**
 ```bash
-git clone https://github.com/mejai84/pozu.git
-cd pozu
+git clone https://github.com/mejai84/pargorojo.git
+cd pargorojo
 ```
 
 2. **Instalar dependencias:**
@@ -151,7 +151,7 @@ WHERE email = 'tu_email@ejemplo.com';
 ## 📁 Estructura del Proyecto
 
 ```
-pozu/
+pargorojo/
 ├── src/
 │   ├── app/                    # App Router (Next.js 14+)
 │   │   ├── admin/             # Panel de administración
@@ -369,7 +369,7 @@ Las contribuciones son bienvenidas! Por favor:
 
 ## 📄 Licencia
 
-Este proyecto es privado y pertenece a Pozu Hamburguesas.
+Este proyecto es privado y pertenece a Pargo Rojo Restaurante.
 
 ---
 
@@ -381,9 +381,9 @@ Este proyecto es privado y pertenece a Pozu Hamburguesas.
 
 ## 📞 Contacto
 
-- **Web:** [Pozu Hamburguesas](https://pozu.vercel.app)
-- **Email:** info@pozu.com
-- **Ubicación:** C. Río Cares, 2, Pola de Laviana, Asturias
+- **Web:** [Pargo Rojo OS](https://pargo-rojo.vercel.app)
+- **Email:** info@pargorojo.com
+- **Ubicación:** Colombia
 
 ---
 
@@ -407,4 +407,4 @@ Este proyecto es privado y pertenece a Pozu Hamburguesas.
 
 ---
 
-*Desarrollado con ❤️ para Pozu Hamburguesas*
+*Desarrollado para el ecosistema Pargo Rojo*
