@@ -3,27 +3,30 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Users, Menu, ChefHat, BarChart3, Calendar, QrCode, Package, Tag, Wallet, BadgeDollarSign, Printer, Utensils } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, UtensilsCrossed, Settings, LogOut, Users, Menu, ChefHat, BarChart3, Calendar, QrCode, Package, Tag, Wallet, BadgeDollarSign, Printer, Utensils, Truck, Bike } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 // ... imports anteriores se mantienen ...
 
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/admin", roles: ['admin', 'manager', 'cashier'] },
+    { icon: LayoutDashboard, label: "Vista General", href: "/admin", roles: ['admin', 'manager', 'cashier'] },
+    { icon: BarChart3, label: "Analytics Premium", href: "/admin/dashboard", roles: ['admin', 'manager'] },
+    { icon: BadgeDollarSign, label: "Control de Caja", href: "/admin/cashier", roles: ['admin', 'manager', 'cashier'] },
     { icon: Utensils, label: "Portal Mesero", href: "/admin/waiter", roles: ['admin', 'manager', 'waiter'] },
-    { icon: ShoppingBag, label: "Caja / Pedidos", href: "/admin/orders", roles: ['admin', 'manager', 'cashier', 'waiter'] },
     { icon: ChefHat, label: "Cocina (KDS)", href: "/admin/kitchen", roles: ['admin', 'manager', 'cook', 'chef'] },
+    { icon: ShoppingBag, label: "Listado Pedidos", href: "/admin/orders", roles: ['admin', 'manager', 'cashier', 'waiter'] },
     { icon: QrCode, label: "Mesas & QR", href: "/admin/tables", roles: ['admin', 'manager', 'waiter', 'cashier', 'cleaner'] },
     { icon: Calendar, label: "Reservas", href: "/admin/reservations", roles: ['admin', 'manager', 'host', 'cashier'] },
-    { icon: Package, label: "Inventario", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
+    { icon: Package, label: "Inventario / Stock", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
+    { icon: UtensilsCrossed, label: "Menú / Productos", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
     { icon: Tag, label: "Cupones", href: "/admin/coupons", roles: ['admin', 'manager'] },
-    { icon: UtensilsCrossed, label: "Productos", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
-    { icon: Users, label: "Clientes", href: "/admin/customers", roles: ['admin', 'manager', 'cashier'] },
+    { icon: Users, label: "Clientes & CRM", href: "/admin/customers", roles: ['admin', 'manager', 'cashier'] },
     { icon: Users, label: "Empleados", href: "/admin/employees", roles: ['admin', 'manager'] },
-    { icon: BadgeDollarSign, label: "Nómina & Turnos", href: "/admin/payroll", roles: ['admin', 'manager'] },
+    { icon: Bike, label: "Repartidores", href: "/admin/drivers", roles: ['admin', 'manager'] },
     { icon: Wallet, label: "Caja Menor", href: "/admin/petty-cash", roles: ['admin', 'manager', 'cashier'] },
     { icon: BarChart3, label: "Reportes", href: "/admin/reports", roles: ['admin', 'manager'] },
+    { icon: Truck, label: "Config Delivery", href: "/admin/delivery-config", roles: ['admin'] },
     { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
     { icon: Printer, label: "Impresoras", href: "/admin/settings/printers", roles: ['admin', 'manager'] },
 ]
