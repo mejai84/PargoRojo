@@ -87,40 +87,6 @@ Gestión de turnos y flujos de efectivo por usuario.
    - **Inmutabilidad:** Movimientos prohibidos de borrar; solo anluaciones con registro de auditoría.
 3. **Arquéo (Punto Crítico):** Comparación ciega de saldos por medio de pago con registro de sobrantes/faltantes.
 
-### 🔑 Diseño Funcional: Apertura de Caja
-La apertura habilita las ventas y el control contable. Sin apertura, el POS está bloqueado.
-
-**Estructura de la Interfaz:**
-- **Operador:** Selección automática del usuario autenticado + Rol (Cajero/Admin) + Turno.
-- **Saldos Iniciales:** Tabla por medio de pago (Efectivo, Tarjeta, Transferencia, QR). Solo Efectivo permite monto inicial > 0 por defecto.
-- **Validaciones:** Prohibido valores negativos. Carga automática de fecha/hora.
-- **Confirmación:** Requiere PIN/Contraseña del usuario para autorizar.
-
-**Reglas Críticas:**
-- ✔️ Una caja abierta por usuario a la vez.
-- ✔️ Fecha y hora inalterables (servidor).
-- ✔️ Generación automática de registros de Turno y Saldo Inicial.
-- ✔️ Prohibido cerrar caja con mesas abiertas.
-
-### 🖥️ Diseño Funcional: Caja en Operación
-Pantalla central de control de turno tras la apertura.
-
-**Información en Tiempo Real:**
-- **Estado General:** Caja Abierta, Usuario, Turno, Hora y Tiempo de Turno Activo.
-- **Saldo Actual:** Monto total centralizado con desglose automático por medio de pago (Efectivo, Tarjeta, etc).
-- **Métricas Rápidas:** Total ventas, número de tickets y ticket promedio del turno.
-
-**Acciones Rápidas (1-2 Clics):**
-- ➕ **Ingreso:** Propinas, fondo adicional.
-- ➖ **Egreso:** Compras menores, retiros, cambios.
-- 🧮 **Arqueo:** Conteo físico parcial o preventivo.
-- 🔒 **Cerrar Caja:** Inicia el proceso de finalización de turno.
-
-**Reglas Operativas:**
-- ✔️ Cada venta genera movimientos automáticos vinculados al turno.
-- ✔️ Cancelaciones generan contramovimientos para auditoría.
-- ✔️ Saldo actual siempre visible; no se ocultan métricas al cajero.
-
 ---
 
 ## 4. MÓDULOS AVANZADOS (DIFERENCIADORES)
@@ -137,21 +103,108 @@ Lo que hace al sistema premium y competitivo.
 
 ---
 
+---
+
 ## 5. ✅ PRÓXIMOS PASOS (BACKLOG)
 
 Para completar al 100% los módulos base e intermedios propuestos:
 
 1. **Módulo de Caja (Fase 1 - Core):** ✅ Tablas creadas. ✅ Interfaz de Apertura terminada. ✅ Pantalla de Operación terminada.
 2. **Módulo de Caja (Fase 2 - Cierre):** ✅ Ingresos/Egresos terminados. ✅ Arqueo (Ciego) terminado. ✅ Cierre Irreversible terminado.
-3. **Configuración de Empresa:** ✅ Interfaz y base de datos terminadas. Datos fiscales y logos dinámicos habilitados.
-4. **Mejoras en Ventas:** ✅ Cambio de Mesa y Mover Producto terminados en el Portal de Mesero.
-5. **Cocina KDS Premium:** ✅ Realtime activado. ✅ Alertas sonoras y visuales por demoras. ✅ Gestión de agotados desde la cocina.
-6. **Tickets PRO (PDF):** ✅ Generación de ticket térmico integrada en el historial de Caja.
-7. **Dashboard de Estadísticas:** ✅ Interfaz `/admin/dashboard` terminada con gráficas Recharts.
-8. **Loyalty System (Puntos):** ✅ Buscador de clientes y visualización de puntos en Caja.
-9. **Inventario Avanzado:** ✅ Descuento automático de insumos por venta (Recetas) activo. ✅ Dashboard de stock en tiempo real.
-10. **Delivery Avanzado:** ✅ Configuración RBAC, Gestión Drivers, Checkout Dinámico, Pickup.
+3. **Módulo de Caja (Fase 3 - POS Engine):** ✅ Esquema DB robusto (`shifts`, `cash_sessions`) implementado. ✅ Server Actions seguras creadas. ✅ Flujo de inicio obligatorio (Start Shift -> Open Box) implementado.
+4. **Configuración de Empresa:** ✅ Interfaz y base de datos terminadas. Datos fiscales y logos dinámicos habilitados.
+5. **Mejoras en Ventas:** ✅ Cambio de Mesa y Mover Producto terminados en el Portal de Mesero.
+6. **Cocina KDS Premium:** ✅ Realtime activado. ✅ Alertas sonoras y visuales por demoras. ✅ Gestión de agotados desde la cocina.
+7. **Tickets PRO (PDF):** ✅ Generación de ticket térmico integrada en el historial de Caja.
+8. **Dashboard de Estadísticas:** ✅ Interfaz `/admin/dashboard` terminada con gráficas Recharts.
+9. **Loyalty System (Puntos):** ✅ Buscador de clientes y visualización de puntos en Caja.
+10. **Inventario Avanzado:** ✅ Descuento automático de insumos por venta (Recetas) activo. ✅ Dashboard de stock en tiempo real.
+11. **Delivery Avanzado:** ✅ Configuración RBAC, Gestión Drivers, Checkout Dinámico, Pickup.
+
+### 🧪 TAREAS DE QA Y VALIDACIÓN (PRIORIDAD ALTA)
+- [ ] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja.
+- [ ] **Validación RLS:** Verificar que un cajero solo vea su turno/caja y no pueda modificar otros.
+- [ ] **Integridad Financiera:** Verificar que los movimientos de caja (ingresos/egresos) sumen correctamente en el cierre.
+- [ ] **Prueba Multiusuario:** Simular dos cajeros intentando abrir la misma caja (debe bloquear).
 
 ---
-*Documento generado el: 24 de enero de 2026*
-*Estado del proyecto: **100% Funcionalidad Delivery Base Completada***
+
+## 6. 🛠️ ESPECIFICACIÓN TÉCNICA DETALLADA (POS ENGINE)
+
+Esta sección define la arquitectura "Enterprise Grade" requerida para el núcleo transaccional del sistema.
+
+### 6.1 Flujo Obligatorio de Inicio de Jornada
+El sistema DEBE forzar este flujo secuencial sin atajos:
+
+1.  **Login:** Usuario/Contraseña -> Validación Rol -> Token.
+2.  **Asignación de Turno:** Selección Turno (Mañana/Tarde/Noche) -> `Un usuario = Un turno activo`.
+3.  **Estado de Caja:** Verificar `cashbox.status`. Si está cerrada -> Obligar Apertura.
+4.  **Apertura de Caja:** Saldo Inicial (Billetes/Monedas) -> Confirmación -> `cashbox_session` creada.
+5.  **Operación (Dashboard):** Se habilitan ventas. Header muestra: Usuario, Turno, Estado Caja, Saldo.
+
+### 6.2 Validaciones Técnicas (Backend Hard Rules)
+*Las validaciones en frontend son solo visuales. El backend es la autoridad.*
+
+1.  **Caja (Estado Crítico):** Antes de CADA venta, validar:
+    *   `cashbox.status = OPEN`
+    *   `cashbox.user_id = session.user_id`
+    *   `turn.status = OPEN`
+    *   **Regla:** Si falla UNA validación -> Venta rechazada (HTTP 403).
+2.  **Apertura Atómica:** `UNIQUE constraint` en `(user_id, status='OPEN')` para turnos y cajas.
+3.  **Integridad de Precios:** Los precios se copian a `sale_items` al momento de la venta. No se referencian dinámicamente para mantener historial inmutable.
+4.  **Auditoría Inmutable:** Tabla `audits` registra `user_id`, `action`, `before_data`, `after_data` para TODA operación de caja o inventario.
+
+### 6.3 Esquema de Base de Datos (Core)
+
+```sql
+-- 1. Usuarios y Roles
+create table users (id uuid pk, name text, pin_hash text, active boolean);
+create table roles (id uuid pk, name text); -- Admin, Cajero, Mesero
+create table role_permissions (role_id uuid, permission text); -- 'open_cash', 'sell', 'void_sale'
+
+-- 2. Sesiones y Dispositivos
+create table devices (id uuid pk, fingerprint text, name text);
+create table shifts (id uuid pk, user_id uuid, status text, started_at timestamptz, ended_at timestamptz);
+
+-- 3. Caja y Movimientos
+create table cashboxes (id uuid pk, name text, status text); -- 'Caja Principal'
+create table cashbox_sessions (
+  id uuid pk, cashbox_id uuid, shift_id uuid, user_id uuid,
+  opening_amount numeric, closing_amount numeric, difference numeric,
+  status text -- 'OPEN', 'CLOSED', 'ARCHIVED'
+);
+create table cash_movements (
+  id uuid pk, session_id uuid, type text, amount numeric, reason text
+); -- type: 'SALE', 'REFUND', 'DEPOSIT', 'WITHDRAWAL'
+
+-- 4. Ventas
+create table sales (
+  id uuid pk, session_id uuid, total numeric, status text -- 'COMPLETED', 'VOIDED'
+);
+create table sale_items (sale_id uuid, product_id uuid, price_at_sale numeric, quantity int);
+create table payments (sale_id uuid, method text, amount numeric); -- 'CASH', 'CARD', 'QR'
+
+-- 5. Auditoría
+create table audits (
+  id uuid pk, user_id uuid, action text, entity text, entity_id uuid, payload jsonb
+);
+```
+
+### 6.4 Casos Límite y Anti-Fraude
+1.  **Venta sin caja:** Backend rechaza transacción. Alerta de seguridad.
+2.  **Cierre de sesión con caja abierta:** El turno y la caja permanecen abiertos a nombre del usuario. Al volver a entrar, se restaura el estado.
+3.  **Offline:**
+    *   Permitido: Crear ventas, imprimir tickets (UUID local).
+    *   Sincronización: Al volver online, se envían ventas en lote.
+    *   Conflictos: El servidor valida integridad (hash).
+4.  **Manipulación de Precios:** El historial de cambios de precio de productos queda en `audits`. Las ventas pasadas no cambian.
+
+### 6.5 Endpoints API (Referencia)
+*   `POST /auth/login`
+*   `POST /shifts/open` | `POST /shifts/close`
+*   `POST /cashbox/open` | `POST /cashbox/close`
+*   `POST /sales` (Transaccional: crea venta + items + pago + movimiento de caja)
+*   `GET /reports/z-cut` (Cierre Z)
+
+---
+*Especificación técnica agregada el: 24 de enero de 2026*

@@ -58,11 +58,23 @@ function MenuContent() {
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedCategory, setSelectedCategory] = useState<any | null>(null)
     const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({})
+    const [showImages, setShowImages] = useState(false)
 
     const fetchData = async () => {
         setLoading(true)
 
         try {
+            // Fetch Settings
+            const { data: settingsData } = await supabase
+                .from('settings')
+                .select('value')
+                .eq('key', 'feature_flags')
+                .single()
+
+            if (settingsData?.value && settingsData.value.menu_show_images !== undefined) {
+                setShowImages(settingsData.value.menu_show_images)
+            }
+
             // Fetch Categories
             const { data: catData, error: catError } = await supabase
                 .from('categories')
@@ -226,6 +238,7 @@ function MenuContent() {
                                                     ...product,
                                                     image: product.image_url || product.image
                                                 }}
+                                                showImages={showImages}
                                             />
                                         ))}
                                     </div>
@@ -368,6 +381,7 @@ function MenuContent() {
                                             ...product,
                                             image: product.image_url || product.image
                                         }}
+                                        showImages={showImages}
                                     />
                                 ))}
                             </div>

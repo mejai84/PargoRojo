@@ -131,6 +131,13 @@ export default function SettingsPage() {
                         </div>
                         <SimpleSwitch checked={settings.enable_combos} onCheckedChange={() => toggle('enable_combos')} />
                     </div>
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                        <div>
+                            <div className="font-bold">Imágenes en Menú</div>
+                            <div className="text-sm text-muted-foreground">Muestra fotos de los platos en el menú digital. Si se desactiva, el menú será más compacto.</div>
+                        </div>
+                        <SimpleSwitch checked={settings.menu_show_images ?? false} onCheckedChange={() => toggle('menu_show_images')} />
+                    </div>
                 </div>
             </div>
         </div>
