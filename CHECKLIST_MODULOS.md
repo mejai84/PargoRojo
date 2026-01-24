@@ -133,6 +133,10 @@ Para completar al 100% los módulos base e intermedios propuestos:
 21. **Diseño Cinematic Premium:** ✅ Landing Page y Portal de Meseros con estética de lujo y carga optimizada de recursos.
 22. **Gestión de Personal Administrativa:** ✅ Perfiles ampliados con Cédula, Fecha de Ingreso y Auditoría de Roles.
 23. **Optimización Multi-dispositivo:** ✅ Panel responsivo validado para PC, Tablet y Smartphones.
+24. **Tarjetas Adaptables Dinámicas:** ✅ Refinamiento de UI: Fichas grandes con fotos y Fichas ultra-compactas (modo texto) para eficiencia operativa.
+25. **Pagos QR Dinámicos (Backlog):** 🏗️ Generación de códigos Nequi/Bancolombia con monto automático.
+26. **WhatsApp Feedback Loop (Backlog):** 🏗️ Encuestas de satisfacción post-servicio automáticas.
+27. **IA Smart Stock (Backlog):** 🏗️ Predicciones de inventario basadas en histórico de ventas.
 
 ### 🧪 TAREAS DE QA Y VALIDACIÓN (PRIORIDAD ALTA)
 - [x] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja. (Implementado técnica y visualmente)

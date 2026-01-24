@@ -5,13 +5,17 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/store/cart-context"
+import { cn } from "@/lib/utils"
 import type { Product } from "@/lib/data"
 
 export function ProductCard({ product, showImages = true }: { product: Product, showImages?: boolean }) {
     const { addItem } = useCart()
 
     return (
-        <div className={`group relative bg-white border border-gray-100 rounded-3xl p-4 hover:border-primary/30 hover:shadow-xl transition-all duration-300 flex flex-col h-full card-shadow hover-lift ${!showImages ? 'justify-between' : ''}`}>
+        <div className={cn(
+            "group relative bg-white border border-gray-100 rounded-3xl hover:border-primary/30 hover:shadow-xl transition-all duration-300 flex flex-col h-full card-shadow hover-lift",
+            showImages ? "p-4" : "p-3"
+        )}>
             {showImages && (
                 <Link href={`/producto/${product.id}`} className="block relative aspect-square mb-6 overflow-hidden rounded-2xl bg-gray-50 cursor-pointer">
                     <img
@@ -31,28 +35,43 @@ export function ProductCard({ product, showImages = true }: { product: Product, 
                 </Link>
             )}
 
-            <div className={`flex flex-col gap-3 px-2 flex-1 ${!showImages ? 'pt-2' : ''}`}>
+            <div className={cn(
+                "flex flex-col gap-3 px-2 flex-1",
+                !showImages ? "pt-1" : ""
+            )}>
                 <Link href={`/producto/${product.id}`} className="block flex-1">
                     <div className="flex justify-between items-start gap-4">
-                        <h3 className={`font-bold text-gray-900 group-hover:text-primary transition-colors ${showImages ? 'text-xl' : 'text-lg'}`}>
+                        <h3 className={cn(
+                            "font-black italic uppercase tracking-tighter text-gray-900 group-hover:text-primary transition-colors",
+                            showImages ? "text-xl" : "text-sm"
+                        )}>
                             {product.name}
                         </h3>
-                        <span className={`font-bold text-primary shrink-0 ${showImages ? 'text-lg' : 'text-base'}`}>
+                        <span className={cn(
+                            "font-black italic text-primary shrink-0",
+                            showImages ? "text-lg" : "text-sm"
+                        )}>
                             ${product.price.toLocaleString('es-CO')}
                         </span>
                     </div>
                     {product.badge && !showImages && (
-                        <span className="inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full mt-1 mb-1">
+                        <span className="inline-block bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full mt-1 mb-1">
                             {product.badge}
                         </span>
                     )}
-                    <p className="text-sm text-gray-500 line-clamp-2 mt-2">
+                    <p className={cn(
+                        "text-gray-500 font-medium italic mt-2",
+                        showImages ? "text-sm line-clamp-2" : "text-[10px] line-clamp-1"
+                    )}>
                         {product.ingredients?.join(", ") || product.description}
                     </p>
                 </Link>
 
                 <Button
-                    className="w-full mt-4 group-hover:bg-primary group-hover:text-white transition-all bg-gray-50 text-gray-900 border border-gray-200 hover:border-primary z-20 relative rounded-xl font-bold"
+                    className={cn(
+                        "w-full group-hover:bg-primary group-hover:text-black transition-all bg-slate-50 text-slate-900 border border-slate-200 hover:border-primary z-20 relative rounded-xl font-black italic uppercase tracking-widest",
+                        showImages ? "mt-4 h-12 text-xs" : "mt-2 h-9 text-[9px]"
+                    )}
                     onClick={(e) => {
                         e.preventDefault();
                         addItem(product);
