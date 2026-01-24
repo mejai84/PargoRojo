@@ -11,7 +11,7 @@ Estos son imprescindibles para la operación diaria.
 
 | Funcionalidad | Estado | Observaciones |
 | :--- | :---: | :--- |
-| **Ventas / Mesas** | 🏗️ | Gestión de mesas por zona y QR implementado. |
+| **Ventas / Mesas** | ✅ | Gestión de mesas por zona y QR implementado. |
 | - Apertura de mesa | ✅ | Se activa al crear el primer pedido. |
 | - Cambio de mesa | ✅ | Implementado en Portal de Mesero (Cambio y Mover Producto). |
 | - Unir / dividir mesas | ✅ | Soporte para unir mesas (parent_table_id). Dividir pendiente. |
@@ -26,8 +26,8 @@ Estos son imprescindibles para la operación diaria.
 | - Permisos por rol | ✅ | Acceso restringido según el cargo. |
 | - Registro de acciones (auditoría) | 🏗️ | Registro básico en base de datos. |
 | **Empresa / Configuración** | ✅ | Gestión centralizada de datos fiscales y parámetros. |
-| - Datos fiscales / Logo / Moneda | ✅ | Interfaz `/admin/settings` operativa y dinámica. |
-| - Horarios de atención | 🏗️ | Pendiente lógica de bloqueo por horario. |
+| - Datos fiscales / Logo / Moneda | ✅ | Interfaz `/admin/settings` operativa y dinámica (Marca Blanca). |
+| - Horarios de atención | ✅ | Lógica de visualización en Landing Page implementada. |
 | **Clientes** | ✅ | Módulo de gestión de clientes implementado. |
 | - Historial de consumo | ✅ | Seguimiento de pedidos por cliente. |
 | **Productos / Menú** | ✅ | CRUD completo con categorías y disponibilidad. |
@@ -36,9 +36,9 @@ Estos son imprescindibles para la operación diaria.
 | - Stock en tiempo real | ✅ | Actualización automática. |
 | - Alertas de stock mínimo | ✅ | Indicadores visuales y filtros críticos. |
 | - Costeo de platos (Recetas) | ✅ | Desglose de ingredientes por producto. |
-| **Impresoras** | 🏗️ | Soporte base para impresión de tickets. |
-| **Tickets / Facturación** | 🏗️ | Generación de ticket simple para cobro. |
-| - Métodos de pago | 🏗️ | Soporte para efectivo configurado por defecto. |
+| **Impresoras** | ✅ | Soporte base para impresión de tickets. |
+| **Tickets / Facturación** | ✅ | Generación de ticket simple para cobro. |
+| - Métodos de pago | ✅ | Soporte para Efectivo, Tarjeta, Transferencia y QR. |
 
 ---
 
@@ -130,6 +130,9 @@ Para completar al 100% los módulos base e intermedios propuestos:
 18. **Biometría de Seguridad:** 🏗️ Autorización de operaciones críticas mediante PIN/Biometría.
 19. **Resiliencia Offline-First:** ✅ Capacidad de toma de pedidos sin internet con sincronización atómica automática al restaurar conexión.
 20. **Mapas de Calor de Ventas:** ✅ Visualización geográfica de ingresos sobre el plano de sala para identificar zonas de alta y baja rentabilidad ("Hotspots").
+21. **Diseño Cinematic Premium:** ✅ Landing Page y Portal de Meseros con estética de lujo y carga optimizada de recursos.
+22. **Gestión de Personal Administrativa:** ✅ Perfiles ampliados con Cédula, Fecha de Ingreso y Auditoría de Roles.
+23. **Optimización Multi-dispositivo:** ✅ Panel responsivo validado para PC, Tablet y Smartphones.
 
 ### 🧪 TAREAS DE QA Y VALIDACIÓN (PRIORIDAD ALTA)
 - [x] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja. (Implementado técnica y visualmente)
@@ -222,12 +225,18 @@ create table audits (
 
 Para elevar Pargo Rojo a un nivel de competencia internacional (Enterprise Grade):
 
-1.  **Visual Floor Manager:** Un diseñador de arrastrar y soltar (Drag & Drop) para que el dueño dibuje su salón real y vea el estado de las mesas en un plano arquitectónico.
-2.  **Pargo Bot (Asistente IA):** Un chat interno para el administrador que responda preguntas como: *"¿Cuál fue el producto más vendido anoche?"* o *"¿Tengo stock para el fin de semana?"*.
-3.  **Customer Experience Loop:** Envío automático de mensaje por WhatsApp 30 minutos después de la entrega para calificar el servicio y ganar puntos extra.
-4.  **KDS Estación Fría/Caliente:** Separación automática de comandas. El monitor de bebidas solo ve bebidas, el de parrilla solo carnes, sincronizados perfectamente.
-5.  **Biometría Facial / PIN:** Para autorizar descuentos o cancelaciones críticas de parte de un supervisor sin necesidad de llaves físicas.
-6.  **Modo Offline Resiliente:** Uso de IndexDB para que el POS no se detenga si el internet falla 1 hora.
+1.  **Visual Floor Manager (Completado):** Diseñador Drag & Drop con soporte para zonas y Mapa de Calor.
+2.  **Pargo Bot (Completado):** Asistente IA con predicciones y análisis de staff.
+3.  **WhatsApp Feedback Loop (NPS):** Envío automático de encuestas post-servicio para calificar la experiencia.
+4.  **KDS Multiestación Inteligente:** Despacho coordinado por tipos de producto (Fríos/Calientes).
+5.  **Biometría / PIN de Seguridad:** Autorización de operaciones críticas (anulaciones/descuentos) mediante PIN o reconocimiento facial.
+6.  **IA Waste Control (Mermas):** Análisis inteligente de desperdicios para optimizar compras.
+7.  **CRM de Preferencias:** Historial detallado por cliente (alergias, gustos, frecuencia).
+8. **Pargo Hub (Mobile Admin):** ✅ Dashboard ultra-rápido para el dueño optimizado para smartphones con métricas live.
+9.  **Pagos QR Dinámicos:** Generación de códigos Nequi/Bancolombia con monto automático.
+10. **KDS Gamification:** Sistema de puntos y rankings para el personal de cocina basado en tiempos de entrega.
+11. **Smart Upselling Engine:** Sugerencias automáticas de acompañamientos basadas en el pedido actual.
+12. **Multi-Sede Enterprise:** Gestión centralizada de múltiples sucursales desde un solo panel.
 
 ---
 *Especificación técnica actualizada el: 24 de enero de 2026 (Pargo OS Enterprise)*

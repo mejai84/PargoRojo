@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -31,17 +30,19 @@ export function CheckoutForm() {
     const [pointsToRedeem, setPointsToRedeem] = useState(0)
     const [pointsDiscount, setPointsDiscount] = useState(0)
     const [deliverySettings, setDeliverySettings] = useState<any>(null)
+    const [businessInfo, setBusinessInfo] = useState<any>(null)
     const [loadingSettings, setLoadingSettings] = useState(true)
 
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch delivery settings
-            const { data: settings } = await supabase
-                .from('delivery_settings')
-                .select('*')
-                .single()
+            // Fetch delivery settings & business info
+            const [{ data: settings }, { data: bInfo }] = await Promise.all([
+                supabase.from('delivery_settings').select('*').single(),
+                supabase.from('settings').select('value').eq('key', 'business_info').single()
+            ])
 
-            setDeliverySettings(settings)
+            if (settings) setDeliverySettings(settings)
+            if (bInfo?.value) setBusinessInfo(bInfo.value)
             setLoadingSettings(false)
 
             // Fetch user profile
@@ -427,8 +428,9 @@ export function CheckoutForm() {
                                 <div className="flex-1">
                                     <h4 className="font-bold text-green-900 mb-1">¡Perfecto! Recogerás tu pedido en local</h4>
                                     <p className="text-sm text-green-700 leading-relaxed">
-                                        📍 <strong>Dirección:</strong> {deliverySettings.restaurant_address || 'Calle Principal #123'}<br />
-                                        📞 <strong>Teléfono:</strong> {deliverySettings.restaurant_phone || '+57 300 123 4567'}<br />
+                                        📍 <strong>Dirección:</strong> {businessInfo?.address || deliverySettings.restaurant_address || 'Calle Principal #123'}<br />
+                                        📞 <strong>Teléfono:</strong> {businessInfo?.phone || deliverySettings.restaurant_phone || '+57 300 123 4567'}<br />
+                                        ✉️ <strong>Email:</strong> {businessInfo?.email || 'contacto@pargorojo.com'}<br />
                                         ⏰ <strong>Tiempo estimado:</strong> {deliverySettings.estimated_delivery_time_min}-{deliverySettings.estimated_delivery_time_max} minutos
                                     </p>
                                 </div>

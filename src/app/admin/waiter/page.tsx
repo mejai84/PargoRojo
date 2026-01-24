@@ -88,6 +88,7 @@ export default function WaiterPortalPage() {
     const [activeOrders, setActiveOrders] = useState<any[]>([])
     const [currentTableOrder, setCurrentTableOrder] = useState<any>(null)
     const [fetchingOrder, setFetchingOrder] = useState(false)
+    const [showImages, setShowImages] = useState(true)
 
     // Customization Modal State
     const [customizingProduct, setCustomizingProduct] = useState<Product | null>(null)
@@ -118,8 +119,15 @@ export default function WaiterPortalPage() {
             const { data: profileData } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
             setProfile(profileData)
         }
-        await Promise.all([fetchTables(), fetchCategories(), fetchProducts(), fetchMyOrders()])
+        await Promise.all([fetchTables(), fetchCategories(), fetchProducts(), fetchMyOrders(), fetchSettings()])
         setLoading(false)
+    }
+
+    const fetchSettings = async () => {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'feature_flags').single()
+        if (data?.value) {
+            setShowImages(data.value.menu_show_images ?? true)
+        }
     }
 
     const fetchTables = async () => {
@@ -248,43 +256,46 @@ export default function WaiterPortalPage() {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8 gap-4 text-white">
+        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 gap-4 text-slate-900">
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="font-black italic uppercase text-[10px] tracking-[0.3em] text-gray-500">Iniciando Terminal Pargo OS...</p>
+            <div className="text-center">
+                <p className="font-black italic uppercase text-[10px] tracking-[0.4em] text-primary">Iniciando Terminal</p>
+                <p className="text-slate-400 text-[8px] font-bold uppercase tracking-widest mt-1">Pargo OS Cloud Interface</p>
+            </div>
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans selection:bg-primary">
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-primary selection:text-black">
 
             {/* 👑 ENTERPRISE WAITER HEADER */}
-            <header className="sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 p-6 flex items-center justify-between shadow-2xl">
+            <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200 p-6 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-5">
                     {view !== 'tables' && (
-                        <Button variant="ghost" size="icon" onClick={() => { setView('tables'); setSelectedTable(null); setCurrentTableOrder(null); setCart([]); }} className="h-12 w-12 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black">
+                        <Button variant="ghost" size="icon" onClick={() => { setView('tables'); setSelectedTable(null); setCurrentTableOrder(null); setCart([]); }} className="h-12 w-12 rounded-2xl bg-white border border-slate-200 hover:bg-slate-900 hover:text-white shadow-sm transition-all">
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                     )}
                     <div>
-                        <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none flex items-center gap-3">
+                        <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none flex items-center gap-3 text-slate-900">
                             {view === 'tables' ? 'CENTRO DE MESAS' : selectedTable?.table_name}
                             {!navigator.onLine && (
                                 <span className="text-[8px] bg-rose-500 text-white px-2 py-0.5 rounded-full animate-pulse uppercase tracking-widest">Offline</span>
                             )}
                         </h1>
-                        <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mt-2 italic flex items-center gap-2">
-                            <ChefHat className="w-3 h-3" /> {profile?.full_name || 'Staff Pargo OS'}
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 italic flex items-center gap-2">
+                            <ChefHat className="w-3 h-3 text-primary" /> {profile?.full_name || 'Staff Pargo OS'}
                         </p>
                     </div>
                 </div>
                 <div className="flex gap-3">
                     {view === 'tables' && (
-                        <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 mr-2">
-                            <button onClick={() => setIsMapView(true)} className={cn("p-2 rounded-lg transition-all", isMapView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}><MapIcon className="w-4 h-4" /></button>
-                            <button onClick={() => setIsMapView(false)} className={cn("p-2 rounded-lg transition-all", !isMapView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}><LayoutGrid className="w-4 h-4" /></button>
+                        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 mr-2 shadow-inner">
+                            <button onClick={() => setIsMapView(true)} className={cn("p-2 rounded-lg transition-all", isMapView ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-900")}><MapIcon className="w-4 h-4" /></button>
+                            <button onClick={() => setIsMapView(false)} className={cn("p-2 rounded-lg transition-all", !isMapView ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-900")}><LayoutGrid className="w-4 h-4" /></button>
                         </div>
                     )}
-                    <Button onClick={() => setView('my-orders')} className="h-11 px-5 bg-white/5 border border-white/5 rounded-xl font-black text-[10px] tracking-widest italic group hover:bg-white hover:text-black transition-all">
+                    <Button onClick={() => setView('my-orders')} className="h-11 px-5 bg-white border border-slate-200 rounded-xl font-black text-[10px] tracking-widest italic group hover:bg-slate-900 hover:text-white transition-all shadow-sm">
                         PEDIDOS <span className="ml-2 w-5 h-5 bg-primary text-black rounded-full flex items-center justify-center text-[10px] ring-4 ring-primary/20">
                             {activeOrders.length + pargoOffline.getPendingOrders().length}
                         </span>
@@ -317,8 +328,8 @@ export default function WaiterPortalPage() {
                                             "absolute flex items-center justify-center font-black italic select-none border-4 transition-all duration-300 shadow-xl active:scale-95 group",
                                             table.shape === 'circle' ? "rounded-full" : "rounded-3xl",
                                             table.status === 'occupied'
-                                                ? "bg-rose-500/10 border-rose-500/30 text-rose-500 shadow-rose-500/10"
-                                                : "bg-[#0a0a0a] border-white/5 text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5",
+                                                ? "bg-rose-50 shadow-[0_10px_30px_rgba(244,63,94,0.2)] border-rose-500 text-rose-500"
+                                                : "bg-white border-slate-200 text-slate-400 hover:border-primary hover:text-primary hover:bg-slate-50 shadow-sm",
                                         )}
                                     >
                                         <div className="text-center">
@@ -441,7 +452,11 @@ export default function WaiterPortalPage() {
                                     <Button variant="ghost" size="icon" onClick={() => setActiveCategory(null)} className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5"><ArrowLeft className="w-5 h-5" /></Button>
                                 )}
                                 <h2 className="text-4xl font-black italic uppercase tracking-tighter uppercase leading-none">
-                                    {!activeCategory ? 'SELECCIONAR <span className="text-primary">CATEGORÍA</span>' : categories.find(c => c.id === activeCategory)?.name}
+                                    {!activeCategory ? (
+                                        <>SELECCIONAR <span className="text-primary">CATEGORÍA</span></>
+                                    ) : (
+                                        categories.find(c => c.id === activeCategory)?.name
+                                    )}
                                 </h2>
                             </div>
                             <div className="relative group">
@@ -467,14 +482,43 @@ export default function WaiterPortalPage() {
                         )}
 
                         {(activeCategory || searchTerm) && (
-                            <div className="px-8 pb-32 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                            <div className={cn(
+                                "px-8 pb-32 grid gap-6",
+                                showImages
+                                    ? "grid-cols-2 md:grid-cols-4 lg:grid-cols-6"
+                                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                            )}>
                                 {products.filter(p => (!activeCategory || p.category_id === activeCategory) && (!searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))).map(product => (
-                                    <button key={product.id} onClick={() => addToCart(product)} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-4 group hover:border-primary transition-all active:scale-95 h-full flex flex-col items-center">
-                                        <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden mb-4 border border-white/5">
-                                            {product.image_url ? <Image src={product.image_url} alt={product.name} fill className="object-cover group-hover:scale-110 transition-transform" /> : <div className="w-full h-full bg-[#111] flex items-center justify-center opacity-20"><Utensils className="w-12 h-12" /></div>}
+                                    <button
+                                        key={product.id}
+                                        onClick={() => addToCart(product)}
+                                        className={cn(
+                                            "bg-white border border-slate-200 group hover:border-primary transition-all active:scale-95 flex items-center shadow-sm",
+                                            showImages ? "flex-col rounded-[2.5rem] text-center p-4" : "flex-row rounded-2xl gap-4 text-left p-3"
+                                        )}
+                                    >
+                                        {showImages && (
+                                            <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden mb-4 border border-slate-100 bg-slate-50">
+                                                {product.image_url ? (
+                                                    <img
+                                                        src={product.image_url}
+                                                        alt={product.name}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = "/images/placeholder.png";
+                                                            (e.target as HTMLImageElement).className = "w-full h-full object-contain opacity-20 p-8";
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center opacity-10"><Utensils className="w-12 h-12" /></div>
+                                                )}
+                                            </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <h4 className="font-black italic uppercase tracking-tighter text-sm mb-1 group-hover:text-primary transition-colors text-slate-900">{product.name}</h4>
+                                            <p className="text-primary font-black text-xl italic">${product.price.toLocaleString()}</p>
                                         </div>
-                                        <h4 className="text-center font-black italic uppercase tracking-tighter text-sm mb-2 group-hover:text-primary transition-colors min-h-[40px]">{product.name}</h4>
-                                        <p className="text-primary font-black text-xl italic">${product.price.toLocaleString()}</p>
+                                        {!showImages && <Plus className="w-6 h-6 text-slate-300 group-hover:text-primary" />}
                                     </button>
                                 ))}
                             </div>

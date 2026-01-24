@@ -21,7 +21,8 @@ import {
     Utensils,
     Eye,
     EyeOff,
-    Edit
+    Edit,
+    Calendar
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -31,6 +32,8 @@ interface Employee {
     full_name: string | null
     phone: string | null
     role: 'admin' | 'staff' | 'waiter' | 'cook' | 'cashier' | 'customer'
+    document_id: string | null
+    hire_date: string | null
     created_at: string
 }
 
@@ -50,14 +53,24 @@ export default function EmployeesPage() {
         password: "",
         full_name: "",
         phone: "",
-        role: "staff"
+        role: "staff",
+        document_id: "",
+        hire_date: new Date().toISOString().split('T')[0]
     })
     const [submitting, setSubmitting] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
+    const [businessInfo, setBusinessInfo] = useState<any>({ name: "PARGO ROJO" })
+
     useEffect(() => {
         fetchEmployees()
+        fetchBusinessInfo()
     }, [])
+
+    async function fetchBusinessInfo() {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'business_info').single()
+        if (data?.value) setBusinessInfo(data.value)
+    }
 
     async function fetchEmployees() {
         try {
@@ -83,7 +96,9 @@ export default function EmployeesPage() {
             password: "",
             full_name: "",
             phone: "",
-            role: "staff"
+            role: "staff",
+            document_id: "",
+            hire_date: new Date().toISOString().split('T')[0]
         })
         setIsAddModalOpen(true)
     }
@@ -95,7 +110,9 @@ export default function EmployeesPage() {
             password: "", // Not editable here
             full_name: emp.full_name || "",
             phone: emp.phone || "",
-            role: emp.role
+            role: emp.role,
+            document_id: emp.document_id || "",
+            hire_date: emp.hire_date || ""
         })
         setIsEditModalOpen(true)
     }
@@ -125,7 +142,9 @@ export default function EmployeesPage() {
                 .update({
                     full_name: formData.full_name,
                     phone: formData.phone,
-                    role: formData.role
+                    role: formData.role,
+                    document_id: formData.document_id,
+                    hire_date: formData.hire_date
                 })
                 .eq('id', authData.user.id)
 
@@ -152,7 +171,9 @@ export default function EmployeesPage() {
                 .update({
                     full_name: formData.full_name,
                     phone: formData.phone,
-                    role: formData.role
+                    role: formData.role,
+                    document_id: formData.document_id,
+                    hire_date: formData.hire_date
                 })
                 .eq('id', selectedEmployee.id)
 
@@ -205,7 +226,7 @@ export default function EmployeesPage() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight uppercase">Equipo <span className="text-primary italic">Pargo Rojo</span></h1>
+                    <h1 className="text-4xl font-black tracking-tight uppercase">Equipo <span className="text-primary italic">{businessInfo.name}</span></h1>
                     <p className="text-muted-foreground font-medium mt-1">Gestión integral de personal y jerarquías operativos.</p>
                 </div>
                 <Button
@@ -262,6 +283,9 @@ export default function EmployeesPage() {
                                                     <Icon className="w-3 h-3" />
                                                     {badge.label}
                                                 </div>
+                                                {emp.document_id && (
+                                                    <span className="text-[9px] font-bold text-muted-foreground ml-2 opacity-60">ID: {emp.document_id}</span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="flex gap-1 opactiy-0 group-hover:opacity-100 transition-opacity">
@@ -293,6 +317,12 @@ export default function EmployeesPage() {
                                             <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                                                 <Phone className="w-3.5 h-3.5 opacity-50" />
                                                 {emp.phone}
+                                            </div>
+                                        )}
+                                        {emp.hire_date && (
+                                            <div className="flex items-center gap-2 text-[10px] font-bold text-primary italic">
+                                                <Calendar className="w-3.5 h-3.5 opacity-50" />
+                                                Ingreso: {new Date(emp.hire_date).toLocaleDateString()}
                                             </div>
                                         )}
                                     </div>
@@ -359,7 +389,7 @@ export default function EmployeesPage() {
                             </Button>
                         </div>
 
-                        <form onSubmit={isAddModalOpen ? handleCreateEmployee : handleUpdateEmployee} className="p-8 pt-4 space-y-6">
+                        <form onSubmit={isAddModalOpen ? handleCreateEmployee : handleUpdateEmployee} className="p-8 pt-4 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -382,6 +412,34 @@ export default function EmployeesPage() {
                                                 className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Cédula / ID</label>
+                                        <div className="relative">
+                                            <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                required
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                value={formData.document_id}
+                                                onChange={(e) => setFormData({ ...formData, document_id: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Fecha de Ingreso</label>
+                                        <div className="relative">
+                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                required
+                                                type="date"
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold text-white uppercase"
+                                                value={formData.hire_date}
+                                                onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
                                             />
                                         </div>
                                     </div>

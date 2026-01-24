@@ -70,6 +70,14 @@ const sidebarSections = [
         ]
     },
     {
+        title: "Negocio & Estrategia",
+        items: [
+            { icon: Zap, label: "Pargo Hub Live", href: "/admin/hub", roles: ['admin'] },
+            { icon: BarChart3, label: "Reportes & Analytics", href: "/admin/reports", roles: ['admin'] },
+            { icon: ShieldCheck, label: "Seguridad & Roles", href: "/admin/employees", roles: ['admin'] },
+        ]
+    },
+    {
         title: "INFRAESTRUCTURA",
         items: [
             { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
@@ -86,6 +94,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [userRole, setUserRole] = useState<string>("")
     const [userName, setUserName] = useState<string>("")
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [businessInfo, setBusinessInfo] = useState<any>({ name: "PARGO OS", logo_url: "" })
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -96,15 +105,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 return
             }
 
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('role, full_name')
-                .eq('id', session.user.id)
-                .single()
+            const [{ data }, { data: settings }] = await Promise.all([
+                supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single(),
+                supabase.from('settings').select('value').eq('key', 'business_info').single()
+            ])
+
+            if (settings?.value) setBusinessInfo(settings.value)
 
             const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host']
 
-            if (error || !data || !allowedRoles.includes(data.role)) {
+            if (!data || !allowedRoles.includes(data.role)) {
                 router.push("/")
                 return
             }
@@ -135,36 +145,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!authorized) return null
 
     return (
-        <div className="flex min-h-screen bg-black selection:bg-primary selection:text-black">
+        <div className="flex min-h-screen bg-slate-50/50 selection:bg-primary selection:text-black">
             {/* 🏰 ENTERPRISE SIDEBAR */}
-            <aside className="w-72 border-r border-white/5 bg-[#050505] hidden lg:flex flex-col sticky top-0 h-screen">
+            <aside className="w-72 border-r border-slate-200 bg-white hidden lg:flex flex-col sticky top-0 h-screen shadow-sm">
 
                 {/* Brand Header */}
                 <div className="p-8 pb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary p-0.5 shadow-lg shadow-primary/20">
-                            <div className="w-full h-full bg-black rounded-[0.9rem] flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-primary" />
+                            <div className="w-full h-full bg-white rounded-[0.9rem] flex items-center justify-center overflow-hidden">
+                                {businessInfo.logo_url ? (
+                                    <img src={businessInfo.logo_url} className="w-full h-full object-contain" alt="Logo" />
+                                ) : (
+                                    <Zap className="w-5 h-5 text-primary" />
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-black italic uppercase tracking-tighter text-white">PARGO <span className="text-primary italic">OS</span></span>
-                            <span className="text-[8px] font-bold text-gray-500 tracking-[0.2em] uppercase">Enterprise v1.6</span>
+                            <span className="text-sm font-black italic uppercase tracking-tighter text-slate-900">{businessInfo.name} <span className="text-primary italic">OS</span></span>
+                            <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em] uppercase">Enterprise v1.6</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Profile Card Mini */}
                 <div className="px-6 py-4 mb-4">
-                    <div className="p-4 rounded-3xl bg-white/5 border border-white/5 flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20 font-black text-primary italic">
+                    <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-200 shadow-sm font-black text-primary italic">
                             {userName.charAt(0)}
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                            <span className="text-xs font-black italic text-white uppercase truncate">{userName}</span>
+                            <span className="text-xs font-black italic text-slate-900 uppercase truncate">{userName}</span>
                             <div className="flex items-center gap-1.5 pt-0.5">
-                                <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{userRole}</span>
+                                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{userRole}</span>
                             </div>
                         </div>
                     </div>
@@ -173,11 +187,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Navigation Search */}
                 <div className="px-6 mb-6">
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Buscar módulo..."
-                            className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/2 border border-white/5 outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-gray-700 transition-all"
+                            className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all"
                         />
                     </div>
                 </div>
@@ -186,7 +200,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="flex-1 overflow-y-auto px-4 custom-scrollbar space-y-8 pb-10">
                     {sidebarSections.map((section, idx) => (
                         <div key={idx} className="space-y-3">
-                            <h4 className="px-4 text-[9px] font-black text-gray-700 uppercase tracking-[0.3em] font-mono">{section.title}</h4>
+                            <h4 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">{section.title}</h4>
                             <div className="space-y-1">
                                 {section.items
                                     .filter(item => userRole === 'admin' || item.roles.includes(userRole))
@@ -199,8 +213,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 <div className={cn(
                                                     "flex items-center justify-between px-4 py-3 rounded-2xl transition-all relative overflow-hidden",
                                                     isActive
-                                                        ? "bg-primary text-black"
-                                                        : "text-gray-500 hover:text-white hover:bg-white/5"
+                                                        ? "bg-primary text-black shadow-lg shadow-primary/20"
+                                                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                                                 )}>
                                                     <div className="flex items-center gap-3 relative z-10">
                                                         <Icon className={cn("w-4 h-4", isActive ? "text-black" : "group-hover:text-primary transition-colors")} />
@@ -217,11 +231,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-6 border-t border-white/5 space-y-4">
+                <div className="p-6 border-t border-slate-100 space-y-4">
                     <NotificationBell />
                     <Button
                         variant="ghost"
-                        className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-500 hover:bg-rose-500 hover:text-white rounded-[1.5rem] transition-all"
+                        className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-600 hover:bg-rose-50 hover:text-white rounded-[1.5rem] transition-all"
                         onClick={async () => {
                             await supabase.auth.signOut()
                             router.push("/login")
@@ -236,15 +250,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* 📺 MAIN COMMAND CENTER */}
             <main className="flex-1 flex flex-col min-w-0">
                 {/* Mobile Floating Header */}
-                <header className="h-16 border-b border-white/5 flex items-center px-6 lg:hidden justify-between bg-[#050505]/80 backdrop-blur-md sticky top-0 z-50">
+                <header className="h-16 border-b border-slate-200 flex items-center px-6 lg:hidden justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50">
                     <div className="flex items-center gap-3">
-                        <Zap className="w-5 h-5 text-primary" />
-                        <span className="font-black italic text-sm tracking-tighter uppercase">PARGO <span className="text-primary italic">OS</span></span>
+                        {businessInfo.logo_url ? (
+                            <img src={businessInfo.logo_url} className="w-6 h-6 object-contain" alt="Logo" />
+                        ) : (
+                            <Zap className="w-5 h-5 text-primary" />
+                        )}
+                        <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">{businessInfo.name} <span className="text-primary italic">OS</span></span>
                     </div>
                     <Button
                         size="icon"
                         variant="ghost"
-                        className="rounded-xl border border-white/5 active:scale-90 transition-transform"
+                        className="rounded-xl border border-slate-200 active:scale-90 transition-transform"
                         onClick={() => setIsMobileMenuOpen(true)}
                     >
                         <Menu className="w-5 h-5" />
@@ -255,14 +273,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {isMobileMenuOpen && (
                     <div className="fixed inset-0 z-[100] lg:hidden">
                         <div
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
                             onClick={() => setIsMobileMenuOpen(false)}
                         />
-                        <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#050505] border-r border-white/10 flex flex-col animate-in slide-in-from-left duration-300 shadow-2xl">
-                            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                        <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-white border-r border-slate-200 flex flex-col animate-in slide-in-from-left duration-300 shadow-2xl">
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <Zap className="w-5 h-5 text-primary" />
-                                    <span className="font-black italic text-sm tracking-tighter uppercase">PARGO <span className="text-primary italic">OS</span></span>
+                                    <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">PARGO <span className="text-primary italic">OS</span></span>
                                 </div>
                                 <Button size="icon" variant="ghost" onClick={() => setIsMobileMenuOpen(false)}>
                                     <X className="w-5 h-5" />
@@ -272,7 +290,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
                                 {sidebarSections.map((section, idx) => (
                                     <div key={idx} className="space-y-3">
-                                        <h4 className="px-4 text-[8px] font-black text-gray-700 uppercase tracking-[0.3em]">{section.title}</h4>
+                                        <h4 className="px-4 text-[8px] font-black text-slate-400 uppercase tracking-[0.3em]">{section.title}</h4>
                                         <div className="space-y-1">
                                             {section.items
                                                 .filter(item => userRole === 'admin' || item.roles.includes(userRole))
@@ -289,7 +307,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                         >
                                                             <div className={cn(
                                                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                                                                isActive ? "bg-primary text-black" : "text-gray-500 hover:text-white"
+                                                                isActive ? "bg-primary text-black" : "text-slate-500 hover:text-slate-900"
                                                             )}>
                                                                 <Icon className="w-4 h-4" />
                                                                 <span className="text-[10px] font-black uppercase italic tracking-widest">{item.label}</span>
@@ -302,10 +320,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 ))}
                             </div>
 
-                            <div className="p-6 border-t border-white/5">
+                            <div className="p-6 border-t border-slate-100">
                                 <Button
                                     variant="ghost"
-                                    className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-500"
+                                    className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-600"
                                     onClick={async () => {
                                         await supabase.auth.signOut()
                                         router.push("/login")
@@ -333,11 +351,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #111;
+                    background: #e2e8f0;
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #1a1a1a;
+                    background: #cbd5e1;
                 }
             `}</style>
         </div>

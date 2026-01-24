@@ -22,6 +22,7 @@ export function Navbar() {
     const [categories, setCategories] = useState<any[]>([])
 
     const [showCombos, setShowCombos] = useState(false)
+    const [businessInfo, setBusinessInfo] = useState<any>({ name: "PARGO ROJO", logo_url: "" })
 
     useEffect(() => {
         // Get initial session
@@ -61,13 +62,14 @@ export function Navbar() {
     const fetchSettings = async () => {
         const { data } = await supabase
             .from('settings')
-            .select('value')
-            .eq('key', 'feature_flags')
-            .single()
+            .select('*')
 
-        if (data?.value) {
-            const features = data.value as any
-            setShowCombos(!!features.enable_combos)
+        if (data) {
+            const features = data.find(s => s.key === 'feature_flags')
+            if (features) setShowCombos(!!features.value.enable_combos)
+
+            const info = data.find(s => s.key === 'business_info')
+            if (info) setBusinessInfo(info.value)
         }
     }
 
@@ -85,7 +87,7 @@ export function Navbar() {
             .eq('is_active', true)
             .order('order_position')
 
-        if (productsData) setProducts(productsData)
+        if (productsData) setProducts(productsData.map(p => ({ ...p, image: p.image_url })))
         if (categoriesData) setCategories(categoriesData)
     }
 
@@ -103,15 +105,15 @@ export function Navbar() {
             <nav className="fixed top-0 w-full z-50 glass border-b border-gray-100">
                 <div className="container mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 group">
-                        <Image
-                            src="/images/logo.jpg"
-                            alt="Pargo Rojo Logo"
-                            width={48}
-                            height={48}
-                            className="rounded-full border-2 border-gray-100 group-hover:border-primary/50 transition-colors"
-                        />
+                        {businessInfo.logo_url ? (
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-primary/50 transition-colors">
+                                <img src={businessInfo.logo_url} className="w-full h-full object-contain" alt="Logo" />
+                            </div>
+                        ) : (
+                            <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-full text-white font-black italic">P</div>
+                        )}
                         <span className="text-xl font-bold tracking-tighter text-gradient uppercase">
-                            Pargo Rojo
+                            {businessInfo.name}
                         </span>
                     </Link>
 

@@ -3,17 +3,15 @@
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-// import { Switch } from "@/components/ui/switch" // Asumiendo que tienes un componente Switch o uso checkbox
-import { Loader2, Save } from "lucide-react"
+import { Loader2, Save, MapPin, Phone, Mail, Instagram, Facebook, Youtube, Video, Twitter, Link2 } from "lucide-react"
 
-// Si no tengo componente Switch, uso un checkbox simple estilizado
 function SimpleSwitch({ checked, onCheckedChange }: { checked: boolean, onCheckedChange: (c: boolean) => void }) {
     return (
         <button
             onClick={() => onCheckedChange(!checked)}
-            className={`w-12 h-6 rounded-full transition-colors flex items-center px-1 ${checked ? 'bg-primary' : 'bg-white/10'}`}
+            className={`w-14 h-7 rounded-full transition-all flex items-center px-1 shadow-inner ${checked ? 'bg-primary' : 'bg-slate-200'}`}
         >
-            <div className={`w-4 h-4 rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-0'}`} />
+            <div className={`w-5 h-5 rounded-full bg-white transition-all shadow-md ${checked ? 'translate-x-7' : 'translate-x-0'}`} />
         </button>
     )
 }
@@ -21,122 +19,251 @@ function SimpleSwitch({ checked, onCheckedChange }: { checked: boolean, onChecke
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-    const [settings, setSettings] = useState<any>({})
+    const [featureFlags, setFeatureFlags] = useState<any>({
+        enable_kitchen_kds: true,
+        enable_waiter_pos: true,
+        require_cashier_approval: false,
+        enable_reservations: true,
+        enable_coupons: true,
+        enable_combos: true,
+        menu_show_images: true
+    })
+    const [businessInfo, setBusinessInfo] = useState<any>({
+        name: "PARGO ROJO",
+        logo_url: "",
+        tagline: "Gran Rafa | Restaurante & Asados",
+        primary_color: "#FF6B35",
+        address: "C.Cial. Cauca Centro, Caucasia",
+        phone: "320 784 8287",
+        email: "contacto@pargorojo.com",
+        instagram_url: "",
+        facebook_url: "",
+        tiktok_url: "",
+        youtube_url: "",
+        threads_url: "",
+        twitter_url: ""
+    })
 
     useEffect(() => {
         fetchSettings()
     }, [])
 
     const fetchSettings = async () => {
-        const { data, error } = await supabase
-            .from('settings')
-            .select('*')
-            .eq('key', 'feature_flags')
-            .single()
+        const { data } = await supabase.from('settings').select('*')
 
         if (data) {
-            setSettings(data.value || {})
+            const flags = data.find(s => s.key === 'feature_flags')
+            if (flags) setFeatureFlags(flags.value)
+
+            const info = data.find(s => s.key === 'business_info')
+            if (info) setBusinessInfo(prev => ({
+                ...prev,
+                ...info.value
+            }))
         }
         setLoading(false)
     }
 
     const handleSave = async () => {
         setSaving(true)
-        const { error } = await supabase
-            .from('settings')
-            .upsert({
-                key: 'feature_flags',
-                value: settings,
-                description: 'Global feature flags updated from admin'
-            })
-
-        if (error) {
+        try {
+            await Promise.all([
+                supabase.from('settings').upsert({
+                    key: 'feature_flags',
+                    value: featureFlags,
+                    description: 'Global feature flags'
+                }),
+                supabase.from('settings').upsert({
+                    key: 'business_info',
+                    value: businessInfo,
+                    description: 'Public business identity and contact info'
+                })
+            ])
+            alert("Configuración actualizada correctamente")
+        } catch (e) {
             alert("Error al guardar")
-        } else {
-            alert("Configuración guardada")
         }
         setSaving(false)
     }
 
     const toggle = (key: string) => {
-        setSettings((prev: any) => ({ ...prev, [key]: !prev[key] }))
+        setFeatureFlags((prev: any) => ({ ...prev, [key]: !prev[key] }))
     }
 
-    if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center p-20 gap-4">
+            <Loader2 className="animate-spin text-primary w-10 h-10" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cargando Preferencias...</p>
+        </div>
+    )
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-between items-center">
+        <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 pb-20">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold">Configuración del Sistema</h1>
-                    <p className="text-muted-foreground">Habilita o deshabilita módulos y características globales.</p>
+                    <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Configuración <span className="text-primary italic">Global</span></h1>
+                    <p className="text-slate-500 font-medium text-sm mt-1 uppercase tracking-wider">Centro de Control de Identidad y Operaciones</p>
                 </div>
-                <Button onClick={handleSave} disabled={saving} className="gap-2 font-bold">
-                    {saving ? <Loader2 className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
-                    Guardar Cambios
+                <Button onClick={handleSave} disabled={saving} className="h-14 px-10 bg-slate-900 text-white hover:bg-primary hover:text-black font-black uppercase text-xs tracking-widest italic rounded-2xl shadow-xl transition-all gap-3 shrink-0">
+                    {saving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
+                    GUARDAR CAMBIOS
                 </Button>
             </div>
 
-            <div className="grid gap-6">
-                <div className="bg-card/50 border border-white/10 rounded-2xl p-6 space-y-6">
-                    <h2 className="text-xl font-bold border-b border-white/10 pb-4">Módulos Operativos</h2>
-
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Sistema de Cocina (KDS)</div>
-                            <div className="text-sm text-muted-foreground">Permite ver y gestionar pedidos en pantalla de cocina.</div>
+            <div className="grid lg:grid-cols-2 gap-10">
+                {/* 🎨 WHITE LABEL & CONTACT SECTION */}
+                <div className="space-y-10">
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic px-4">Identidad Visual</h2>
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-8">
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Nombre Comercial</label>
+                                <input
+                                    className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-black italic text-xl transition-all"
+                                    value={businessInfo.name}
+                                    onChange={e => setBusinessInfo({ ...businessInfo, name: e.target.value.toUpperCase() })}
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Eslogan / Tagline</label>
+                                <input
+                                    className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-bold text-slate-600 transition-all text-sm"
+                                    value={businessInfo.tagline}
+                                    onChange={e => setBusinessInfo({ ...businessInfo, tagline: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">URL del Logo (PNG/SVG)</label>
+                                <input
+                                    className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-mono transition-all"
+                                    placeholder="https://..."
+                                    value={businessInfo.logo_url}
+                                    onChange={e => setBusinessInfo({ ...businessInfo, logo_url: e.target.value })}
+                                />
+                            </div>
                         </div>
-                        <SimpleSwitch checked={settings.enable_kitchen_kds} onCheckedChange={() => toggle('enable_kitchen_kds')} />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">POS Meseros</div>
-                            <div className="text-sm text-muted-foreground">Habilita la interfaz de toma de pedidos para meseros.</div>
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic px-4">Información de Contacto</h2>
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><MapPin className="w-3 h-3" /> Dirección</label>
+                                    <input
+                                        className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-bold text-slate-600 transition-all text-sm"
+                                        value={businessInfo.address}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, address: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Phone className="w-3 h-3" /> Teléfono</label>
+                                    <input
+                                        className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-bold text-slate-600 transition-all text-sm"
+                                        value={businessInfo.phone}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Mail className="w-3 h-3" /> Email Público</label>
+                                <input
+                                    className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-bold text-slate-600 transition-all text-sm"
+                                    value={businessInfo.email}
+                                    onChange={e => setBusinessInfo({ ...businessInfo, email: e.target.value })}
+                                />
+                            </div>
                         </div>
-                        <SimpleSwitch checked={settings.enable_waiter_pos} onCheckedChange={() => toggle('enable_waiter_pos')} />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Aprobación de Caja</div>
-                            <div className="text-sm text-muted-foreground">Requiere que un cajero apruebe los pedidos antes de ir a cocina.</div>
-                        </div>
-                        <SimpleSwitch checked={settings.require_cashier_approval} onCheckedChange={() => toggle('require_cashier_approval')} />
                     </div>
                 </div>
 
-                <div className="bg-card/50 border border-white/10 rounded-2xl p-6 space-y-6">
-                    <h2 className="text-xl font-bold border-b border-white/10 pb-4">Características Cliente</h2>
-
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Reservas en Línea</div>
-                            <div className="text-sm text-muted-foreground">Permite a los clientes reservar mesas desde la web.</div>
+                {/* 🎥 SOCIAL MEDIA & VIDEO SECTION */}
+                <div className="space-y-10">
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic px-4">Ecosistema Digital</h2>
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Instagram className="w-3 h-3 text-pink-500" /> Instagram URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.instagram_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, instagram_url: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Facebook className="w-3 h-3 text-blue-600" /> Facebook URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.facebook_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, facebook_url: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Video className="w-4 h-4 text-black" /> TikTok URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.tiktok_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, tiktok_url: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Youtube className="w-4 h-4 text-red-600" /> YouTube URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.youtube_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, youtube_url: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Link2 className="w-4 h-4 text-slate-900" /> Threads URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.threads_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, threads_url: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Twitter className="w-4 h-4 text-slate-900" /> Twitter / X URL</label>
+                                    <input
+                                        className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-medium text-slate-600"
+                                        placeholder="https://..."
+                                        value={businessInfo.twitter_url}
+                                        onChange={e => setBusinessInfo({ ...businessInfo, twitter_url: e.target.value })}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <SimpleSwitch checked={settings.enable_reservations} onCheckedChange={() => toggle('enable_reservations')} />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Cupones y Descuentos</div>
-                            <div className="text-sm text-muted-foreground">Habilita el sistema de cupones promocionales.</div>
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic px-4">Características Operativas</h2>
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-sm overflow-hidden">
+                            {[
+                                { key: 'enable_kitchen_kds', label: 'Monitor de Cocina (KDS)', sub: 'Habilitar interfaz táctil para cocineros.' },
+                                { key: 'enable_waiter_pos', label: 'POS para Meseros', sub: 'Activar terminal de toma de pedidos en móviles.' },
+                                { key: 'require_cashier_approval', label: 'Control de Caja', sub: 'Los pedidos requieren pago antes de procesarse.' },
+                                { key: 'menu_show_images', label: 'Imágenes en Menú', sub: 'Mostrar fotos de platos (o fichas compactas).' },
+                                { key: 'enable_reservations', label: 'Reservas en Línea', sub: 'Permitir que clientes reserven mesas.' },
+                            ].map(flag => (
+                                <div key={flag.key} className="flex items-center justify-between p-6 hover:bg-slate-50 transition-all rounded-3xl group">
+                                    <div className="space-y-1">
+                                        <div className="font-black italic uppercase text-sm text-slate-900 group-hover:text-primary transition-colors">{flag.label}</div>
+                                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{flag.sub}</div>
+                                    </div>
+                                    <SimpleSwitch checked={featureFlags[flag.key]} onCheckedChange={() => toggle(flag.key)} />
+                                </div>
+                            ))}
                         </div>
-                        <SimpleSwitch checked={settings.enable_coupons} onCheckedChange={() => toggle('enable_coupons')} />
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Combos</div>
-                            <div className="text-sm text-muted-foreground">Muestra la sección de combos en el menú.</div>
-                        </div>
-                        <SimpleSwitch checked={settings.enable_combos} onCheckedChange={() => toggle('enable_combos')} />
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
-                        <div>
-                            <div className="font-bold">Imágenes en Menú</div>
-                            <div className="text-sm text-muted-foreground">Muestra fotos de los platos en el menú digital. Si se desactiva, el menú será más compacto.</div>
-                        </div>
-                        <SimpleSwitch checked={settings.menu_show_images ?? false} onCheckedChange={() => toggle('menu_show_images')} />
                     </div>
                 </div>
             </div>

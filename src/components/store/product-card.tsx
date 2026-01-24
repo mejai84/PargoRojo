@@ -14,11 +14,14 @@ export function ProductCard({ product, showImages = true }: { product: Product, 
         <div className={`group relative bg-white border border-gray-100 rounded-3xl p-4 hover:border-primary/30 hover:shadow-xl transition-all duration-300 flex flex-col h-full card-shadow hover-lift ${!showImages ? 'justify-between' : ''}`}>
             {showImages && (
                 <Link href={`/producto/${product.id}`} className="block relative aspect-square mb-6 overflow-hidden rounded-2xl bg-gray-50 cursor-pointer">
-                    <Image
+                    <img
                         src={product.image || "/images/placeholder.png"}
                         alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/images/placeholder.png";
+                            (e.target as HTMLImageElement).className = "w-full h-full object-contain opacity-20 p-8";
+                        }}
                     />
                     {product.badge && (
                         <span className="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">

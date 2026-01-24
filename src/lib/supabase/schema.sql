@@ -10,6 +10,8 @@ CREATE TABLE public.profiles (
   phone TEXT,
   role TEXT DEFAULT 'customer' CHECK (role IN ('customer', 'admin', 'staff')),
   loyalty_points INTEGER DEFAULT 0,
+  document_id TEXT, -- Cédula o ID de identidad
+  hire_date DATE, -- Fecha de ingreso al equipo
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
