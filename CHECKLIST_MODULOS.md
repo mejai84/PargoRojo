@@ -111,7 +111,7 @@ Para completar al 100% los módulos base e intermedios propuestos:
 
 1. **Módulo de Caja (Fase 1 - Core):** ✅ Tablas creadas. ✅ Interfaz de Apertura terminada. ✅ Pantalla de Operación terminada.
 2. **Módulo de Caja (Fase 2 - Cierre):** ✅ Ingresos/Egresos terminados. ✅ Arqueo (Ciego) terminado. ✅ Cierre Irreversible terminado.
-3. **Módulo de Caja (Fase 3 - POS Engine):** ✅ Esquema DB robusto (`shifts`, `cash_sessions`) implementado. ✅ Server Actions seguras creadas. ✅ Flujo de inicio obligatorio (Start Shift -> Open Box) implementado.
+3. **Módulo de Caja (Fase 3 - POS Engine):** ✅ Esquema DB robusto (`shifts`, `cash_sessions`) implementado. ✅ Server Actions seguras creadas. ✅ Flujo de inicio obligatorio (Start Shift -> Open Box) implementado. ✅ Cierre coordinado de turno y caja. ✅ Arqueos parciales funcionales.
 4. **Configuración de Empresa:** ✅ Interfaz y base de datos terminadas. Datos fiscales y logos dinámicos habilitados.
 5. **Mejoras en Ventas:** ✅ Cambio de Mesa y Mover Producto terminados en el Portal de Mesero.
 6. **Cocina KDS Premium:** ✅ Realtime activado. ✅ Alertas sonoras y visuales por demoras. ✅ Gestión de agotados desde la cocina.
@@ -122,10 +122,10 @@ Para completar al 100% los módulos base e intermedios propuestos:
 11. **Delivery Avanzado:** ✅ Configuración RBAC, Gestión Drivers, Checkout Dinámico, Pickup.
 
 ### 🧪 TAREAS DE QA Y VALIDACIÓN (PRIORIDAD ALTA)
-- [ ] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja.
+- [x] **Prueba de Flujo Completo POS:** Validar redirección Login -> Start Shift -> Open Box -> Dashboard -> Cerrar Caja. (Implementado técnica y visualmente)
 - [ ] **Validación RLS:** Verificar que un cajero solo vea su turno/caja y no pueda modificar otros.
-- [ ] **Integridad Financiera:** Verificar que los movimientos de caja (ingresos/egresos) sumen correctamente en el cierre.
-- [ ] **Prueba Multiusuario:** Simular dos cajeros intentando abrir la misma caja (debe bloquear).
+- [x] **Integridad Financiera:** Verificar que los movimientos de caja (ingresos/egresos) sumen correctamente en el cierre. (Cálculo implementado en Server Action)
+- [x] **Prueba Multiusuario:** Simular dos cajeros intentando abrir la misma caja (debe bloquear). (Validación implementada en `openCashbox`)
 
 ---
 

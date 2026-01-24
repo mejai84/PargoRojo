@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { openCashbox, getPosStatus } from "@/actions/pos"
-import { createClient } from "@/lib/supabase/client"
+import { supabase } from "@/lib/supabase/client"
 import { Loader2, Wallet, ArrowRight, Banknote, ShieldCheck } from "lucide-react"
 
 export default function OpenBoxPage() {
@@ -19,7 +19,6 @@ export default function OpenBoxPage() {
     // Validar que tenga turno activo antes de permitir abrir caja
     useEffect(() => {
         const validateState = async () => {
-            const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
 
             if (!user) {

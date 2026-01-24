@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { startShift } from "@/actions/pos"
-import { createClient } from "@/lib/supabase/client"
+import { supabase } from "@/lib/supabase/client"
 import { Loader2, Sun, Moon, Sunset, Clock, User } from "lucide-react"
 import { useEffect } from "react"
 
@@ -15,7 +15,6 @@ export default function StartShiftPage() {
 
     useEffect(() => {
         const getUser = async () => {
-            const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()

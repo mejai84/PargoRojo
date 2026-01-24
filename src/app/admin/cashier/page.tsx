@@ -129,9 +129,6 @@ export default function CashierPage() {
             const incomes = moves.filter(m => m.movement_type === 'DEPOSIT').reduce((acc, m) => acc + m.amount, 0)
             const expenses = moves.filter(m => m.movement_type === 'WITHDRAWAL').reduce((acc, m) => acc + m.amount, 0)
 
-            // TODO: Sum payments from sale_payments table for accurate breakdown by method
-            // For now assuming movements reflect cash flow primarily or we aggregate pos_sales later
-
             setBalance({
                 total: opening + sales + incomes - expenses,
                 sales,
@@ -155,9 +152,7 @@ export default function CashierPage() {
                 user_id: currentUser.id,
                 movement_type: type,
                 amount: modalData.amount,
-                description: modalData.reason,
-                // payment_method: modalData.payment_method // Not in schema yet, adding to description or separate table?
-                // For now, let's assume movements are strictly cash operational adjustments or add column if needed
+                description: modalData.reason
             })
 
             if (error) throw error
@@ -255,12 +250,15 @@ export default function CashierPage() {
                                 EGRESO
                             </Button>
                             <Button
-                                disabled
-                                className="h-24 rounded-[2rem] bg-white/5 border border-white/10 text-gray-500 cursor-not-allowed flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1">
-                                <Scale className="w-6 h-6" /> ARQUEO (WIP)
+                                onClick={() => {
+                                    setModalData({ amount: 0, reason: "", payment_method: 'CASH' });
+                                    setModalOpen('audit');
+                                }}
+                                className="h-24 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 hover:border-primary hover:text-primary transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1">
+                                <Scale className="w-6 h-6" /> ARQUEO PARCIAL
                             </Button>
                             <Button
-                                onClick={() => alert("Función de cierre en construcción. Usa 'Arqueo' pronto.")}
+                                onClick={() => setModalOpen('close')}
                                 className="h-24 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-rose-600 hover:text-white transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1">
                                 <Lock className="w-6 h-6" /> CERRAR CAJA
                             </Button>
@@ -374,6 +372,175 @@ export default function CashierPage() {
                                     </Button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL CIERRE DE CAJA */}
+                {modalOpen === 'close' && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-[#111] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
+                            <div className="p-8 space-y-8">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-rose-500/20 text-rose-500 mx-auto flex items-center justify-center mb-4">
+                                        <Lock className="w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-3xl font-black uppercase tracking-tighter italic text-rose-500">
+                                        Cierre de Caja
+                                    </h2>
+                                    <p className="text-gray-500 font-medium italic">Finaliza la jornada y entrega el efectivo</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
+                                        <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest italic">
+                                            <span className="text-gray-500">Saldo en Sistema</span>
+                                            <span className="text-white">${balance.total.toLocaleString()}</span>
+                                        </div>
+                                        <div className="pt-3 border-t border-white/10 flex justify-between items-center">
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Diferencia estimada</span>
+                                            <span className={cn(
+                                                "text-lg font-black italic",
+                                                (modalData.amount - balance.total) === 0 ? "text-green-500" : "text-rose-500"
+                                            )}>
+                                                ${(modalData.amount - balance.total).toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Efectivo Contado (Físico)</label>
+                                        <input
+                                            type="number"
+                                            autoFocus
+                                            className="w-full h-20 bg-black border-2 border-white/10 focus:border-rose-500 rounded-2xl px-6 outline-none text-4xl font-black text-center transition-all text-white"
+                                            placeholder="0"
+                                            value={modalData.amount || ""}
+                                            onChange={e => setModalData({ ...modalData, amount: parseFloat(e.target.value) || 0 })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Notas de Cierre</label>
+                                        <textarea
+                                            className="w-full h-24 bg-black border border-white/10 rounded-2xl p-4 outline-none transition-all font-medium text-sm resize-none text-white"
+                                            placeholder="Ej: Diferencia por falta de cambio..."
+                                            value={modalData.reason}
+                                            onChange={e => setModalData({ ...modalData, reason: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <Button type="button" variant="ghost" onClick={() => setModalOpen(null)} className="flex-1 h-16 rounded-2xl font-black uppercase text-xs tracking-widest italic">
+                                        CANCELAR
+                                    </Button>
+                                    <Button
+                                        onClick={async () => {
+                                            if (!status?.activeCashboxSession) return;
+                                            setSubmittingModal(true);
+                                            try {
+                                                const { closeCashbox } = await import("@/actions/pos");
+                                                await closeCashbox(
+                                                    status.activeCashboxSession.id,
+                                                    currentUser.id,
+                                                    modalData.amount,
+                                                    modalData.reason
+                                                );
+                                                alert("Caja cerrada exitosamente.");
+                                                router.push("/admin/dashboard");
+                                            } catch (e: any) {
+                                                alert(e.message);
+                                            } finally {
+                                                setSubmittingModal(false);
+                                            }
+                                        }}
+                                        disabled={submittingModal}
+                                        className="flex-[2] h-16 rounded-2xl font-black uppercase text-sm tracking-[0.2em] italic bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                                    >
+                                        {submittingModal ? <Loader2 className="w-6 h-6 animate-spin" /> : "CERRAR JORNADA"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* MODAL ARQUEO PARCIAL */}
+                {modalOpen === 'audit' && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-[#111] w-full max-w-xl rounded-[2.5rem] border border-white/10 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
+                            <div className="p-8 space-y-8">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-indigo-500/20 text-indigo-500 mx-auto flex items-center justify-center mb-4">
+                                        <Scale className="w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-3xl font-black uppercase tracking-tighter italic">
+                                        Arqueo Parcial
+                                    </h2>
+                                    <p className="text-gray-500 font-medium italic">Verifica el efectivo en caja ahora mismo</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
+                                        <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest italic">
+                                            <span className="text-gray-500">Saldo en Sistema</span>
+                                            <span className="text-white">${balance.total.toLocaleString()}</span>
+                                        </div>
+                                        <div className="pt-3 border-t border-white/10 flex justify-between items-center">
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Diferencia actual</span>
+                                            <span className={cn(
+                                                "text-lg font-black italic",
+                                                (modalData.amount - balance.total) === 0 ? "text-green-500" : "text-rose-500"
+                                            )}>
+                                                ${(modalData.amount - balance.total).toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Monto Contado</label>
+                                        <input
+                                            type="number"
+                                            autoFocus
+                                            className="w-full h-20 bg-black border-2 border-white/10 focus:border-indigo-500 rounded-2xl px-6 outline-none text-4xl font-black text-center transition-all text-white"
+                                            placeholder="0"
+                                            value={modalData.amount || ""}
+                                            onChange={e => setModalData({ ...modalData, amount: parseFloat(e.target.value) || 0 })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <Button type="button" variant="ghost" onClick={() => setModalOpen(null)} className="flex-1 h-16 rounded-2xl font-black uppercase text-xs tracking-widest italic">
+                                        VOLVER
+                                    </Button>
+                                    <Button
+                                        onClick={async () => {
+                                            if (!status?.activeCashboxSession) return;
+                                            setSubmittingModal(true);
+                                            try {
+                                                const { performPartialAudit } = await import("@/actions/pos");
+                                                const result = await performPartialAudit(
+                                                    status.activeCashboxSession.id,
+                                                    currentUser.id,
+                                                    modalData.amount,
+                                                    "Arqueo parcial realizado por el usuario"
+                                                );
+                                                alert(`Arqueo registrado. Diferencia: $${result.difference.toLocaleString()}`);
+                                                setModalOpen(null);
+                                            } catch (e: any) {
+                                                alert(e.message);
+                                            } finally {
+                                                setSubmittingModal(false);
+                                            }
+                                        }}
+                                        disabled={submittingModal}
+                                        className="flex-[2] h-16 rounded-2xl font-black uppercase text-sm tracking-[0.2em] italic bg-white text-black hover:bg-primary transition-all shadow-lg"
+                                    >
+                                        {submittingModal ? <Loader2 className="w-6 h-6 animate-spin" /> : "REGISTRAR ARQUEO"}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

@@ -154,7 +154,7 @@ export async function openCashbox(
 }
 
 /**
- * Cierra la sesión de caja actual.
+ * Cierra la sesión de caja actual y el turno asociado.
  */
 export async function closeCashbox(
     sessionId: string,
@@ -164,27 +164,100 @@ export async function closeCashbox(
 ) {
     const supabase = await createClient()
 
-    // 1. Obtener totales del sistema para comparar
-    // Aquí deberíamos sumar todas las ventas en efectivo
-    // Por simplicidad inicial simulamos el cálculo, luego conectaremos con pos_sales
-    const systemAmount = 0 // TODO: Calcular real desde pos_sales + cash_movements
+    // 1. Obtener la sesión y sus movimientos para calcular el balance teórico
+    const { data: sessionData, error: sessionError } = await supabase
+        .from('cashbox_sessions')
+        .select('*, cash_movements(*)')
+        .eq('id', sessionId)
+        .eq('user_id', userId)
+        .single()
 
-    const { data, error } = await supabase
+    if (sessionError || !sessionData) {
+        throw new Error("No se encontró la sesión de caja activa.")
+    }
+
+    // Calcular el saldo teórico basado en movimientos
+    const movements = sessionData.cash_movements || []
+    const systemAmount = movements.reduce((acc: number, m: any) => {
+        if (['OPENING', 'SALE', 'DEPOSIT'].includes(m.movement_type)) {
+            return acc + Number(m.amount)
+        } else if (['WITHDRAWAL', 'REFUND'].includes(m.movement_type)) {
+            return acc - Number(m.amount)
+        }
+        return acc
+    }, 0)
+
+    // 2. Cerrar la sesión de caja
+    const { error: closeError } = await supabase
         .from('cashbox_sessions')
         .update({
             status: 'CLOSED',
             closing_amount: closingAmount,
-            system_amount: systemAmount, // Se guardará automáticamente la diferencia
+            system_amount: systemAmount,
             closing_notes: notes,
             closing_time: new Date().toISOString()
         })
         .eq('id', sessionId)
-        .eq('user_id', userId) // Seguridad extra
+
+    if (closeError) throw new Error("Error al cerrar la sesión de caja: " + closeError.message)
+
+    // 3. Cerrar automáticamente el turno asociado
+    await supabase
+        .from('shifts')
+        .update({
+            status: 'CLOSED',
+            ended_at: new Date().toISOString()
+        })
+        .eq('id', sessionData.shift_id)
+
+    revalidatePath('/admin/cashier')
+    revalidatePath('/admin')
+
+    return { success: true, systemAmount, difference: closingAmount - systemAmount }
+}
+
+/**
+ * Realiza un arqueo parcial (conteo físico) sin cerrar la caja.
+ */
+export async function performPartialAudit(
+    sessionId: string,
+    userId: string,
+    countedAmount: number,
+    notes?: string
+) {
+    const supabase = await createClient()
+
+    // 1. Calcular el saldo teórico actual
+    const { data: movements, error: movesError } = await supabase
+        .from('cash_movements')
+        .select('amount, movement_type')
+        .eq('cashbox_session_id', sessionId)
+
+    if (movesError) throw new Error("Error al obtener movimientos: " + movesError.message)
+
+    const systemAmount = (movements || []).reduce((acc: number, m: any) => {
+        if (['OPENING', 'SALE', 'DEPOSIT'].includes(m.movement_type)) {
+            return acc + Number(m.amount)
+        } else if (['WITHDRAWAL', 'REFUND'].includes(m.movement_type)) {
+            return acc - Number(m.amount)
+        }
+        return acc
+    }, 0)
+
+    // 2. Registrar el arqueo
+    const { data, error } = await supabase
+        .from('cashbox_audits')
+        .insert({
+            cashbox_session_id: sessionId,
+            user_id: userId,
+            counted_amount: countedAmount,
+            system_amount: systemAmount,
+            notes: notes
+        })
         .select()
         .single()
 
-    if (error) throw new Error(error.message)
+    if (error) throw new Error("Error al registrar arqueo: " + error.message)
 
-    revalidatePath('/admin')
-    return data
+    return { ...data, difference: countedAmount - systemAmount }
 }
