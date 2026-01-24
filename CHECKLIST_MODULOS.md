@@ -128,7 +128,7 @@ Lo que hace al sistema premium y competitivo.
 
 | Funcionalidad | Estado | Observaciones |
 | :--- | :---: | :--- |
-| **Delivery y Take Away** | 🏗️ | Estructura de pedidos lista, falta tracking de repartidores. |
+| **Delivery y Take Away** | ✅ | Sistema completo con RBAC y configuración dinámica. (Pickup/Delivery, Drivers) |
 | **Comandas desde móvil (Meseros)** | ✅ | Módulo `/admin/waiter` optimizado para tablets/móviles. |
 | **Análisis y BI (Dashboard)** | ✅ | Gráficos de tendencias, ranking de productos y meseros. |
 | **Seguridad** | ✅ | Protección de rutas y base de datos (Supabase Auth/RLS). |
@@ -150,7 +150,8 @@ Para completar al 100% los módulos base e intermedios propuestos:
 7. **Dashboard de Estadísticas:** ✅ Interfaz `/admin/dashboard` terminada con gráficas Recharts.
 8. **Loyalty System (Puntos):** ✅ Buscador de clientes y visualización de puntos en Caja.
 9. **Inventario Avanzado:** ✅ Descuento automático de insumos por venta (Recetas) activo. ✅ Dashboard de stock en tiempo real.
+10. **Delivery Avanzado:** ✅ Configuración RBAC, Gestión Drivers, Checkout Dinámico, Pickup.
 
 ---
-*Documento generado el: 23 de enero de 2026*
-*Estado del proyecto: **98% Funcionalidad Base Completada***
+*Documento generado el: 24 de enero de 2026*
+*Estado del proyecto: **100% Funcionalidad Delivery Base Completada***
