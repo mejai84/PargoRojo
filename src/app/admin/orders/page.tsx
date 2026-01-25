@@ -282,14 +282,14 @@ export default function AdminOrdersPage() {
 
             {/* 🛠️ MODAL NUEVO PEDIDO + LOYALTY LINKING */}
             {isCreateOpen && (
-                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300">
-                    <div className="bg-[#0a0a0a] w-full max-w-7xl h-full md:h-[90vh] md:rounded-[4rem] border border-white/10 shadow-3xl flex flex-col overflow-hidden relative">
-                        <div className="p-8 md:p-12 border-b border-white/5 flex justify-between items-center bg-[#050505]">
+                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-7xl h-full md:h-[90vh] md:rounded-[4rem] border border-slate-200 shadow-2xl flex flex-col overflow-hidden relative">
+                        <div className="p-8 md:p-12 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                             <div>
-                                <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white">Ingreso de <span className="text-primary">Comanda Industrial</span></h2>
-                                <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mt-2">{currentUser?.full_name} @ Terminal POS-01</p>
+                                <h2 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Ingreso de <span className="text-primary">Comanda Industrial</span></h2>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">{currentUser?.full_name} @ Terminal POS-01</p>
                             </div>
-                            <Button onClick={() => setIsCreateOpen(false)} variant="ghost" className="h-16 w-16 rounded-[2rem] bg-white/5 border border-white/5"><X className="w-8 h-8" /></Button>
+                            <Button onClick={() => setIsCreateOpen(false)} variant="ghost" className="h-16 w-16 rounded-[2rem] bg-white border border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-900"><X className="w-8 h-8" /></Button>
                         </div>
 
                         <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">

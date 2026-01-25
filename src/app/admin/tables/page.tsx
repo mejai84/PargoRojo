@@ -299,6 +299,23 @@ export default function TablesAdminPage() {
                                 {savingLayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} GUARDAR PLANO
                             </Button>
                         )}
+                        {isVisualView && (
+                            <Button
+                                onClick={() => {
+                                    if (confirm("¿Restablecer mesas fuera de rango? Esto las traerá al centro.")) {
+                                        setTables(prev => prev.map((t, i) => ({
+                                            ...t,
+                                            x_pos: t.x_pos < 50 || t.y_pos < 50 ? (i % 4) * 250 + 100 : t.x_pos,
+                                            y_pos: t.y_pos < 50 ? Math.floor(i / 4) * 250 + 100 : t.y_pos
+                                        })))
+                                    }
+                                }}
+                                className="h-14 px-6 bg-white border border-slate-200 text-slate-500 rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-slate-900 hover:text-white transition-all gap-2 shadow-sm"
+                                title="Traer mesas perdidas al centro"
+                            >
+                                <RefreshCw className="w-5 h-5" /> RESCATAR
+                            </Button>
+                        )}
                         <Button
                             onClick={() => setIsAddModalOpen(true)}
                             className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/20 gap-3"
@@ -453,7 +470,9 @@ export default function TablesAdminPage() {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
                             const tNum = parseInt(formData.get('table_number') as string);
-                            await supabase.from('tables').insert({
+
+                            // 1. Insert in DB returning the new object
+                            const { data: newTable, error } = await supabase.from('tables').insert({
                                 table_number: tNum,
                                 table_name: formData.get('table_name'),
                                 capacity: parseInt(formData.get('capacity') as string),
@@ -461,13 +480,20 @@ export default function TablesAdminPage() {
                                 shape: formData.get('shape'),
                                 qr_code: `TABLE-${tNum}-${Date.now()}`,
                                 status: 'available',
-                                x_pos: 100,
-                                y_pos: 100,
+                                x_pos: 400, // Safe position away from rounded corners
+                                y_pos: 300,
                                 width: 120,
                                 height: 120,
                                 rotation: 0
-                            });
-                            setIsAddModalOpen(false); loadTables();
+                            }).select().single();
+
+                            if (!error && newTable) {
+                                // 2. Add to local state without reloading (preserves unsaved moves)
+                                setTables(prev => [...prev, newTable as Table]);
+                                setIsAddModalOpen(false);
+                            } else {
+                                alert("Error al crear mesa.");
+                            }
                         }}>
                             <div className="grid grid-cols-2 gap-4">
                                 <input name="table_number" type="number" placeholder="N° MESA" required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic" />

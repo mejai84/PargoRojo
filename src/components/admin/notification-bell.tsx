@@ -57,24 +57,27 @@ export function NotificationBell() {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 hover:bg-white/5 rounded-lg transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all relative group shadow-sm"
             >
-                <Bell className="w-6 h-6" />
+                <div className="flex items-center gap-3">
+                    <Bell className="w-4 h-4 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] font-black uppercase italic tracking-widest group-hover:text-slate-900">Notificaciones</span>
+                </div>
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                    <span className="flex items-center justify-center bg-rose-500 text-white text-[9px] font-bold rounded-full w-5 h-5 shadow-lg shadow-rose-500/30 animate-pulse">
                         {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute left-0 mt-2 w-80 md:w-96 bg-card border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden max-w-[calc(100vw-2rem)]">
-                    <div className="flex items-center justify-between p-4 border-b border-white/10">
-                        <h3 className="font-bold flex items-center gap-2 truncate">
+                <div className="absolute left-0 bottom-full mb-4 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[200] overflow-hidden max-w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
+                        <h3 className="font-bold flex items-center gap-2 truncate text-slate-900">
                             <Bell className="w-5 h-5 text-primary" />
-                            <span className="truncate">Notificaciones</span>
+                            <span className="truncate text-sm uppercase tracking-widest font-black italic">Notificaciones</span>
                             {unreadCount > 0 && (
-                                <span className="bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full flex-shrink-0">
+                                <span className="bg-primary text-black text-[10px] font-black px-2 py-0.5 rounded-full flex-shrink-0">
                                     {unreadCount}
                                 </span>
                             )}
@@ -84,30 +87,30 @@ export function NotificationBell() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={markAllAsRead}
-                                className="text-xs gap-1 flex-shrink-0"
+                                className="text-[10px] gap-1 flex-shrink-0 text-slate-500 hover:text-primary uppercase font-bold tracking-wider"
                             >
                                 <Check className="w-3 h-3" />
-                                <span className="hidden sm:inline">Marcar todas</span>
+                                <span className="hidden sm:inline">Marcar Leídas</span>
                             </Button>
                         )}
                     </div>
 
-                    <div className="max-h-[min(500px,70vh)] overflow-y-auto">
+                    <div className="max-h-[min(400px,60vh)] overflow-y-auto bg-white">
                         {notifications.length === 0 ? (
-                            <div className="p-8 text-center text-muted-foreground">
-                                <Bell className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                                <p>No hay notificaciones</p>
+                            <div className="p-10 text-center text-slate-400">
+                                <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                                <p className="text-xs font-bold uppercase tracking-widest">Sin novedades</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/5">
+                            <div className="divide-y divide-slate-100">
                                 {notifications.map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`p-4 hover:bg-white/5 transition-colors ${!notification.read ? 'bg-primary/5' : ''
+                                        className={`p-4 hover:bg-slate-50 transition-colors group relative ${!notification.read ? 'bg-primary/5' : ''
                                             }`}
                                     >
-                                        <div className="flex gap-3">
-                                            <div className="text-2xl flex-shrink-0">
+                                        <div className="flex gap-4">
+                                            <div className="text-2xl flex-shrink-0 pt-1">
                                                 {getNotificationIcon(notification.type)}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -117,14 +120,16 @@ export function NotificationBell() {
                                                         markAsRead(notification.id)
                                                         setIsOpen(false)
                                                     }}
+                                                    className="block"
                                                 >
-                                                    <div className="font-bold text-sm mb-1 line-clamp-1">
+                                                    <div className="font-black text-xs uppercase tracking-tight text-slate-900 mb-1 line-clamp-1">
                                                         {notification.title}
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground line-clamp-2">
+                                                    <div className="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
                                                         {notification.message}
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                    <div className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-wider flex items-center gap-1">
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                                                         {new Date(notification.created_at).toLocaleTimeString('es-ES', {
                                                             hour: '2-digit',
                                                             minute: '2-digit'
@@ -133,8 +138,12 @@ export function NotificationBell() {
                                                 </Link>
                                             </div>
                                             <button
-                                                onClick={() => clearNotification(notification.id)}
-                                                className="p-1 hover:bg-white/10 rounded flex-shrink-0 h-fit"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    clearNotification(notification.id);
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                                title="Eliminar notificación"
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>

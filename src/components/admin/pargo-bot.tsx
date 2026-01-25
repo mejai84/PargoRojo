@@ -16,6 +16,7 @@ import {
     Zap,
     Wallet
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase/client"
 import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
@@ -220,42 +221,54 @@ export function PargoBot() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "fixed bottom-10 right-10 w-20 h-20 rounded-[2.5rem] bg-primary text-black flex items-center justify-center shadow-3xl hover:scale-110 transition-all z-[100] group",
-                    isOpen && "rotate-90 bg-white"
+                    "fixed bottom-10 right-10 w-20 h-20 rounded-[2.5rem] bg-primary text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-all z-[100] group border-4 border-white shadow-primary/20",
+                    isOpen && "rotate-90 bg-slate-900 text-white border-slate-900"
                 )}
             >
                 {isOpen ? <X className="w-8 h-8" /> : <Zap className="w-8 h-8 group-hover:animate-pulse" />}
                 {!isOpen && (
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 rounded-full border-4 border-black animate-bounce flex items-center justify-center">
-                        <span className="text-[10px] font-black italic">!</span>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 rounded-full border-4 border-white animate-bounce flex items-center justify-center shadow-sm">
+                        <span className="text-[10px] font-black italic text-white">!</span>
                     </div>
                 )}
             </button>
 
+            {/* Click Outside Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 z-[90] bg-slate-900/20 backdrop-blur-[2px]"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
             {/* AI Assistant Panel */}
             {isOpen && (
-                <div className="fixed bottom-0 right-0 sm:bottom-32 sm:right-10 w-full sm:w-[450px] h-full sm:h-[650px] bg-[#0a0a0a] border-t sm:border border-white/10 rounded-t-[3.5rem] sm:rounded-[3.5rem] shadow-3xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500">
+                <div className="fixed bottom-0 right-0 sm:bottom-32 sm:right-10 w-full sm:w-[450px] h-full sm:h-[650px] bg-white border-t sm:border border-slate-200 rounded-t-[3.5rem] sm:rounded-[3.5rem] shadow-2xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500">
 
                     {/* Bot Header */}
-                    <div className="p-8 bg-gradient-to-br from-primary to-secondary text-black">
+                    <div className="p-8 bg-slate-50 border-b border-slate-100">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center overflow-hidden">
+                                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-sm">
                                     {logoUrl ? <img src={logoUrl} alt="Bot" className="w-full h-full object-cover" /> : <Sparkles className="w-6 h-6 text-primary" />}
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black italic uppercase tracking-tighter">PARGO <span className="text-white">AI</span></h3>
+                                    <h3 className="text-xl font-black italic uppercase tracking-tighter text-slate-900">PARGO <span className="text-primary">AI</span></h3>
                                     <div className="flex items-center gap-1.5 pt-0.5">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Insight Engine Activado</span>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">Insight Engine Activado</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Bot className="w-10 h-10 opacity-20" />
-                                <button onClick={() => setIsOpen(false)} className="sm:hidden p-2 bg-black/20 rounded-full hover:bg-black/40 text-black">
-                                    <X className="w-5 h-5" />
-                                </button>
+                                <Button
+                                    onClick={() => setIsOpen(false)}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-900 transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -263,7 +276,7 @@ export function PargoBot() {
                     {/* Chat Messages */}
                     <div
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-black"
+                        className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-white"
                     >
                         {messages.map((msg, i) => (
                             <div key={i} className={cn(
@@ -271,10 +284,10 @@ export function PargoBot() {
                                 msg.role === 'user' ? "ml-auto items-end" : "items-start"
                             )}>
                                 <div className={cn(
-                                    "p-4 rounded-3xl text-[11px] font-bold tracking-tight italic",
+                                    "p-4 rounded-3xl text-[11px] font-bold tracking-tight italic shadow-sm",
                                     msg.role === 'user'
-                                        ? "bg-white text-black rounded-tr-none"
-                                        : "bg-white/5 text-gray-400 border border-white/5 rounded-tl-none"
+                                        ? "bg-slate-900 text-white rounded-tr-none"
+                                        : "bg-slate-50 text-slate-600 border border-slate-100 rounded-tl-none"
                                 )}>
                                     {msg.content}
                                 </div>
@@ -283,19 +296,19 @@ export function PargoBot() {
                                 {msg.type === 'stat' && (
                                     <div className="mt-4 p-5 bg-primary/10 border border-primary/20 rounded-3xl w-full animate-in zoom-in-95">
                                         <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-1 italic">{msg.data.label}</p>
-                                        <h4 className="text-2xl font-black italic text-white uppercase">{msg.data.value}</h4>
+                                        <h4 className="text-2xl font-black italic text-slate-900 uppercase">{msg.data.value}</h4>
                                     </div>
                                 )}
 
                                 {msg.type === 'alert' && (
-                                    <div className="mt-4 p-5 bg-rose-500/10 border border-rose-500/20 rounded-3xl w-full animate-in zoom-in-95">
+                                    <div className="mt-4 p-5 bg-rose-50 border border-rose-100 rounded-3xl w-full animate-in zoom-in-95">
                                         <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-3 italic flex items-center gap-2">
                                             <AlertTriangle className="w-3 h-3" /> STOCK CRÍTICO
                                         </p>
                                         <div className="space-y-2">
                                             {msg.data.items.slice(0, 3).map((item: any, idx: number) => (
-                                                <div key={idx} className="flex justify-between items-center bg-black/40 p-2 rounded-xl border border-white/5">
-                                                    <span className="text-[10px] font-bold text-white uppercase">{item.name}</span>
+                                                <div key={idx} className="flex justify-between items-center bg-white p-2 rounded-xl border border-rose-100 shadow-sm">
+                                                    <span className="text-[10px] font-bold text-slate-700 uppercase">{item.name}</span>
                                                     <span className="text-[10px] font-black text-rose-500">{item.stock}u</span>
                                                 </div>
                                             ))}
@@ -305,7 +318,7 @@ export function PargoBot() {
                             </div>
                         ))}
                         {loading && (
-                            <div className="flex gap-2 p-4 bg-white/5 rounded-2xl w-24">
+                            <div className="flex gap-2 p-4 bg-slate-50 rounded-2xl w-24">
                                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
                                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
                                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
@@ -314,18 +327,18 @@ export function PargoBot() {
                     </div>
 
                     {/* Chat Input */}
-                    <form onSubmit={handleSubmit} className="p-8 border-t border-white/5 bg-[#050505]">
+                    <form onSubmit={handleSubmit} className="p-8 border-t border-slate-100 bg-slate-50">
                         <div className="relative group">
                             <input
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Escribe un comando analítico..."
-                                className="w-full h-14 bg-black border border-white/10 rounded-2xl pl-6 pr-16 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-xs font-bold text-white transition-all placeholder:text-gray-700 italic"
+                                className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-6 pr-16 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-xs font-bold text-slate-900 transition-all placeholder:text-slate-400 italic shadow-sm"
                             />
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="absolute right-2 top-2 w-10 h-10 rounded-xl bg-primary text-black flex items-center justify-center hover:bg-white transition-all active:scale-90"
+                                className="absolute right-2 top-2 w-10 h-10 rounded-xl bg-primary text-black flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all active:scale-90"
                             >
                                 <Send className="w-4 h-4" />
                             </button>
@@ -336,7 +349,7 @@ export function PargoBot() {
                                     key={chip}
                                     type="button"
                                     onClick={() => processQuery(chip)}
-                                    className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-gray-500 hover:text-primary transition-all"
+                                    className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
                                 >
                                     {chip}
                                 </button>
@@ -349,7 +362,7 @@ export function PargoBot() {
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
             `}</style>
         </>
     )

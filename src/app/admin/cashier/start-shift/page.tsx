@@ -37,7 +37,7 @@ export default function StartShiftPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4">
             <div className="max-w-2xl w-full space-y-8 animate-in fade-in zoom-in-95 duration-500">
 
                 <div className="text-center space-y-4">
@@ -47,8 +47,8 @@ export default function StartShiftPage() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
                         Iniciar <span className="text-primary">Jornada</span>
                     </h1>
-                    <p className="text-lg text-gray-400 font-medium max-w-md mx-auto">
-                        Hola, <span className="text-white font-bold">{user?.profile?.full_name || 'Cajero'}</span>.
+                    <p className="text-lg text-slate-500 font-medium max-w-md mx-auto">
+                        Hola, <span className="text-slate-900 font-bold">{user?.profile?.full_name || 'Cajero'}</span>.
                         Selecciona tu turno para comenzar a operar.
                     </p>
                 </div>
@@ -57,13 +57,13 @@ export default function StartShiftPage() {
                     <button
                         onClick={() => handleStartShift('MORNING')}
                         disabled={loading}
-                        className="group relative h-40 bg-[#111] hover:bg-primary border border-white/10 hover:border-primary rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden"
+                        className="group relative h-40 bg-white hover:bg-amber-400 border border-slate-200 hover:border-amber-400 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden shadow-sm"
                     >
                         <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Sun className="w-24 h-24" />
+                            <Sun className="w-24 h-24 text-amber-500 group-hover:text-white" />
                         </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between group-hover:text-black">
-                            <span className="p-3 bg-white/5 group-hover:bg-black/10 w-fit rounded-xl">
+                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-black">
+                            <span className="p-3 bg-amber-50 group-hover:bg-white/20 w-fit rounded-xl text-amber-500 group-hover:text-black">
                                 <Sun className="w-6 h-6" />
                             </span>
                             <div>
@@ -76,13 +76,13 @@ export default function StartShiftPage() {
                     <button
                         onClick={() => handleStartShift('AFTERNOON')}
                         disabled={loading}
-                        className="group relative h-40 bg-[#111] hover:bg-orange-500 border border-white/10 hover:border-orange-500 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden"
+                        className="group relative h-40 bg-white hover:bg-orange-500 border border-slate-200 hover:border-orange-500 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden shadow-sm"
                     >
                         <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Sunset className="w-24 h-24" />
+                            <Sunset className="w-24 h-24 text-orange-500 group-hover:text-white" />
                         </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between group-hover:text-black">
-                            <span className="p-3 bg-white/5 group-hover:bg-black/10 w-fit rounded-xl">
+                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-white">
+                            <span className="p-3 bg-orange-50 group-hover:bg-white/20 w-fit rounded-xl text-orange-500 group-hover:text-white">
                                 <Sunset className="w-6 h-6" />
                             </span>
                             <div>
@@ -95,13 +95,13 @@ export default function StartShiftPage() {
                     <button
                         onClick={() => handleStartShift('NIGHT')}
                         disabled={loading}
-                        className="group relative h-40 bg-[#111] hover:bg-indigo-500 border border-white/10 hover:border-indigo-500 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden md:col-span-2"
+                        className="group relative h-40 bg-white hover:bg-indigo-600 border border-slate-200 hover:border-indigo-600 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden md:col-span-2 shadow-sm"
                     >
                         <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Moon className="w-24 h-24" />
+                            <Moon className="w-24 h-24 text-indigo-500 group-hover:text-white" />
                         </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between group-hover:text-white">
-                            <span className="p-3 bg-white/5 group-hover:bg-white/10 w-fit rounded-xl">
+                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-white">
+                            <span className="p-3 bg-indigo-50 group-hover:bg-white/20 w-fit rounded-xl text-indigo-500 group-hover:text-white">
                                 <Moon className="w-6 h-6" />
                             </span>
                             <div>

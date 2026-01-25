@@ -20,7 +20,7 @@ export function DemoUsers({ onSelect }: DemoUserProps) {
         },
         {
             email: "andres.mesero@pargorojo.com",
-            pass: "123456",
+            pass: "PargoRojo2024!",
             role: "Mesero",
             icon: UserIcon,
             color: "text-blue-400",
@@ -28,7 +28,7 @@ export function DemoUsers({ onSelect }: DemoUserProps) {
         },
         {
             email: "elena.chef@pargorojo.com",
-            pass: "123456",
+            pass: "PargoRojo2024!",
             role: "Chef / Cocina",
             icon: ChefHat,
             color: "text-orange-400",
@@ -36,7 +36,7 @@ export function DemoUsers({ onSelect }: DemoUserProps) {
         },
         {
             email: "ana.caja@pargorojo.com",
-            pass: "123456",
+            pass: "PargoRojo2024!",
             role: "Cajero",
             icon: Wallet,
             color: "text-emerald-400",
