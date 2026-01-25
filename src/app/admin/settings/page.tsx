@@ -133,13 +133,39 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">URL del Logo (PNG/SVG)</label>
-                                <input
-                                    className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary text-xs font-mono transition-all"
-                                    placeholder="https://..."
-                                    value={businessInfo.logo_url}
-                                    onChange={e => setBusinessInfo({ ...businessInfo, logo_url: e.target.value })}
-                                />
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Logo del Negocio</label>
+                                <div className="flex items-center gap-6">
+                                    <div className="w-24 h-24 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center p-2 overflow-hidden shrink-0">
+                                        {businessInfo.logo_url ? (
+                                            <img src={businessInfo.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="text-[10px] text-slate-400 font-bold">SIN LOGO</span>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 space-y-2">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:uppercase file:bg-primary file:text-black hover:file:bg-slate-900 hover:file:text-white transition-all text-sm text-slate-500"
+                                            onChange={async (e) => {
+                                                if (!e.target.files || e.target.files.length === 0) return
+                                                const file = e.target.files[0]
+                                                const fileExt = file.name.split('.').pop()
+                                                const fileName = `logo-${Date.now()}.${fileExt}`
+                                                try {
+                                                    const { error } = await supabase.storage.from('brand_assets').upload(fileName, file)
+                                                    if (error) throw error
+                                                    const { data: { publicUrl } } = supabase.storage.from('brand_assets').getPublicUrl(fileName)
+                                                    setBusinessInfo({ ...businessInfo, logo_url: publicUrl })
+                                                } catch (error) {
+                                                    alert('Error subiendo logo')
+                                                    console.error(error)
+                                                }
+                                            }}
+                                        />
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Recomendado: 500x500 PNG transparente</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

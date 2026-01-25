@@ -40,11 +40,21 @@ export function PargoBot() {
     const [loading, setLoading] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
 
+    const [logoUrl, setLogoUrl] = useState("")
+
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight
         }
     }, [messages])
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const { data } = await supabase.from('settings').select('value').eq('key', 'business_info').single()
+            if (data?.value?.logo_url) setLogoUrl(data.value.logo_url)
+        }
+        fetchSettings()
+    }, [])
 
     const processQuery = async (query: string) => {
         setLoading(true)
@@ -125,7 +135,52 @@ export function PargoBot() {
                     data: { icon: Wallet, label: 'Ticket Promedio', value: formatPrice(avg) }
                 }
             }
-            // ⚠️ ALERTAS DE STOCK
+            // 📅 RESUMEN SEMANAL
+            else if (q.includes('semana') || q.includes('7 dias') || q.includes('balance')) {
+                const sevenDaysAgo = new Date()
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+                const { data } = await supabase.from('orders').select('total, created_at').gte('created_at', sevenDaysAgo.toISOString())
+                const total = data?.reduce((acc, o) => acc + (o.total || 0), 0) || 0
+                const count = data?.length || 0
+                response = {
+                    role: 'assistant',
+                    content: `En los últimos 7 días hemos facturado ${formatPrice(total)} en ${count} pedidos.`,
+                    type: 'stat',
+                    data: { icon: TrendingUp, label: 'Balance Semanal', value: formatPrice(total) }
+                }
+            }
+            // 📉 MENOS VENDIDOS (FLOP)
+            else if (q.includes('menos') || q.includes('peor') || q.includes('bajo')) {
+                const { data } = await supabase.from('order_items').select('quantity, products(name)').limit(500)
+                const counts: any = {}
+                // Contar todos
+                data?.forEach((item: any) => {
+                    const name = item.products?.name
+                    if (name) counts[name] = (counts[name] || 0) + item.quantity
+                })
+                // Ordenar ascendente
+                const sorted = Object.entries(counts).sort((a: any, b: any) => a[1] - b[1])
+                const flop = sorted[0]
+
+                if (flop) {
+                    response = {
+                        role: 'assistant',
+                        content: `El producto con menos movimiento es "${flop[0]}" con solo ${flop[1]} unidades. Considera promocionarlo o cambiar la receta.`,
+                        type: 'text'
+                    }
+                } else {
+                    response = { role: 'assistant', content: "No hay suficientes datos para determinar el producto menos vendido aún.", type: 'text' }
+                }
+            }
+            // ❓ AYUDA / COMANDOS
+            else if (q.includes('ayuda') || q.includes('que puedes') || q.includes('comandos')) {
+                response = {
+                    role: 'assistant',
+                    content: "Soy tu asistente operativo. Puedes preguntarme:\n- 'Ventas hoy' o 'Resumen semana'\n- 'Producto estrella' o 'Menos vendidos'\n- 'Alertas de stock'\n- 'Ticket promedio'\n- 'Mejor mesero'\n- 'Predicción de ventas'",
+                    type: 'text'
+                }
+            }
+            // ⚠️ ALERTAS DE STOCK (Mantenido)
             else if (q.includes('stock') || q.includes('inventario') || q.includes('falta')) {
                 const { data } = await supabase.from('inventory_items').select('name, stock, min_stock').lte('stock', 'min_stock')
                 if (data && data.length > 0) {
@@ -185,8 +240,8 @@ export function PargoBot() {
                     <div className="p-8 bg-gradient-to-br from-primary to-secondary text-black">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
-                                    <Sparkles className="w-6 h-6 text-primary" />
+                                <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center overflow-hidden">
+                                    {logoUrl ? <img src={logoUrl} alt="Bot" className="w-full h-full object-cover" /> : <Sparkles className="w-6 h-6 text-primary" />}
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-black italic uppercase tracking-tighter">PARGO <span className="text-white">AI</span></h3>
@@ -196,7 +251,12 @@ export function PargoBot() {
                                     </div>
                                 </div>
                             </div>
-                            <Bot className="w-10 h-10 opacity-20" />
+                            <div className="flex items-center gap-2">
+                                <Bot className="w-10 h-10 opacity-20" />
+                                <button onClick={() => setIsOpen(false)} className="sm:hidden p-2 bg-black/20 rounded-full hover:bg-black/40 text-black">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 

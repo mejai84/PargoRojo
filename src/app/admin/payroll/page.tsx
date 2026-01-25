@@ -109,18 +109,18 @@ export default function PayrollPage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Nómina & Turnos</h1>
-                    <p className="text-muted-foreground">Control de horas laboradas y liquidación de personal.</p>
+                    <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Nómina & <span className="text-primary">Turnos</span></h1>
+                    <p className="text-slate-400 font-medium italic uppercase text-[10px] tracking-widest mt-1">Control de horas laboradas y liquidación de personal.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="gap-2">
-                        <History className="w-5 h-5" />
+                    <Button variant="ghost" className="h-14 px-6 rounded-2xl border border-slate-200 bg-white shadow-sm font-black uppercase text-[10px] tracking-widest italic gap-2 hover:bg-slate-50">
+                        <History className="w-5 h-5 text-slate-400" />
                         Historial
                     </Button>
-                    <Button className="gap-2 font-bold px-6">
+                    <Button className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-primary/20 gap-3">
                         <BadgeDollarSign className="w-5 h-5" />
                         Liquidar Periodo
                     </Button>
@@ -136,31 +136,34 @@ export default function PayrollPage() {
                         Turnos Activos ({activeShifts.length})
                     </h2>
 
-                    <div className="bg-card border border-white/10 rounded-3xl overflow-hidden">
+                    <div className="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-sm">
                         {activeShifts.length === 0 ? (
-                            <div className="p-12 text-center text-muted-foreground italic">
+                            <div className="p-20 text-center text-slate-300 italic font-medium flex flex-col items-center gap-4">
+                                <div className="p-6 bg-slate-50 rounded-full border border-slate-100">
+                                    <Clock className="w-12 h-12 opacity-20" />
+                                </div>
                                 No hay empleados con turno activo en este momento.
                             </div>
                         ) : (
-                            <div className="divide-y divide-white/5">
+                            <div className="divide-y divide-slate-100">
                                 {activeShifts.map(shift => (
-                                    <div key={shift.id} className="p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+                                    <div key={shift.id} className="p-8 flex items-center justify-between hover:bg-slate-50 transition-colors">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                                                <Users className="w-6 h-6 text-emerald-500" />
+                                            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center">
+                                                <Users className="w-6 h-6" />
                                             </div>
                                             <div>
-                                                <div className="font-bold text-lg">{shift.employee.full_name}</div>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <span className="uppercase text-[10px] bg-white/10 px-2 py-0.5 rounded font-black tracking-widest">{shift.employee.role}</span>
-                                                    <span>• Inicio: {new Date(shift.start_time).toLocaleTimeString()}</span>
+                                                <div className="font-black italic uppercase text-lg text-slate-900 leading-none mb-1">{shift.employee.full_name}</div>
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                                    <span className="bg-slate-100 px-2 py-0.5 rounded italic">{shift.employee.role}</span>
+                                                    <span className="italic">• Inicio: {new Date(shift.start_time).toLocaleTimeString()}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-6">
                                             <div className="text-right">
-                                                <div className="text-sm text-muted-foreground uppercase font-black text-[10px] tracking-tight">Tiempo Transcurrido</div>
-                                                <div className="font-mono text-xl font-bold text-primary animate-pulse">
+                                                <div className="text-[10px] text-slate-400 uppercase font-black tracking-widest italic leading-none mb-1">Tiempo Transcurrido</div>
+                                                <div className="font-mono text-xl font-black text-primary animate-pulse italic">
                                                     {(() => {
                                                         const diff = new Date().getTime() - new Date(shift.start_time).getTime()
                                                         const hours = Math.floor(diff / 3600000)
@@ -171,11 +174,10 @@ export default function PayrollPage() {
                                             </div>
                                             <Button
                                                 onClick={() => endShift(shift.id)}
-                                                variant="destructive"
-                                                className="gap-2 rounded-2xl h-12 px-6"
+                                                className="h-12 px-6 bg-rose-50 text-rose-500 border border-rose-100 rounded-xl hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[9px] tracking-widest italic gap-2"
                                             >
-                                                <Square className="w-4 h-4 fill-white" />
-                                                Cerrar Turno
+                                                <Square className="w-3.5 h-3.5 fill-current" />
+                                                CERRAR TURNO
                                             </Button>
                                         </div>
                                     </div>
@@ -191,30 +193,30 @@ export default function PayrollPage() {
                         <Play className="w-5 h-5 text-emerald-500" />
                         Iniciar Turno
                     </h2>
-                    <div className="bg-card border border-white/10 rounded-3xl p-6 space-y-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Buscar empleado..."
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm outline-none focus:border-primary transition-all"
+                                className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-xs outline-none focus:border-primary transition-all font-black uppercase italic tracking-widest shadow-inner"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-2 max-h-[400px] overflow-y-auto no-scrollbar">
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar pt-2">
                             {employees
                                 .filter(e => e.full_name.toLowerCase().includes(searchQuery.toLowerCase()) && !activeShifts.find(s => s.employee_id === e.id))
                                 .map(employee => (
-                                    <div key={employee.id} className="p-3 rounded-2xl border border-white/5 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all flex items-center justify-between group">
-                                        <span className="font-bold">{employee.full_name}</span>
+                                    <div key={employee.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-primary/20 hover:bg-white transition-all flex items-center justify-between group">
+                                        <span className="font-black italic uppercase text-xs text-slate-900">{employee.full_name}</span>
                                         <Button
-                                            size="sm"
+                                            size="icon"
                                             variant="ghost"
-                                            className="text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl"
+                                            className="h-10 w-10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl shadow-sm border border-emerald-100"
                                             onClick={() => startShift(employee.id)}
                                         >
-                                            <Play className="w-4 h-4" />
+                                            <Play className="w-4 h-4 fill-current" />
                                         </Button>
                                     </div>
                                 ))}

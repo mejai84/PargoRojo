@@ -23,7 +23,8 @@ export function CheckoutForm() {
         address: '',
         city: '',
         phone: '',
-        pickupTime: ''
+        pickupTime: '',
+        orderNotes: '' // Observaciones del cliente
     })
 
     const [profile, setProfile] = useState<any>(null)
@@ -123,6 +124,7 @@ export function CheckoutForm() {
                 payment_method: paymentMethod,
                 payment_status: paymentMethod === 'cash' ? 'pending' : 'paid',
                 notes: [
+                    formData.orderNotes ? `📝 Observaciones: ${formData.orderNotes}` : null,
                     pointsToRedeem > 0 ? `Redimidos ${pointsToRedeem} puntos ($${pointsDiscount})` : null,
                     orderType === 'pickup' && formData.pickupTime ? `Hora de recogida: ${formData.pickupTime}` : null
                 ].filter(Boolean).join(' | ') || null
@@ -175,7 +177,7 @@ export function CheckoutForm() {
 
             // Success
             clearCart()
-            router.push('/checkout/success')
+            router.push(`/checkout/status/${order.id}`)
 
         } catch (error: any) {
             console.error(error)
@@ -474,6 +476,24 @@ export function CheckoutForm() {
                                 </span>
                             </button>
                         </div>
+                    </div>
+
+                    {/* OBSERVACIONES DEL PEDIDO */}
+                    <div className="space-y-2">
+                        <label className="font-medium flex items-center gap-2">
+                            📝 Observaciones (opcional)
+                        </label>
+                        <textarea
+                            name="orderNotes"
+                            onChange={(e) => setFormData(prev => ({ ...prev, orderNotes: e.target.value }))}
+                            value={formData.orderNotes}
+                            placeholder="Ej: Sin cebolla, término medio, alergia a mariscos, etc."
+                            className="bg-white/5 border border-white/10 rounded-xl p-4 w-full min-h-[100px] resize-none placeholder:text-muted-foreground/50 focus:border-primary outline-none transition-all"
+                            maxLength={500}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            {formData.orderNotes.length}/500 caracteres - Estas observaciones serán enviadas a cocina
+                        </p>
                     </div>
 
                     <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={loading}>

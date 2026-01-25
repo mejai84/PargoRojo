@@ -274,11 +274,25 @@ function MenuContent() {
                                 <button
                                     key={cat.id}
                                     onClick={() => handleCategorySelect(cat)}
-                                    className={`px-8 py-3 rounded-2xl whitespace-nowrap font-black uppercase text-[10px] tracking-[0.2em] transition-all border italic ${selectedCategory.id === cat.id
+                                    className={`flex items-center gap-3 pr-6 pl-2 py-2 rounded-full whitespace-nowrap font-black uppercase text-[10px] tracking-[0.2em] transition-all border italic group ${selectedCategory.id === cat.id
                                         ? "bg-primary text-black border-primary shadow-xl shadow-primary/20 scale-105"
                                         : "bg-white text-gray-500 border-gray-100 hover:border-primary hover:text-primary"
                                         }`}
                                 >
+                                    <div className={`w-8 h-8 rounded-full overflow-hidden relative shrink-0 ${selectedCategory.id === cat.id ? 'bg-black/10' : 'bg-gray-100 group-hover:bg-primary/10'}`}>
+                                        <Image
+                                            src={`/categories/${cat.slug}.png`}
+                                            alt={cat.name}
+                                            fill
+                                            className="object-cover"
+                                            onError={(e) => {
+                                                // Fallback to icon only if image fails validation
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.parentElement!.innerText = categoryIcons[cat.slug] || "🍽️";
+                                                e.currentTarget.parentElement!.className += " flex items-center justify-center text-sm";
+                                            }}
+                                        />
+                                    </div>
                                     {cat.name}
                                 </button>
                             ))}

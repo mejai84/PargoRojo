@@ -136,26 +136,26 @@ export default function NewPurchasePage() {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-transparent flex items-center justify-center">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-10 font-sans selection:bg-primary">
+        <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-10 font-sans selection:bg-primary">
             <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700">
 
                 {/* 🔝 HEADER */}
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center animate-in fade-in slide-in-from-top-4 duration-700">
                     <div className="flex items-center gap-6">
                         <Link href="/admin/inventory">
-                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all">
-                                <ArrowLeft className="w-6 h-6" />
+                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+                                <ArrowLeft className="w-6 h-6 text-slate-900" />
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Registro de <span className="text-primary">Suministros</span></h1>
-                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">Entrada formal de mercancía al almacén</p>
+                            <h1 className="text-4xl font-black tracking-tighter uppercase italic text-slate-900">Registro de <span className="text-primary">Suministros</span></h1>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic leading-none">Entrada formal de mercancía al almacén</p>
                         </div>
                     </div>
                 </div>
@@ -164,23 +164,23 @@ export default function NewPurchasePage() {
 
                     {/* 📝 FORM LEFT */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-[#111] p-8 rounded-[3rem] border border-white/5 space-y-8 shadow-3xl">
+                        <div className="bg-white p-8 rounded-[3rem] border border-slate-200 space-y-8 shadow-sm">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 italic">
                                         <Truck className="w-3 h-3 text-primary" /> PROVEEDOR
                                     </label>
                                     <select
                                         value={supplierId}
                                         onChange={(e) => setSupplierId(e.target.value)}
-                                        className="w-full h-14 px-6 rounded-2xl bg-black border border-white/5 focus:border-primary outline-none font-black text-xs uppercase tracking-widest appearance-none transition-all"
+                                        className="w-full h-14 px-6 rounded-2xl bg-slate-50 border border-slate-100 focus:border-primary outline-none font-black text-xs uppercase tracking-widest appearance-none transition-all text-slate-900 shadow-inner italic"
                                     >
                                         <option value="">Seleccionar Proveedor...</option>
                                         {suppliers.map(s => <option key={s.id} value={s.id}>{s.name.toUpperCase()}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 italic">
                                         <Receipt className="w-3 h-3 text-primary" /> FACTURA / REMISIÓN
                                     </label>
                                     <input
@@ -188,15 +188,15 @@ export default function NewPurchasePage() {
                                         placeholder="Ej: FE-12345"
                                         value={invoiceNumber}
                                         onChange={(e) => setInvoiceNumber(e.target.value)}
-                                        className="w-full h-14 px-6 rounded-2xl bg-black border border-white/5 focus:border-primary outline-none font-black text-xs uppercase tracking-widest transition-all"
+                                        className="w-full h-14 px-6 rounded-2xl bg-slate-50 border border-slate-100 focus:border-primary outline-none font-black text-xs uppercase tracking-widest transition-all text-slate-900 shadow-inner italic"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-6 pt-6">
-                                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 pb-4">
                                     <h3 className="text-sm font-black uppercase tracking-widest italic text-primary">Detalle de Insumos</h3>
-                                    <Button onClick={addItem} variant="ghost" className="h-10 px-4 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-black font-black text-[9px] uppercase tracking-widest">
+                                    <Button onClick={addItem} variant="ghost" className="h-10 px-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:bg-slate-900 hover:text-white transition-all font-black text-[9px] uppercase tracking-widest italic">
                                         <Plus className="w-3 h-3 mr-2" /> AGREGAR ITEM
                                     </Button>
                                 </div>
@@ -208,7 +208,7 @@ export default function NewPurchasePage() {
                                                 <select
                                                     value={item.ingredient_id}
                                                     onChange={(e) => updateItem(index, 'ingredient_id', e.target.value)}
-                                                    className="w-full h-12 px-4 rounded-xl bg-black border border-white/5 focus:border-primary outline-none font-bold text-[10px] uppercase tracking-tighter"
+                                                    className="w-full h-12 px-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-primary outline-none font-bold text-[10px] uppercase tracking-tighter text-slate-900 italic shadow-inner"
                                                 >
                                                     <option value="">Seleccionar Insumo...</option>
                                                     {ingredients.map(ing => <option key={ing.id} value={ing.id}>{ing.name.toUpperCase()} ({ing.unit})</option>)}
@@ -220,7 +220,7 @@ export default function NewPurchasePage() {
                                                     placeholder="Cant"
                                                     value={item.quantity || ''}
                                                     onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                                                    className="w-full h-12 px-4 rounded-xl bg-black border border-white/5 focus:border-primary outline-none font-black text-xs"
+                                                    className="w-full h-12 px-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-primary outline-none font-black text-xs text-slate-900 shadow-inner italic"
                                                 />
                                             </div>
                                             <div className="col-span-4 md:col-span-2 space-y-2">
@@ -231,15 +231,15 @@ export default function NewPurchasePage() {
                                                         placeholder="Costo"
                                                         value={item.unit_cost || ''}
                                                         onChange={(e) => updateItem(index, 'unit_cost', e.target.value)}
-                                                        className="w-full h-12 pl-8 pr-4 rounded-xl bg-black border border-white/5 focus:border-primary outline-none font-black text-xs"
+                                                        className="w-full h-12 pl-8 pr-4 rounded-xl bg-slate-50 border border-slate-100 focus:border-primary outline-none font-black text-xs text-slate-900 shadow-inner"
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-span-3 md:col-span-2 h-12 flex items-center justify-end font-black italic text-emerald-400 text-xs text-right overflow-hidden">
+                                            <div className="col-span-3 md:col-span-2 h-12 flex items-center justify-end font-black italic text-emerald-600 text-xs text-right overflow-hidden tracking-tighter">
                                                 ${(item.total_cost).toLocaleString()}
                                             </div>
                                             <div className="col-span-1 h-12 flex items-center justify-center">
-                                                <button onClick={() => removeItem(index)} className="text-gray-600 hover:text-rose-500 transition-colors">
+                                                <button onClick={() => removeItem(index)} className="text-slate-200 hover:text-rose-500 transition-colors">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -252,26 +252,26 @@ export default function NewPurchasePage() {
 
                     {/* 💳 SUMMARY RIGHT */}
                     <div className="space-y-6">
-                        <div className="bg-[#111] p-8 rounded-[3rem] border border-white/5 shadow-3xl space-y-8 sticky top-10">
+                        <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm space-y-8 sticky top-10">
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 italic">Total de la entrada</p>
-                                <h2 className="text-5xl font-black italic tracking-tighter text-emerald-400 leading-none">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Total de la entrada</p>
+                                <h2 className="text-5xl font-black italic tracking-tighter text-emerald-600 leading-none">
                                     ${totalOrder.toLocaleString()}
                                 </h2>
                             </div>
 
-                            <div className="space-y-4 pt-6 border-t border-white/5">
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="font-bold text-gray-400">Items registrados</span>
-                                    <span className="font-black italic text-white">{items.length}</span>
+                            <div className="space-y-4 pt-6 border-t border-slate-100">
+                                <div className="flex justify-between items-center text-[10px] uppercase font-black tracking-widest italic">
+                                    <span className="text-slate-400">Items registrados</span>
+                                    <span className="text-slate-900">{items.length}</span>
                                 </div>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="font-bold text-gray-400">Fecha de ingreso</span>
+                                <div className="flex justify-between items-center text-[10px] uppercase font-black tracking-widest italic">
+                                    <span className="text-slate-400">Fecha de ingreso</span>
                                     <input
                                         type="date"
                                         value={purchaseDate}
                                         onChange={(e) => setPurchaseDate(e.target.value)}
-                                        className="bg-transparent border-none text-white font-black italic text-right focus:outline-none"
+                                        className="bg-transparent border-none text-slate-900 font-black italic text-right focus:outline-none cursor-pointer"
                                     />
                                 </div>
                             </div>
@@ -279,15 +279,15 @@ export default function NewPurchasePage() {
                             <Button
                                 onClick={handleSubmit}
                                 disabled={saving}
-                                className="w-full h-20 bg-primary text-black rounded-[2rem] font-black uppercase text-xs tracking-[0.2em] italic hover:bg-white transition-all shadow-2xl shadow-primary/20 gap-3"
+                                className="w-full h-20 bg-primary text-black rounded-[2rem] font-black uppercase text-xs tracking-[0.2em] italic hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-primary/20 gap-3 border-none"
                             >
                                 {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
                                 {saving ? 'PROCESANDO...' : 'CONFIRMAR ENTRADA'}
                             </Button>
 
-                            <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex gap-4">
+                            <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-100 flex gap-4">
                                 <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
-                                <p className="text-[9px] font-bold text-emerald-500 leading-relaxed uppercase">
+                                <p className="text-[9px] font-bold text-emerald-600 leading-relaxed uppercase italic">
                                     Al confirmar esta entrada, el stock de los insumos se actualizará automáticamente y se generará el registro en el historial de costos.
                                 </p>
                             </div>

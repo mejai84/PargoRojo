@@ -323,8 +323,8 @@ export default function WaiterPortalPage() {
                 {/* 🗺️ VISUAL FLOOR SELECTOR */}
                 {view === 'tables' && isMapView && (
                     <div className="p-8 animate-in zoom-in-95 duration-500">
-                        <div className="relative w-full h-[750px] bg-[#000] rounded-[3.5rem] border border-white/5 overflow-x-auto overflow-y-hidden shadow-3xl pattern-grid flex items-center justify-center">
-                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                        <div className="relative w-full h-[750px] bg-slate-100 rounded-[3.5rem] border border-slate-200 overflow-x-auto overflow-y-hidden shadow-3xl pattern-grid flex items-center justify-center">
+                            <div className="absolute inset-0 opacity-[0.2] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
                             {/* The Map Canvas */}
                             <div className="relative" style={{ width: '1000px', height: '1000px' }}>
@@ -352,7 +352,7 @@ export default function WaiterPortalPage() {
                                             <p className="text-[8px] uppercase tracking-widest mt-1 opacity-40">{table.capacity}P</p>
                                         </div>
                                         {table.status === 'occupied' && (
-                                            <div className="absolute -top-2 -right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center animate-pulse border-4 border-black text-[10px]">
+                                            <div className="absolute -top-2 -right-2 bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center animate-pulse border-4 border-white text-[10px]">
                                                 !
                                             </div>
                                         )}
@@ -371,12 +371,12 @@ export default function WaiterPortalPage() {
                                 key={table.id}
                                 onClick={() => handleSelectTable(table)}
                                 className={cn(
-                                    "h-48 rounded-[2.5rem] border-2 flex flex-col items-center justify-center transition-all p-6 active:scale-95 shadow-2xl group relative overflow-hidden",
-                                    table.status === 'available' ? "bg-[#0a0a0a] border-white/5" : "bg-rose-500/10 border-rose-500/30"
+                                    "h-48 rounded-[2.5rem] border-2 flex flex-col items-center justify-center transition-all p-6 active:scale-95 shadow-md group relative overflow-hidden",
+                                    table.status === 'available' ? "bg-white border-slate-200" : "bg-rose-50 border-rose-200"
                                 )}
                             >
-                                <span className="text-[9px] font-black text-gray-600 uppercase mb-3 tracking-[0.2em]">{table.location}</span>
-                                <span className={cn("text-6xl font-black italic tracking-tighter group-hover:text-primary transition-colors", table.status === 'occupied' ? "text-rose-500" : "text-white")}>{table.table_number}</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase mb-3 tracking-[0.2em]">{table.location}</span>
+                                <span className={cn("text-6xl font-black italic tracking-tighter group-hover:text-primary transition-colors", table.status === 'occupied' ? "text-rose-500" : "text-slate-900")}>{table.table_number}</span>
                                 <div className={cn(
                                     "mt-4 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest italic",
                                     table.status === 'available' ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500 text-white"
@@ -400,41 +400,41 @@ export default function WaiterPortalPage() {
                                 <p className="font-black text-gray-600 uppercase text-[10px] tracking-[0.3em] italic">Desencriptando cuenta...</p>
                             </div>
                         ) : !currentTableOrder ? (
-                            <div className="bg-[#0a0a0a] rounded-[3.5rem] p-16 border border-white/5 shadow-3xl text-center space-y-8">
+                            <div className="bg-white rounded-[3.5rem] p-16 border border-slate-200 shadow-3xl text-center space-y-8">
                                 <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto border border-primary/20">
                                     <AlertCircle className="w-12 h-12 text-primary" />
                                 </div>
                                 <div>
-                                    <h2 className="text-4xl font-black italic uppercase tracking-tighter">Mesa sin Registro</h2>
-                                    <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em] mt-4">No se detectaron comandas activas para esta posición táctica.</p>
+                                    <h2 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Mesa sin Registro</h2>
+                                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-4">No se detectaron comandas activas para esta posición táctica.</p>
                                 </div>
-                                <Button onClick={() => setView('order')} className="w-full h-20 rounded-[2rem] bg-primary text-black font-black text-2xl italic tracking-tighter gap-4 shadow-xl shadow-primary/20 hover:bg-white transition-all">
+                                <Button onClick={() => setView('order')} className="w-full h-20 rounded-[2rem] bg-primary text-black font-black text-2xl italic tracking-tighter gap-4 shadow-xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all">
                                     <Plus className="w-8 h-8" /> INICIAR COMANDA
                                 </Button>
                             </div>
                         ) : (
                             <div className="space-y-8">
-                                <div className="bg-[#0a0a0a] rounded-[3.5rem] p-10 border border-white/5 shadow-3xl relative overflow-hidden">
+                                <div className="bg-white rounded-[3.5rem] p-10 border border-slate-200 shadow-3xl relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-10 opacity-5 text-primary"><Receipt className="w-32 h-32" /></div>
                                     <div className="flex justify-between items-center mb-10">
-                                        <h2 className="text-[10px] font-black text-gray-600 tracking-[0.3em] uppercase italic">Consumo Consolidado</h2>
-                                        <span className="text-[10px] font-black text-gray-500 uppercase italic">Ref: #{currentTableOrder.id.split('-')[0].toUpperCase()}</span>
+                                        <h2 className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase italic">Consumo Consolidado</h2>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase italic">Ref: #{currentTableOrder.id.split('-')[0].toUpperCase()}</span>
                                     </div>
 
                                     <div className="space-y-6 mb-10">
                                         {currentTableOrder.order_items.map((item: any, i: number) => (
                                             <div key={i} className="flex justify-between items-center group">
                                                 <div className="flex items-center gap-5">
-                                                    <span className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-black text-lg text-primary italic shrink-0 group-hover:bg-primary group-hover:text-black transition-all">{item.quantity}</span>
-                                                    <span className="font-black text-xl italic uppercase tracking-tighter text-white">{item.products?.name}</span>
+                                                    <span className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center font-black text-lg text-primary italic shrink-0 group-hover:bg-primary group-hover:text-black transition-all">{item.quantity}</span>
+                                                    <span className="font-black text-xl italic uppercase tracking-tighter text-slate-900">{item.products?.name}</span>
                                                 </div>
-                                                <span className="font-black text-xl italic tracking-tighter text-gray-500">${(item.unit_price * item.quantity).toLocaleString()}</span>
+                                                <span className="font-black text-xl italic tracking-tighter text-slate-400">${(item.unit_price * item.quantity).toLocaleString()}</span>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="pt-10 border-t border-white/10 flex justify-between items-end">
-                                        <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] mb-2 italic">Saldo de Mesa</span>
+                                    <div className="pt-10 border-t border-slate-100 flex justify-between items-end">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 italic">Saldo de Mesa</span>
                                         <span className="text-6xl font-black text-primary italic tracking-tighter leading-none">${currentTableOrder.total.toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -475,8 +475,8 @@ export default function WaiterPortalPage() {
                                 </h2>
                             </div>
                             <div className="relative group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-700 group-focus-within:text-primary transition-colors" />
-                                <input className="w-full h-18 bg-[#0a0a0a] border border-white/5 rounded-[2rem] pl-16 pr-6 outline-none focus:border-primary/50 font-black italic text-xl transition-all placeholder:text-gray-800" placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                <input className="w-full h-18 bg-white border border-slate-200 rounded-[2rem] pl-16 pr-6 outline-none focus:border-primary/50 font-black italic text-xl transition-all placeholder:text-slate-300 text-slate-900 shadow-sm" placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                             </div>
                         </div>
 
@@ -487,7 +487,7 @@ export default function WaiterPortalPage() {
                                         {cat.image_url ? (
                                             <Image src={cat.image_url} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-100" />
                                         ) : (
-                                            <div className="w-full h-full bg-[#111] flex items-center justify-center text-6xl">{categoryIcons[cat.slug] || "🍽️"}</div>
+                                            <div className="w-full h-full bg-slate-100 flex items-center justify-center text-6xl">{categoryIcons[cat.slug] || "🍽️"}</div>
                                         )}
                                         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent" />
                                         <h3 className="absolute bottom-6 left-6 right-6 text-center text-sm font-black text-white uppercase tracking-widest group-hover:text-primary transition-colors drop-shadow-2xl">{cat.name}</h3>
@@ -625,13 +625,13 @@ export default function WaiterPortalPage() {
             <style jsx global>{`
                 .pattern-grid {
                     background-image: 
-                        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+                        linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
                     background-size: 50px 50px;
                 }
                 .custom-scrollbar::-webkit-scrollbar { width: 5px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
             `}</style>
         </div>
     )

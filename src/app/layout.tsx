@@ -5,6 +5,7 @@ import { CartProvider } from "@/components/store/cart-context";
 import { CartSheet } from "@/components/store/cart-sheet";
 import { Footer } from "@/components/store/footer";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
+import { ClientBot } from "@/components/store/client-bot";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
                         <Footer />
                     </div>
                     <CartSheet />
+                    <ClientBot />
                     <WhatsAppButton />
                 </CartProvider>
             </body>

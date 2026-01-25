@@ -157,10 +157,10 @@ export default function CashierPage() {
     )
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white p-4 md:p-8 font-sans selection:bg-primary selection:text-black relative overflow-hidden">
+        <div className="min-h-screen bg-slate-50 text-slate-900 p-4 md:p-8 font-sans selection:bg-primary selection:text-black relative overflow-hidden">
             {/* Mesh Gradients for Premium Feel */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="max-w-[1600px] mx-auto relative z-10">
 
@@ -205,23 +205,23 @@ export default function CashierPage() {
                     {/* LEFT COL: STATS & ACTIONS */}
                     <div className="lg:col-span-4 space-y-8">
                         {/* TOTAL BALANCE CARD */}
-                        <div className="bg-[#111]/40 backdrop-blur-xl border border-white/5 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden group">
+                        <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-xl relative overflow-hidden group">
                             <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:scale-110 group-hover:opacity-10 transition-transform duration-700">
                                 <DollarSign className="w-64 h-64 text-primary" />
                             </div>
                             <div className="relative z-10">
                                 <p className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-4 italic">Saldo Total Estimado</p>
-                                <h2 className="text-6xl font-black tracking-tighter italic">
+                                <h2 className="text-6xl font-black tracking-tighter italic text-slate-900">
                                     ${balance.total.toLocaleString('es-CO', { maximumFractionDigits: 0 })}
                                 </h2>
-                                <div className="mt-10 pt-10 border-t border-white/5 grid grid-cols-2 gap-8">
+                                <div className="mt-10 pt-10 border-t border-slate-100 grid grid-cols-2 gap-8">
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Ventas Turno</p>
-                                        <p className="text-2xl font-black text-white italic tracking-tighter">${balance.sales.toLocaleString('es-CO')}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Ventas Turno</p>
+                                        <p className="text-2xl font-black text-slate-900 italic tracking-tighter">${balance.sales.toLocaleString('es-CO')}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Movimientos</p>
-                                        <p className="text-2xl font-black text-white italic tracking-tighter">{movements.length} <span className="text-[10px] text-gray-500 opacity-50 tracking-widest uppercase">Ops</span></p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Movimientos</p>
+                                        <p className="text-2xl font-black text-slate-900 italic tracking-tighter">{movements.length} <span className="text-[10px] text-slate-400 opacity-50 tracking-widest uppercase">Ops</span></p>
                                     </div>
                                 </div>
                             </div>
@@ -246,12 +246,12 @@ export default function CashierPage() {
                                     setModalData({ amount: 0, reason: "", payment_method: 'CASH' });
                                     setModalOpen('audit');
                                 }}
-                                className="h-28 rounded-[2rem] bg-indigo-500/10 border border-indigo-500/20 hover:border-primary hover:text-primary transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1">
+                                className="h-28 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/20 hover:border-primary hover:text-black transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1 text-slate-700">
                                 <Scale className="w-7 h-7" /> ARQUEO PARCIAL
                             </Button>
                             <Button
                                 onClick={() => setModalOpen('close')}
-                                className="h-28 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-rose-600 hover:text-white transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1">
+                                className="h-28 rounded-[2rem] bg-white border border-slate-200 hover:bg-rose-600 hover:text-white transition-all flex flex-col gap-1 font-black uppercase text-[10px] tracking-widest italic col-span-1 text-slate-700">
                                 <Lock className="w-7 h-7" /> CERRAR CAJA
                             </Button>
                         </div>
@@ -259,9 +259,9 @@ export default function CashierPage() {
 
                     {/* RIGHT COL: MOVEMENTS LIST */}
                     <div className="lg:col-span-8 space-y-8">
-                        <div className="bg-[#111]/40 backdrop-blur-xl border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col min-h-[600px]">
-                            <div className="p-8 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] flex items-center gap-3 italic">
+                        <div className="bg-white border border-slate-200 rounded-[3rem] overflow-hidden shadow-xl flex flex-col min-h-[600px]">
+                            <div className="p-8 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-3 italic">
                                     <Clock className="w-5 h-5 text-primary" /> Historial de Movimientos
                                 </h3>
                             </div>
@@ -269,39 +269,39 @@ export default function CashierPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] bg-white/2 border-b border-white/5">
+                                        <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] bg-slate-50 border-b border-slate-100">
                                             <th className="px-10 py-5">TIPO</th>
                                             <th className="px-10 py-5">DESCRIPCIÓN</th>
                                             <th className="px-10 py-5 text-right">MONTO</th>
                                             <th className="px-10 py-5 text-right">HORA</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
+                                    <tbody className="divide-y divide-slate-100">
                                         {movements.map((move) => (
-                                            <tr key={move.id} className="hover:bg-white/5 transition-colors group">
+                                            <tr key={move.id} className="hover:bg-slate-50 transition-colors group">
                                                 <td className="px-10 py-6">
                                                     <div className={cn(
                                                         "inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter italic border",
-                                                        move.movement_type === 'SALE' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                                                            move.movement_type === 'DEPOSIT' ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" :
-                                                                move.movement_type === 'WITHDRAWAL' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                                                                    move.movement_type === 'OPENING' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                                                        move.movement_type === 'SALE' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                                                            move.movement_type === 'DEPOSIT' ? "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" :
+                                                                move.movement_type === 'WITHDRAWAL' ? "bg-rose-500/10 text-rose-600 border-rose-500/20" :
+                                                                    move.movement_type === 'OPENING' ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "bg-slate-100 text-slate-500 border-slate-200"
                                                     )}>
                                                         {move.movement_type}
                                                     </div>
                                                 </td>
                                                 <td className="px-10 py-6">
-                                                    <p className="text-sm font-bold text-gray-300 uppercase italic tracking-tight">{move.description || 'Sin descripción'}</p>
+                                                    <p className="text-sm font-bold text-slate-900 uppercase italic tracking-tight">{move.description || 'Sin descripción'}</p>
                                                 </td>
                                                 <td className="px-10 py-6 text-right font-black italic text-xl">
                                                     <span className={cn(
-                                                        move.movement_type === 'WITHDRAWAL' ? "text-rose-500" : "text-emerald-400"
+                                                        move.movement_type === 'WITHDRAWAL' ? "text-rose-500" : "text-emerald-600"
                                                     )}>
                                                         {move.movement_type === 'WITHDRAWAL' ? '-' : '+'}${Number(move.amount).toLocaleString('es-CO')}
                                                     </span>
                                                 </td>
                                                 <td className="px-10 py-6 text-right">
-                                                    <span className="text-[10px] font-mono text-gray-500 font-bold">
+                                                    <span className="text-[10px] font-mono text-slate-400 font-bold">
                                                         {new Date(move.created_at).toLocaleTimeString()}
                                                     </span>
                                                 </td>
@@ -309,7 +309,7 @@ export default function CashierPage() {
                                         ))}
                                         {movements.length === 0 && (
                                             <tr>
-                                                <td colSpan={4} className="px-10 py-32 text-center text-gray-500 italic text-sm font-medium tracking-tight">
+                                                <td colSpan={4} className="px-10 py-32 text-center text-slate-400 italic text-sm font-medium tracking-tight">
                                                     No hay movimientos registrados en esta sesión.
                                                 </td>
                                             </tr>
@@ -323,23 +323,23 @@ export default function CashierPage() {
 
                 {/* MODALES REUTILIZABLES */}
                 {modalOpen && (modalOpen === 'income' || modalOpen === 'expense') && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-[#0a0a0a] w-full max-w-xl rounded-[3rem] border border-white/10 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-xl rounded-[3rem] border border-slate-200 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
                             <form onSubmit={handleMovement} className="p-10 space-y-10">
                                 <div className="text-center">
-                                    <h2 className="text-4xl font-black uppercase tracking-tighter italic">
-                                        Registrar <span className={modalOpen === 'income' ? "text-indigo-400" : "text-rose-400"}>
+                                    <h2 className="text-4xl font-black uppercase tracking-tighter italic text-slate-900">
+                                        Registrar <span className={modalOpen === 'income' ? "text-indigo-500" : "text-rose-500"}>
                                             {modalOpen === 'income' ? 'Ingreso' : 'Egreso'}
                                         </span>
                                     </h2>
                                 </div>
                                 <div className="space-y-8">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Monto en Efectivo</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2 italic">Monto en Efectivo</label>
                                         <input
                                             type="number"
                                             autoFocus
-                                            className="w-full h-24 bg-black border-2 border-white/10 focus:border-primary rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-white italic"
+                                            className="w-full h-24 bg-slate-50 border-2 border-slate-200 focus:border-primary rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-slate-900 italic"
                                             value={modalData.amount || ""}
                                             onChange={e => setModalData({ ...modalData, amount: parseFloat(e.target.value) || 0 })}
                                             required
@@ -371,30 +371,30 @@ export default function CashierPage() {
 
                 {/* MODAL CIERRE DE CAJA */}
                 {modalOpen === 'close' && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-[#0a0a0a] w-full max-w-xl rounded-[3rem] border border-white/10 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-xl rounded-[3rem] border border-slate-200 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
                             <div className="p-10 space-y-10">
                                 <div className="text-center">
-                                    <div className="w-20 h-20 rounded-[1.5rem] bg-rose-500/20 text-rose-500 mx-auto flex items-center justify-center mb-6 border border-rose-500/30">
+                                    <div className="w-20 h-20 rounded-[1.5rem] bg-rose-500/10 text-rose-500 mx-auto flex items-center justify-center mb-6 border border-rose-500/20">
                                         <Lock className="w-10 h-10" />
                                     </div>
                                     <h2 className="text-4xl font-black uppercase tracking-tighter italic text-rose-500">
                                         Cierre de Caja
                                     </h2>
-                                    <p className="text-gray-500 font-medium italic">Finaliza la jornada y arquea el efectivo</p>
+                                    <p className="text-slate-500 font-medium italic">Finaliza la jornada y arquea el efectivo</p>
                                 </div>
 
                                 <div className="space-y-8">
-                                    <div className="p-8 bg-white/5 rounded-[2rem] border border-white/5 space-y-4 shadow-inner">
+                                    <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-4 shadow-inner">
                                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em] italic">
-                                            <span className="text-gray-500">Saldo en Sistema</span>
-                                            <span className="text-white">${balance.total.toLocaleString()}</span>
+                                            <span className="text-slate-500">Saldo en Sistema</span>
+                                            <span className="text-slate-900">${balance.total.toLocaleString()}</span>
                                         </div>
-                                        <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                                        <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
                                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Diferencia estimada</span>
                                             <span className={cn(
                                                 "text-2xl font-black italic tracking-tighter",
-                                                (modalData.amount - balance.total) === 0 ? "text-green-500" : "text-rose-500"
+                                                (modalData.amount - balance.total) === 0 ? "text-emerald-500" : "text-rose-500"
                                             )}>
                                                 ${(modalData.amount - balance.total).toLocaleString()}
                                             </span>
@@ -402,11 +402,11 @@ export default function CashierPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Efectivo Contado (Físico)</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2 italic">Efectivo Contado (Físico)</label>
                                         <input
                                             type="number"
                                             autoFocus
-                                            className="w-full h-24 bg-black border-2 border-white/10 focus:border-rose-500 rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-white italic"
+                                            className="w-full h-24 bg-slate-50 border-2 border-slate-200 focus:border-rose-500 rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-slate-900 italic"
                                             placeholder="0"
                                             value={modalData.amount || ""}
                                             onChange={e => setModalData({ ...modalData, amount: parseFloat(e.target.value) || 0 })}
@@ -414,9 +414,9 @@ export default function CashierPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Notas Finales</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2 italic">Notas Finales</label>
                                         <textarea
-                                            className="w-full h-24 bg-black border border-white/10 rounded-[1.5rem] p-6 outline-none transition-all font-medium text-sm resize-none text-white italic"
+                                            className="w-full h-24 bg-slate-50 border border-slate-200 rounded-[1.5rem] p-6 outline-none transition-all font-medium text-sm resize-none text-slate-900 italic"
                                             placeholder="Ej: Diferencia por falta de cambio..."
                                             value={modalData.reason}
                                             onChange={e => setModalData({ ...modalData, reason: e.target.value })}
@@ -461,30 +461,30 @@ export default function CashierPage() {
 
                 {/* MODAL ARQUEO PARCIAL */}
                 {modalOpen === 'audit' && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-[#0a0a0a] w-full max-w-xl rounded-[3rem] border border-white/10 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-xl rounded-[3rem] border border-slate-200 shadow-3xl overflow-hidden animate-in zoom-in-95 duration-300">
                             <div className="p-10 space-y-10">
                                 <div className="text-center">
-                                    <div className="w-20 h-20 rounded-[1.5rem] bg-indigo-500/20 text-indigo-500 mx-auto flex items-center justify-center mb-6 border border-indigo-500/30">
+                                    <div className="w-20 h-20 rounded-[1.5rem] bg-indigo-500/10 text-indigo-500 mx-auto flex items-center justify-center mb-6 border border-indigo-500/20">
                                         <Scale className="w-10 h-10" />
                                     </div>
-                                    <h2 className="text-4xl font-black uppercase tracking-tighter italic">
+                                    <h2 className="text-4xl font-black uppercase tracking-tighter italic text-slate-900">
                                         Arqueo Parcial
                                     </h2>
-                                    <p className="text-gray-500 font-medium italic">Verifica el efectivo en caja ahora mismo</p>
+                                    <p className="text-slate-500 font-medium italic">Verifica el efectivo en caja ahora mismo</p>
                                 </div>
 
                                 <div className="space-y-8">
-                                    <div className="p-8 bg-white/5 rounded-[2rem] border border-white/5 space-y-4 shadow-inner">
+                                    <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-4 shadow-inner">
                                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em] italic">
-                                            <span className="text-gray-500">Saldo en Sistema</span>
-                                            <span className="text-white">${balance.total.toLocaleString()}</span>
+                                            <span className="text-slate-500">Saldo en Sistema</span>
+                                            <span className="text-slate-900">${balance.total.toLocaleString()}</span>
                                         </div>
-                                        <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                                        <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
                                             <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">Diferencia actual</span>
                                             <span className={cn(
                                                 "text-2xl font-black italic tracking-tighter",
-                                                (modalData.amount - balance.total) === 0 ? "text-green-500" : "text-rose-500"
+                                                (modalData.amount - balance.total) === 0 ? "text-emerald-500" : "text-rose-500"
                                             )}>
                                                 ${(modalData.amount - balance.total).toLocaleString()}
                                             </span>
@@ -492,11 +492,11 @@ export default function CashierPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-2 italic">Monto Contado</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2 italic">Monto Contado</label>
                                         <input
                                             type="number"
                                             autoFocus
-                                            className="w-full h-24 bg-black border-2 border-white/10 focus:border-indigo-500 rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-white italic"
+                                            className="w-full h-24 bg-slate-50 border-2 border-slate-200 focus:border-indigo-500 rounded-[1.5rem] px-8 outline-none text-5xl font-black text-center transition-all text-slate-900 italic"
                                             placeholder="0"
                                             value={modalData.amount || ""}
                                             onChange={e => setModalData({ ...modalData, amount: parseFloat(e.target.value) || 0 })}

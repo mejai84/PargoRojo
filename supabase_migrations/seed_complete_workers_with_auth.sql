@@ -75,26 +75,27 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ==========================================
 
 -- 1. Usuario Administrador (Solicitado)
+-- 1. Usuario Administrador (Solicitado)
 SELECT create_test_user('jajl840316@gmail.com', '@Mejai840316', 'Administrador Principal', 'admin');
 
--- 2. Meseros
-SELECT create_test_user('andres.mesero@pargorojo.com', '123456', 'Andrés Martínez', 'waiter', '3011234567');
-SELECT create_test_user('luisa.mesera@pargorojo.com', '123456', 'Luisa Fernanda Torres', 'waiter', '3019876543');
-SELECT create_test_user('mateo.mesero@pargorojo.com', '123456', 'Mateo Gómez', 'waiter', '3024567890');
+-- 2. Meseros (Pass: PargoRojo2024!)
+SELECT create_test_user('andres.mesero@pargorojo.com', 'PargoRojo2024!', 'Andrés Martínez', 'waiter', '3011234567');
+SELECT create_test_user('luisa.mesera@pargorojo.com', 'PargoRojo2024!', 'Luisa Fernanda Torres', 'waiter', '3019876543');
+SELECT create_test_user('mateo.mesero@pargorojo.com', 'PargoRojo2024!', 'Mateo Gómez', 'waiter', '3024567890');
 
 -- 3. Cocina
-SELECT create_test_user('elena.chef@pargorojo.com', '123456', 'Elena Rodríguez', 'cook', '3101112233');
-SELECT create_test_user('mario.auxiliar@pargorojo.com', '123456', 'Mario Benítez', 'cook', '3104445566');
+SELECT create_test_user('elena.chef@pargorojo.com', 'PargoRojo2024!', 'Elena Rodríguez', 'cook', '3101112233');
+SELECT create_test_user('mario.auxiliar@pargorojo.com', 'PargoRojo2024!', 'Mario Benítez', 'cook', '3104445566');
 
 -- 4. Caja
-SELECT create_test_user('ana.caja@pargorojo.com', '123456', 'Ana María López', 'cashier', '3207778899');
+SELECT create_test_user('ana.caja@pargorojo.com', 'PargoRojo2024!', 'Ana María López', 'cashier', '3207778899');
 
 -- 5. Staff / Limpieza
-SELECT create_test_user('julian.limpieza@pargorojo.com', '123456', 'Julián Castro', 'cleaner', '3005556677');
-SELECT create_test_user('sofia.logistica@pargorojo.com', '123456', 'Sofía Vergara', 'staff', '3112223344');
+SELECT create_test_user('julian.limpieza@pargorojo.com', 'PargoRojo2024!', 'Julián Castro', 'cleaner', '3005556677');
+SELECT create_test_user('sofia.logistica@pargorojo.com', 'PargoRojo2024!', 'Sofía Vergara', 'staff', '3112223344');
 
 -- 6. Admin Adicional
-SELECT create_test_user('gerencia.comercial@pargorojo.com', '123456', 'Gerencia Comercial', 'admin', '3000000001');
+SELECT create_test_user('gerencia.comercial@pargorojo.com', 'PargoRojo2024!', 'Gerencia Comercial', 'admin', '3000000001');
 
 -- Limpieza (Opcional): Borrar la función auxiliar si no se quiere conservar
 -- DROP FUNCTION create_test_user;

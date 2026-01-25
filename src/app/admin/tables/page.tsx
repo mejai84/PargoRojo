@@ -230,23 +230,23 @@ export default function TablesAdminPage() {
         if (!error) { setIsEditModalOpen(false); setSelectedTable(null); loadTables(); }
     }
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-black"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-transparent"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-primary">
+        <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-8 font-sans selection:bg-primary">
             <div className="max-w-[1600px] mx-auto space-y-10">
 
                 {/* 🔝 ENTERPRISE HEADER */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
                     <div className="flex items-center gap-6">
                         <Link href="/admin">
-                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all">
-                                <ArrowLeft className="w-6 h-6" />
+                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+                                <ArrowLeft className="w-6 h-6 text-slate-900" />
                             </Button>
                         </Link>
                         <div>
-                            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none">Gestión de <span className="text-primary">Mesas</span></h1>
-                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
+                            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none text-slate-900">Gestión de <span className="text-primary">Mesas</span></h1>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
                                 <LayoutGrid className="w-3 h-3" /> Control físico y digital del salón
                             </p>
                         </div>
@@ -254,14 +254,14 @@ export default function TablesAdminPage() {
 
                     <div className="flex flex-wrap items-center gap-3">
                         {/* Zone Switcher */}
-                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 mr-4 font-black italic">
+                        <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-200 mr-4 font-black italic shadow-inner">
                             {["TODAS", "Interior", "Terraza", "Barra", "Salon VIP"].map(zone => (
                                 <button
                                     key={zone}
                                     onClick={() => setActiveZone(zone)}
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-[8px] uppercase tracking-widest transition-all",
-                                        activeZone === zone ? "bg-primary text-black" : "text-gray-500 hover:text-white"
+                                        activeZone === zone ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-900"
                                     )}
                                 >
                                     {zone}
@@ -269,16 +269,16 @@ export default function TablesAdminPage() {
                             ))}
                         </div>
 
-                        <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 mr-4 font-black italic">
+                        <div className="flex bg-slate-50 p-1 rounded-2xl border border-slate-200 mr-4 font-black italic shadow-inner">
                             <button
                                 onClick={() => setIsVisualView(false)}
-                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", !isVisualView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}
+                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", !isVisualView ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-900")}
                             >
                                 LISTA
                             </button>
                             <button
                                 onClick={() => setIsVisualView(true)}
-                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", isVisualView ? "bg-primary text-black" : "text-gray-500 hover:text-white")}
+                                className={cn("px-6 py-2.5 rounded-xl text-[9px] uppercase tracking-widest transition-all", isVisualView ? "bg-white text-primary shadow-sm" : "text-slate-400 hover:text-slate-900")}
                             >
                                 DISEÑO 2D
                             </button>
@@ -287,15 +287,15 @@ export default function TablesAdminPage() {
                             <Button
                                 onClick={toggleHeatmap}
                                 className={cn(
-                                    "h-14 px-8 rounded-2xl font-black uppercase text-[10px] tracking-widest italic transition-all gap-3",
-                                    isHeatmapMode ? "bg-orange-600 text-white shadow-xl shadow-orange-600/30" : "bg-white/5 border border-white/10 text-gray-400 hover:text-white"
+                                    "h-14 px-8 rounded-2xl font-black uppercase text-[10px] tracking-widest italic transition-all gap-3 shadow-sm",
+                                    isHeatmapMode ? "bg-orange-600 text-white shadow-xl shadow-orange-600/30" : "bg-white border border-slate-200 text-slate-400 hover:text-slate-900"
                                 )}
                             >
                                 <Flame className={cn("w-5 h-5", isHeatmapMode && "animate-pulse")} /> MAPA DE CALOR
                             </Button>
                         )}
                         {isVisualView && (
-                            <Button onClick={saveLayout} disabled={savingLayout} className="h-14 px-8 bg-emerald-500 text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all gap-3">
+                            <Button onClick={saveLayout} disabled={savingLayout} className="h-14 px-8 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-slate-900 transition-all gap-3 shadow-sm">
                                 {savingLayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} GUARDAR PLANO
                             </Button>
                         )}
@@ -313,19 +313,19 @@ export default function TablesAdminPage() {
                     <div className="space-y-6 animate-in zoom-in-95 duration-500">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-4">
                             <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase italic">
+                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase italic">
                                     <MapIcon className="w-4 h-4 text-primary" /> {isHeatmapMode ? "Analizando facturación por punto físico" : "Arrastra las mesas para organizar el salón"}
                                 </div>
                                 <div className="flex items-center gap-4">
                                     {!isHeatmapMode ? (
                                         <>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
-                                                <span className="text-[8px] font-black uppercase text-gray-600">Libre</span>
+                                                <div className="w-3 h-3 rounded-full bg-emerald-500/10 border border-emerald-500/30" />
+                                                <span className="text-[8px] font-black uppercase text-slate-400">Libre</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 rounded-full bg-rose-500/20 border border-rose-500/40" />
-                                                <span className="text-[8px] font-black uppercase text-gray-600">Ocupada</span>
+                                                <div className="w-3 h-3 rounded-full bg-rose-500/10 border border-rose-500/30" />
+                                                <span className="text-[8px] font-black uppercase text-slate-400">Ocupada</span>
                                             </div>
                                         </>
                                     ) : (
@@ -352,9 +352,9 @@ export default function TablesAdminPage() {
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
                             onMouseLeave={handleMouseUp}
-                            className="relative w-full h-[750px] bg-[#050505] rounded-[3.5rem] border border-white/5 overflow-hidden shadow-3xl pattern-grid"
+                            className="relative w-full h-[750px] bg-slate-100 rounded-[3.5rem] border border-slate-200 overflow-hidden shadow-inner pattern-grid"
                         >
-                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                            <div className="absolute inset-0 opacity-[0.1] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
                             {tables
                                 .filter(t => activeZone === "TODAS" || t.location === activeZone)
@@ -382,8 +382,8 @@ export default function TablesAdminPage() {
                                         )}
                                     >
                                         <div className="text-center relative z-10">
-                                            <p className={cn("text-2xl font-black tracking-tighter leading-none", isHeatmapMode && "text-white")}>{table.table_number}</p>
-                                            <p className="text-[8px] uppercase tracking-widest mt-1 opacity-40 group-hover:opacity-100">
+                                            <p className={cn("text-2xl font-black tracking-tighter leading-none", isHeatmapMode ? "text-white" : "text-slate-900")}>{table.table_number}</p>
+                                            <p className="text-[8px] uppercase tracking-widest mt-1 opacity-40 group-hover:opacity-100 text-slate-400">
                                                 {isHeatmapMode ? `$${(tableSales[table.id] || 0).toLocaleString()}` : `${table.capacity} PAX`}
                                             </p>
                                         </div>
@@ -402,41 +402,40 @@ export default function TablesAdminPage() {
                         </div>
                     </div>
                 ) : (
-                    /* 📋 CLASSIC LIST VIEW (STYLIZED) */
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-700">
                         {tables
                             .filter(t => activeZone === "TODAS" || t.location === activeZone)
                             .map(table => (
-                                <div key={table.id} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 space-y-6 hover:border-primary/20 transition-all group relative overflow-hidden">
+                                <div key={table.id} className="bg-white border border-slate-200 rounded-[2.5rem] p-8 space-y-6 hover:border-primary transition-all group relative overflow-hidden shadow-sm">
                                     <div className="absolute top-0 right-0 p-8 opacity-5 text-primary group-hover:scale-125 transition-all">
                                         <QrCode className="w-12 h-12" />
                                     </div>
 
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">{table.table_name}</h3>
-                                            <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-2 italic flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary" /> {table.location}</p>
+                                            <h3 className="text-3xl font-black italic uppercase tracking-tighter text-slate-900">{table.table_name}</h3>
+                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2 italic flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary" /> {table.location}</p>
                                         </div>
                                         <div className={cn(
                                             "px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest border italic",
-                                            table.status === 'available' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                            table.status === 'available' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
                                         )}>
                                             {table.status}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 text-[10px] font-black text-gray-500 uppercase tracking-widest italic">
+                                    <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
                                         <Users className="w-4 h-4 text-primary" /> CAPACIDAD: {table.capacity} PERSONAS
                                     </div>
 
                                     <div className="pt-4 flex gap-2">
-                                        <Button onClick={() => generateQRCode(table)} variant="ghost" className="flex-1 h-12 bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-white hover:text-black transition-all gap-2">
+                                        <Button onClick={() => generateQRCode(table)} variant="ghost" className="flex-1 h-12 bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 hover:text-white transition-all gap-2">
                                             <QrCode className="w-3.5 h-3.5" /> QR
                                         </Button>
-                                        <Button onClick={() => { setSelectedTable(table); setIsEditModalOpen(true); }} variant="ghost" className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl hover:bg-primary hover:text-black transition-all flex items-center justify-center">
+                                        <Button onClick={() => { setSelectedTable(table); setIsEditModalOpen(true); }} variant="ghost" className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl hover:bg-primary hover:text-black transition-all flex items-center justify-center">
                                             <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button onClick={() => deleteTable(table)} variant="ghost" className="w-12 h-12 bg-rose-500/10 border border-rose-500/10 rounded-xl text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center">
+                                        <Button onClick={() => deleteTable(table)} variant="ghost" className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center">
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
@@ -446,11 +445,10 @@ export default function TablesAdminPage() {
                 )}
             </div>
 
-            {/* MODALS (Simplified for the demo) */}
             {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl">
-                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8 text-white">Nueva <span className="text-primary">Mesa</span></h2>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white border border-slate-200 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl text-slate-900">
+                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8">Nueva <span className="text-primary">Mesa</span></h2>
                         <form className="space-y-6" onSubmit={async (e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -462,45 +460,50 @@ export default function TablesAdminPage() {
                                 location: formData.get('location'),
                                 shape: formData.get('shape'),
                                 qr_code: `TABLE-${tNum}-${Date.now()}`,
-                                status: 'available'
+                                status: 'available',
+                                x_pos: 100,
+                                y_pos: 100,
+                                width: 120,
+                                height: 120,
+                                rotation: 0
                             });
                             setIsAddModalOpen(false); loadTables();
                         }}>
                             <div className="grid grid-cols-2 gap-4">
-                                <input name="table_number" type="number" placeholder="N° MESA" required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
-                                <input name="table_name" placeholder="NOMBRE (ej: VIP 1)" required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-bold italic" />
+                                <input name="table_number" type="number" placeholder="N° MESA" required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic" />
+                                <input name="table_name" placeholder="NOMBRE (ej: VIP 1)" required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-bold italic" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <input name="capacity" type="number" defaultValue={4} placeholder="PAX" className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
-                                <select name="location" className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black uppercase italic tracking-widest">
+                                <input name="capacity" type="number" defaultValue={4} placeholder="PAX" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic" />
+                                <select name="location" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black uppercase italic tracking-widest cursor-pointer">
                                     <option value="Interior">Interior</option>
                                     <option value="Terraza">Terraza</option>
                                     <option value="Barra">Barra</option>
                                 </select>
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Geometría de Mesa</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Geometría de Mesa</label>
                                 <div className="grid grid-cols-3 gap-3">
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="rectangle" className="hidden" defaultChecked />
-                                        <SquareIcon className="w-6 h-6" />
-                                        <span className="text-[8px] font-black uppercase">Rectang.</span>
+                                        <SquareIcon className="w-6 h-6 text-slate-400" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Rectang.</span>
                                     </label>
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="circle" className="hidden" />
-                                        <Circle className="w-6 h-6" />
-                                        <span className="text-[8px] font-black uppercase">Circular</span>
+                                        <Circle className="w-6 h-6 text-slate-400" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Circular</span>
                                     </label>
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="square" className="hidden" />
-                                        <div className="w-6 h-6 border-2 border-white rounded-md" />
-                                        <span className="text-[8px] font-black uppercase">Cuadrada</span>
+                                        <div className="w-6 h-6 border-2 border-slate-300 rounded-md" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Cuadrada</span>
                                     </label>
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-6">
                                 <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => setIsAddModalOpen(false)}>CANCELAR</Button>
-                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl">GUARDAR</Button>
+                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all">GUARDAR</Button>
                             </div>
                         </form>
                     </div>
@@ -508,45 +511,45 @@ export default function TablesAdminPage() {
             )}
 
             {isEditModalOpen && selectedTable && (
-                <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
-                    <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl">
-                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8 text-white">Editar <span className="text-primary">{selectedTable.table_name}</span></h2>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white border border-slate-200 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl text-slate-900">
+                        <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8">Editar <span className="text-primary">{selectedTable.table_name}</span></h2>
                         <form className="space-y-6" onSubmit={handleEditSubmit}>
                             <div className="grid grid-cols-2 gap-4">
-                                <input name="table_number" type="number" defaultValue={selectedTable.table_number} required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
-                                <input name="table_name" defaultValue={selectedTable.table_name} required className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-bold italic" />
+                                <input name="table_number" type="number" defaultValue={selectedTable.table_number} required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic" />
+                                <input name="table_name" defaultValue={selectedTable.table_name} required className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-bold italic" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <input name="capacity" type="number" defaultValue={selectedTable.capacity} className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black italic" />
-                                <select name="location" defaultValue={selectedTable.location} className="w-full h-14 bg-black border border-white/5 rounded-2xl px-6 outline-none text-white focus:border-primary font-black uppercase italic tracking-widest">
+                                <input name="capacity" type="number" defaultValue={selectedTable.capacity} className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic" />
+                                <select name="location" defaultValue={selectedTable.location} className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black uppercase italic tracking-widest cursor-pointer">
                                     <option value="Interior">Interior</option>
                                     <option value="Terraza">Terraza</option>
                                     <option value="Barra">Barra</option>
                                 </select>
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Geometría de Mesa</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Geometría de Mesa</label>
                                 <div className="grid grid-cols-3 gap-3">
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="rectangle" className="hidden" defaultChecked={selectedTable.shape === 'rectangle'} />
-                                        <SquareIcon className="w-6 h-6" />
-                                        <span className="text-[8px] font-black uppercase">Rectang.</span>
+                                        <SquareIcon className="w-6 h-6 text-slate-400" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Rectang.</span>
                                     </label>
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="circle" className="hidden" defaultChecked={selectedTable.shape === 'circle'} />
-                                        <Circle className="w-6 h-6" />
-                                        <span className="text-[8px] font-black uppercase">Circular</span>
+                                        <Circle className="w-6 h-6 text-slate-400" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Circular</span>
                                     </label>
-                                    <label className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                    <label className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/5 transition-all">
                                         <input type="radio" name="shape" value="square" className="hidden" defaultChecked={selectedTable.shape === 'square'} />
-                                        <div className="w-6 h-6 border-2 border-white rounded-md" />
-                                        <span className="text-[8px] font-black uppercase">Cuadrada</span>
+                                        <div className="w-6 h-6 border-2 border-slate-300 rounded-md" />
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Cuadrada</span>
                                     </label>
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-6">
                                 <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => { setIsEditModalOpen(false); setSelectedTable(null); }}>CANCELAR</Button>
-                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl">ACTUALIZAR</Button>
+                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all">ACTUALIZAR</Button>
                             </div>
                         </form>
                     </div>
