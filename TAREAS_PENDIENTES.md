@@ -7,6 +7,11 @@
 
 ## 🔴 PRIORIDAD ALTA - Errores y Bugs
 
+### 0. 🏗️ Migración Global SaaS (MULTI-TENANCY)
+- **Estado:** 🏗️ EN DESARROLLO (Backend Listo)
+- **Descripción:** Implementar el aislamiento de datos por `restaurant_id` en todas las tablas transaccionales.
+- **Acción:** Ejecutar `supabase_migrations/111_global_multi_tenancy_migration.sql` en Supabase.
+
 ### 1. ✅ Error en Nueva Venta desde Admin (CORREGIDO vía SQL)
 - **Estado:** ✅ COMPLETADO
 - **Descripción:** Corregido mediante migración SQL que arregla las políticas RLS.

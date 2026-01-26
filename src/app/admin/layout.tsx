@@ -27,7 +27,8 @@ import {
     ChevronRight,
     Search,
     Bell,
-    X
+    X,
+    ShieldAlert
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -39,6 +40,7 @@ import { NotificationBell } from "@/components/admin/notification-bell"
 import { PargoBot } from "@/components/admin/pargo-bot"
 import { IncomingOrderAlert } from "@/components/admin/incoming-order-alert"
 import { ShiftGuard } from "@/components/admin/shift-guard"
+import { useRestaurant } from "@/providers/RestaurantProvider"
 
 const sidebarSections = [
     {
@@ -64,8 +66,11 @@ const sidebarSections = [
     {
         title: "BACKOFFICE & STOCK",
         items: [
-            { icon: Package, label: "Inventario / Fisico", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
-            { icon: UtensilsCrossed, label: "Menú & Recetas", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
+            { icon: Package, label: "Stock e Insumos", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
+            { icon: Truck, label: "Proveedores", href: "/admin/inventory/suppliers", roles: ['admin', 'manager'] },
+            { icon: ShoppingBag, label: "Compras / Ingresos", href: "/admin/inventory/purchases", roles: ['admin', 'manager'] },
+            { icon: UtensilsCrossed, label: "Menú & Productos", href: "/admin/products", roles: ['admin', 'manager', 'chef'] },
+            { icon: ChefHat, label: "Libro de Recetas", href: "/admin/inventory/recipes", roles: ['admin', 'manager', 'chef'] },
             { icon: Tag, label: "Promociones / Cupones", href: "/admin/coupons", roles: ['admin', 'manager'] },
             { icon: BarChart3, label: "Reportes Avanzados", href: "/admin/reports", roles: ['admin', 'manager'] },
             { icon: Wallet, label: "Caja Menor / Gastos", href: "/admin/petty-cash", roles: ['admin', 'manager', 'cashier'] },
@@ -77,6 +82,7 @@ const sidebarSections = [
             { icon: Zap, label: "Pargo Hub Live", href: "/admin/hub", roles: ['admin'] },
             { icon: BarChart3, label: "Reportes & Analytics", href: "/admin/reports", roles: ['admin'] },
             { icon: ShieldCheck, label: "Seguridad & Roles", href: "/admin/employees", roles: ['admin'] },
+            { icon: ShieldAlert, label: "Trazabilidad SaaS", href: "/admin/audit", roles: ['admin'] },
         ]
     },
     {
@@ -91,12 +97,12 @@ const sidebarSections = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const router = useRouter()
+    const { restaurant, loading: restaurantLoading } = useRestaurant()
     const [loading, setLoading] = useState(true)
     const [authorized, setAuthorized] = useState(false)
     const [userRole, setUserRole] = useState<string>("")
     const [userName, setUserName] = useState<string>("")
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [businessInfo, setBusinessInfo] = useState<any>({ name: "PARGO OS", logo_url: "" })
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -107,12 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 return
             }
 
-            const [{ data }, { data: settings }] = await Promise.all([
-                supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single(),
-                supabase.from('settings').select('value').eq('key', 'business_info').single()
-            ])
-
-            if (settings?.value) setBusinessInfo(settings.value)
+            const { data } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single()
 
             const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host']
 
@@ -127,8 +128,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             setLoading(false)
         }
 
-        checkAuth()
-    }, [router])
+        if (!restaurantLoading) {
+            checkAuth()
+        }
+    }, [router, restaurantLoading])
 
     if (loading) {
         return (
@@ -157,15 +160,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary p-0.5 shadow-lg shadow-primary/20">
                                 <div className="w-full h-full bg-white rounded-[0.9rem] flex items-center justify-center overflow-hidden">
-                                    {businessInfo.logo_url ? (
-                                        <img src={businessInfo.logo_url} className="w-full h-full object-contain" alt="Logo" />
+                                    {restaurant?.logo_url ? (
+                                        <img src={restaurant.logo_url} className="w-full h-full object-contain" alt="Logo" />
                                     ) : (
                                         <Zap className="w-5 h-5 text-primary" />
                                     )}
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-sm font-black italic uppercase tracking-tighter text-slate-900">{businessInfo.name} <span className="text-primary italic">OS</span></span>
+                                <span className="text-sm font-black italic uppercase tracking-tighter text-slate-900">
+                                    {restaurant?.name || "PARGO OS"} <span className="text-primary italic">OS</span>
+                                </span>
                                 <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em] uppercase">Enterprise v1.6</span>
                             </div>
                         </div>
@@ -255,12 +260,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {/* Mobile Floating Header */}
                     <header className="h-16 border-b border-slate-200 flex items-center px-6 lg:hidden justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50">
                         <div className="flex items-center gap-3">
-                            {businessInfo.logo_url ? (
-                                <img src={businessInfo.logo_url} className="w-6 h-6 object-contain" alt="Logo" />
+                            {restaurant?.logo_url ? (
+                                <img src={restaurant.logo_url} className="w-6 h-6 object-contain" alt="Logo" />
                             ) : (
                                 <Zap className="w-5 h-5 text-primary" />
                             )}
-                            <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">{businessInfo.name} <span className="text-primary italic">OS</span></span>
+                            <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">
+                                {restaurant?.name || "PARGO OS"} <span className="text-primary italic">OS</span>
+                            </span>
                         </div>
                         <Button
                             size="icon"

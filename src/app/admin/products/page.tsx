@@ -39,26 +39,32 @@ type Product = {
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<Product[]>([])
+    const [stations, setStations] = useState<{ id: string, name: string }[]>([])
     const [loading, setLoading] = useState(true)
     const [isEditing, setIsEditing] = useState(false)
     const [showDeleted, setShowDeleted] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState("")
 
-    const [formData, setFormData] = useState<Partial<Product>>({
-        name: '', price: 0, category_id: categories[0]?.id || '', description: '', image_url: '', ingredients: []
+    const [formData, setFormData] = useState<Partial<Product & { station_id: string }>>({
+        name: '', price: 0, category_id: categories[0]?.id || '', description: '', image_url: '', ingredients: [], station_id: ''
     })
 
     const fetchProducts = async () => {
         setLoading(true)
-        const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false })
-        if (data) setProducts(data as Product[])
+        const [prodRes, statRes] = await Promise.all([
+            supabase.from('products').select('*').order('created_at', { ascending: false }),
+            supabase.from('prep_stations').select('id, name').eq('is_active', true)
+        ])
+
+        if (prodRes.data) setProducts(prodRes.data as Product[])
+        if (statRes.data) setStations(statRes.data)
         setLoading(false)
     }
 
     useEffect(() => { fetchProducts() }, [])
 
-    const handleEdit = (product: Product) => {
+    const handleEdit = (product: Product & { station_id?: string }) => {
         setEditingId(product.id)
         setFormData({ ...product })
         setIsEditing(true)
@@ -73,6 +79,7 @@ export default function AdminProductsPage() {
             description: formData.description,
             image_url: formData.image_url,
             ingredients: formData.ingredients || [],
+            station_id: formData.station_id || null,
             is_available: true
         }
 
@@ -229,6 +236,13 @@ export default function AdminProductsPage() {
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">CLASificación</label>
                                         <select value={formData.category_id} onChange={e => setFormData({ ...formData, category_id: e.target.value })} className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black uppercase italic tracking-widest text-xs cursor-pointer shadow-inner">
                                             {categories.map(c => <option key={c.id} value={c.id} className="bg-white text-slate-900 uppercase">{c.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Estación KDS</label>
+                                        <select value={formData.station_id || ''} onChange={e => setFormData({ ...formData, station_id: e.target.value })} className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black uppercase italic tracking-widest text-xs cursor-pointer shadow-inner">
+                                            <option value="" className="bg-white text-slate-900 uppercase">Sin estación</option>
+                                            {stations.map(s => <option key={s.id} value={s.id} className="bg-white text-slate-900 uppercase">{s.name}</option>)}
                                         </select>
                                     </div>
                                 </div>

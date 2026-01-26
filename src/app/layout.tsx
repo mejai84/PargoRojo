@@ -6,6 +6,7 @@ import { CartSheet } from "@/components/store/cart-sheet";
 import { Footer } from "@/components/store/footer";
 import { WhatsAppButton } from "@/components/store/whatsapp-button";
 import { ClientBot } from "@/components/store/client-bot";
+import { RestaurantProvider } from "@/providers/RestaurantProvider";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -22,17 +23,19 @@ export default function RootLayout({
     return (
         <html lang="es" className="light" suppressHydrationWarning>
             <body className={`${outfit.className} bg-white text-gray-900 antialiased`}>
-                <CartProvider>
-                    <div className="flex flex-col min-h-screen">
-                        <main className="flex-1">
-                            {children}
-                        </main>
-                        <Footer />
-                    </div>
-                    <CartSheet />
-                    <ClientBot />
-                    <WhatsAppButton />
-                </CartProvider>
+                <RestaurantProvider>
+                    <CartProvider>
+                        <div className="flex flex-col min-h-screen">
+                            <main className="flex-1">
+                                {children}
+                            </main>
+                            <Footer />
+                        </div>
+                        <CartSheet />
+                        <ClientBot />
+                        <WhatsAppButton />
+                    </CartProvider>
+                </RestaurantProvider>
             </body>
         </html>
     );

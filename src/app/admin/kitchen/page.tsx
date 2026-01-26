@@ -22,6 +22,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
+import { useRestaurant } from "@/providers/RestaurantProvider"
 
 type OrderItem = {
     quantity: number
@@ -42,7 +43,7 @@ type Order = {
     id: string
     created_at: string
     status: OrderStatus
-    order_items: OrderItem[]
+    order_items: (OrderItem & { products: { station_id: string } })[]
     guest_info?: any
     tables?: {
         table_name: string
@@ -52,7 +53,11 @@ type Order = {
     notes?: string // Observaciones generales
 }
 
-const STATIONS = ["TODAS", "ENTRADAS", "PLATOS FUERTES", "MARISCOS", "BEBIDAS", "POSTRES"];
+interface Station {
+    id: string
+    name: string
+}
+
 const STATUS_COLUMNS = [
     { id: 'pending' as const, label: 'RECIBIDAS', color: 'text-blue-600', bg: 'bg-white', accent: 'border-slate-200' },
     { id: 'preparing' as const, label: 'EN FOGÓN', color: 'text-primary', bg: 'bg-white', accent: 'border-slate-200' },
@@ -60,15 +65,19 @@ const STATUS_COLUMNS = [
 ];
 
 export default function KitchenPage() {
+    const { restaurant } = useRestaurant()
     const [orders, setOrders] = useState<Order[]>([])
+    const [stations, setStations] = useState<Station[]>([])
     const [loading, setLoading] = useState(true)
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-    const [activeStation, setActiveStation] = useState("TODAS")
+    const [activeStationId, setActiveStationId] = useState<string>("TODAS")
     const [currentTime, setCurrentTime] = useState(new Date())
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-        fetchOrders()
+
+        if (restaurant) {
+            fetchData()
+        }
 
         const channel = supabase
             .channel('kitchen-realtime')
@@ -76,7 +85,7 @@ export default function KitchenPage() {
                 if (payload.eventType === 'INSERT') {
                     new Audio('/sounds/new-order.mp3').play().catch(() => { })
                 }
-                fetchOrders()
+                fetchData()
             })
             .subscribe()
 
@@ -84,16 +93,40 @@ export default function KitchenPage() {
             clearInterval(timer)
             supabase.removeChannel(channel)
         }
-    }, [])
+    }, [restaurant])
 
-    const fetchOrders = async () => {
-        const { data } = await supabase
-            .from('orders')
-            .select(`*, tables (table_name), order_items (quantity, customizations, products (id, name, is_available, categories (name)))`)
-            .in('status', ['pending', 'preparing', 'ready'])
-            .order('created_at', { ascending: true })
-        if (data) setOrders(data as any)
-        setLoading(false)
+    const fetchData = async () => {
+        try {
+            setLoading(true)
+
+            // 1. Cargar Estaciones
+            const { data: stationsData } = await supabase
+                .from('prep_stations')
+                .select('id, name')
+                .eq('is_active', true)
+
+            setStations(stationsData || [])
+
+            // 2. Cargar Órdenes
+            const { data } = await supabase
+                .from('orders')
+                .select(`
+                    *, 
+                    tables (table_name), 
+                    order_items (
+                        quantity, 
+                        customizations, 
+                        products (id, name, is_available, station_id, categories (name))
+                    )
+                `)
+                .eq('restaurant_id', restaurant?.id)
+                .in('status', ['pending', 'preparing', 'ready'])
+                .order('created_at', { ascending: true })
+
+            if (data) setOrders(data as any)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const updateStatus = async (id: string, newStatus: OrderStatus) => {
@@ -102,7 +135,7 @@ export default function KitchenPage() {
         if (newStatus === 'ready') updateData.preparation_finished_at = new Date().toISOString()
 
         const { error } = await supabase.from('orders').update(updateData).eq('id', id)
-        if (!error) fetchOrders()
+        if (!error) fetchData()
     }
 
     const getElapsed = (dateString: string) => {
@@ -110,6 +143,11 @@ export default function KitchenPage() {
         const diff = Math.floor((new Date().getTime() - start) / 60000)
         return diff
     }
+
+    const filteredOrders = orders.filter(order => {
+        if (activeStationId === 'TODAS') return true
+        return order.order_items.some(item => item.products?.station_id === activeStationId)
+    })
 
     const preparingCount = orders.filter(o => o.status === 'preparing').length
 
@@ -132,22 +170,31 @@ export default function KitchenPage() {
                             </div>
                         </div>
                         <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
-                            <Zap className="w-3 h-3" /> Monitor de flujo termodinámico de platos
+                            <Zap className="w-3 h-3" /> Estación: {stations.find(s => s.id === activeStationId)?.name || "TODAS"}
                         </p>
                     </div>
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
-                    {STATIONS.map(station => (
+                    <button
+                        onClick={() => setActiveStationId("TODAS")}
+                        className={cn(
+                            "px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all italic",
+                            activeStationId === "TODAS" ? "bg-primary text-black" : "text-slate-400 hover:text-slate-900"
+                        )}
+                    >
+                        TODAS
+                    </button>
+                    {stations.map(station => (
                         <button
-                            key={station}
-                            onClick={() => setActiveStation(station)}
+                            key={station.id}
+                            onClick={() => setActiveStationId(station.id)}
                             className={cn(
                                 "px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all italic",
-                                activeStation === station ? "bg-primary text-black" : "text-slate-400 hover:text-slate-900"
+                                activeStationId === station.id ? "bg-primary text-black" : "text-slate-400 hover:text-slate-900"
                             )}
                         >
-                            {station}
+                            {station.name}
                         </button>
                     ))}
                 </div>
@@ -163,7 +210,7 @@ export default function KitchenPage() {
                             <span className="text-xl font-black text-slate-900 italic leading-none">12M</span>
                         </div>
                     </div>
-                    <Button onClick={fetchOrders} className="h-16 w-16 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
+                    <Button onClick={fetchData} className="h-16 w-16 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
                         <RefreshCw className={cn("w-6 h-6 text-slate-900", loading && "animate-spin")} />
                     </Button>
                 </div>
@@ -178,23 +225,22 @@ export default function KitchenPage() {
                                 {column.label}
                             </h2>
                             <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
-                                {orders.filter(o => o.status === column.id).length}
+                                {filteredOrders.filter(o => o.status === column.id).length}
                             </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                            {orders
+                            {filteredOrders
                                 .filter(o => o.status === column.id)
-                                .filter(o => {
-                                    if (activeStation === 'TODAS') return true;
-                                    // Filtrar por categoría de producto si fuera necesario
-                                    // Por ahora, asumimos que si no es TODAS, filtramos items (lógica visual)
-                                    // En un KDS real, cada estación ve solo sus items. 
-                                    // Aquí haremos que si seleccionas 'Cocina Caliente', veas items relevantes (mock logic for now or needs proper category mapping)
-                                    return true;
-                                })
                                 .map(order => {
                                     const minutes = getElapsed(order.created_at)
+                                    // Filtrar items por estación si no es 'TODAS'
+                                    const itemsToDisplay = order.order_items.filter(item =>
+                                        activeStationId === 'TODAS' || item.products?.station_id === activeStationId
+                                    )
+
+                                    if (itemsToDisplay.length === 0) return null
+
                                     return (
                                         <div key={order.id} className="group bg-white rounded-[2.5rem] border border-slate-200 p-8 space-y-6 hover:border-primary/30 transition-all relative overflow-hidden shadow-sm">
 
@@ -238,9 +284,7 @@ export default function KitchenPage() {
                                             </div>
 
                                             <div className="space-y-4">
-                                                {order.order_items.map((item, idx) => {
-                                                    // Lógica básica de filtrado por estación (si tuviéramos categorías en productos)
-                                                    // Por ahora mostramos todos, pero destacamos si tienen notas
+                                                {itemsToDisplay.map((item, idx) => {
                                                     return (
                                                         <div key={idx} className="flex gap-4">
                                                             <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-lg font-black text-primary italic shrink-0">

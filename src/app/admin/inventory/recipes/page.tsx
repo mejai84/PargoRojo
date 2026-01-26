@@ -89,24 +89,27 @@ export default function RecipesPage() {
         <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-8 font-sans selection:bg-primary selection:text-black">
             <div className="max-w-6xl mx-auto space-y-10">
 
-                {/* 🔝 HEADER */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-4">
-                            <Link href="/admin/inventory">
-                                <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
-                                    <ArrowLeft className="w-5 h-5 text-slate-900" />
-                                </Button>
-                            </Link>
-                            <div>
-                                <h1 className="text-4xl font-black tracking-tighter uppercase italic text-slate-900">Libro de <span className="text-primary">Recetas</span></h1>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic leading-none">Ficha técnica y composición de productos</p>
+                {/* 🔝 PREMIUM RECIPE HEADER */}
+                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white font-black italic text-[10px] uppercase tracking-[0.2em]">
+                                <ChefHat className="w-3 h-3 text-primary" />
+                                Escandallos & Costos
+                            </div>
+                            <div className="space-y-1">
+                                <h1 className="text-4xl font-black italic tracking-tighter text-slate-900 uppercase leading-none">
+                                    Libro de <span className="text-primary italic">Recetas</span>
+                                </h1>
+                                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+                                    Ficha técnica y composición precisa de tus platos
+                                </p>
                             </div>
                         </div>
+                        <Button className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-primary/20 gap-2 border-none">
+                            <Plus className="w-5 h-5 font-bold" /> Crear Nueva Ficha
+                        </Button>
                     </div>
-                    <Button className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-primary/20 gap-2 border-none">
-                        <Plus className="w-5 h-5" /> CREAR RECETA
-                    </Button>
                 </div>
 
                 {/* 🔍 FILTERS */}
