@@ -49,11 +49,12 @@ export async function getPosStatus(userId: string): Promise<PosStatus> {
     }
 }
 
+
 /**
- * Inicia un nuevo turno de trabajo.
+ * Inicia un nuevo turno de trabajo basado en una definición configurada.
  * Valida que no exista uno previo.
  */
-export async function startShift(userId: string, shiftType: ShiftType) {
+export async function startShift(userId: string, shiftDefinitionId: string) {
     const supabase = await createClient()
 
     // Validar si ya existe
@@ -68,11 +69,21 @@ export async function startShift(userId: string, shiftType: ShiftType) {
         throw new Error("Ya tienes un turno activo. Debes cerrarlo antes de iniciar otro.")
     }
 
+    // Obtener info de la definición del turno
+    const { data: def } = await supabase
+        .from('shift_definitions')
+        .select('name')
+        .eq('id', shiftDefinitionId)
+        .single()
+
+    if (!def) throw new Error("Turno no válido o eliminado")
+
     const { data, error } = await supabase
         .from('shifts')
         .insert({
             user_id: userId,
-            shift_type: shiftType,
+            shift_type: def.name, // Mantener compatibilidad con columna legacy
+            shift_definition_id: shiftDefinitionId,
             status: 'OPEN',
             started_at: new Date().toISOString()
         })
@@ -260,4 +271,44 @@ export async function performPartialAudit(
     if (error) throw new Error("Error al registrar arqueo: " + error.message)
 
     return { ...data, difference: countedAmount - systemAmount }
+}
+
+/**
+ * Procesa el pago de una orden existente de forma atómica.
+ */
+export async function processOrderPayment(
+    orderId: string,
+    userId: string,
+    paymentMethod: 'cash' | 'card' | 'transfer',
+    amount: number
+) {
+    const supabase = await createClient()
+
+    // 1. Obtener estado POS para asegurar que hay caja abierta (si es efectivo)
+    const posStatus = await getPosStatus(userId)
+
+    if (paymentMethod === 'cash' && !posStatus.hasOpenCashbox) {
+        throw new Error("No hay caja abierta. Debes abrir caja para recibir efectivo.")
+    }
+
+    const sessionId = posStatus.activeCashboxSession?.id || null
+
+    // 2. Ejecutar RPC
+    const { data, error } = await supabase.rpc('pay_order_atomic', {
+        p_order_id: orderId,
+        p_user_id: userId,
+        p_cashbox_session_id: sessionId,
+        p_payment_method: paymentMethod,
+        p_amount: amount
+    })
+
+    if (error) {
+        console.error("Error paying order:", error)
+        throw new Error(error.message)
+    }
+
+    revalidatePath('/admin/orders')
+    revalidatePath('/admin/cashier')
+    revalidatePath('/admin/tables')
+    return data
 }

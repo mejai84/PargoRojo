@@ -32,6 +32,7 @@ import {
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { pargoOffline } from "@/lib/offline-engine"
+import { createOrderWithNotes } from "@/actions/orders-fixed"
 
 // --- Types ---
 interface Category { id: string; name: string; slug: string; image_url: string | null }
@@ -254,19 +255,64 @@ export default function WaiterPortalPage() {
         }
 
         try {
-            const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-            let orderId = currentTableOrder?.id
-            if (!orderId) {
-                const { data: newOrder } = await supabase.from('orders').insert([{ table_id: selectedTable.id, waiter_id: profile.id, total, status: 'pending', order_type: 'pickup', guest_info: { name: selectedTable.table_name }, payment_status: 'pending' }]).select().single()
-                orderId = newOrder.id
-                await supabase.from('tables').update({ status: 'occupied' }).eq('id', selectedTable.id)
+            const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+            const total = subtotal // Agregar impuestos si aplica
+
+            // CASO 1: ORDEN NUEVA
+            if (!currentTableOrder) {
+                const orderData = {
+                    user_id: profile.id, // User del sistema (mesero)
+                    waiter_id: profile.id, // ID específico del mesero
+                    table_id: selectedTable.id,
+                    items: cart.map(item => ({
+                        product_id: item.product_id,
+                        quantity: item.quantity,
+                        unit_price: item.price,
+                        subtotal: item.price * item.quantity,
+                        notes: item.notes // ✅ Pasando notas correctamente
+                    })),
+                    subtotal: subtotal,
+                    total: total,
+                    notes: "Creado desde Pargo OS Waiter"
+                }
+
+                const result = await createOrderWithNotes(orderData)
+                if (!result.success) throw new Error("Error creando orden")
+
             } else {
-                await supabase.from('orders').update({ total: currentTableOrder.total + total }).eq('id', orderId)
+                // CASO 2: AGREGAR A ORDEN EXISTENTE (Update Manual mejorado)
+                const orderId = currentTableOrder.id
+
+                // Actualizar total de la orden
+                await supabase.from('orders')
+                    .update({
+                        total: currentTableOrder.total + total,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', orderId)
+
+                // Insertar nuevos items
+                const itemsToInsert = cart.map(item => ({
+                    order_id: orderId,
+                    product_id: item.product_id,
+                    quantity: item.quantity,
+                    unit_price: item.price,
+                    subtotal: item.price * item.quantity,
+                    notes: item.notes || null // ✅ Usando columna notes explícita
+                }))
+
+                const { error } = await supabase.from('order_items').insert(itemsToInsert)
+                if (error) throw error
             }
-            const itemsToInsert = cart.map(item => ({ order_id: orderId, product_id: item.product_id, quantity: item.quantity, unit_price: item.price, customizations: item.notes ? { notes: item.notes } : null }))
-            await supabase.from('order_items').insert(itemsToInsert)
-            setCart([]); setSelectedTable(null); setCurrentTableOrder(null); setView('tables'); fetchMyOrders(); setShowReviewModal(false);
-        } catch (e) { }
+
+            // Exito
+            setCart([]); setSelectedTable(null); setCurrentTableOrder(null); setView('tables');
+            fetchMyOrders(); setShowReviewModal(false);
+
+        } catch (e: any) {
+            console.error("Error submitting order:", e)
+            alert("Error al enviar el pedido: " + e.message)
+        }
         finally { setSubmitting(false) }
     }
 
@@ -506,7 +552,7 @@ export default function WaiterPortalPage() {
                                 {products.filter(p => (!activeCategory || p.category_id === activeCategory) && (!searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))).map(product => (
                                     <button
                                         key={product.id}
-                                        onClick={() => addToCart(product)}
+                                        onClick={() => setCustomizingProduct(product)}
                                         className={cn(
                                             "bg-white border border-slate-200 group hover:border-primary transition-all active:scale-95 flex items-center shadow-sm",
                                             showImages ? "flex-col rounded-[2.5rem] text-center p-4" : "flex-row rounded-2xl gap-4 text-left p-3"
@@ -536,6 +582,56 @@ export default function WaiterPortalPage() {
                                         {!showImages && <Plus className="w-6 h-6 text-slate-300 group-hover:text-primary" />}
                                     </button>
                                 ))}
+                            </div>
+                        )}
+
+                        {/* 🛠️ CUSTOMIZATION MODAL */}
+                        {customizingProduct && (
+                            <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+                                <div className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-3xl animate-in zoom-in-95 duration-200 flex flex-col">
+                                    <div className="relative h-48 bg-slate-100">
+                                        {customizingProduct.image_url ? (
+                                            <img src={customizingProduct.image_url} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">🍽️</div>
+                                        )}
+                                        <button onClick={() => { setCustomizingProduct(null); setProductNotes(""); }} className="absolute top-4 right-4 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black transition-all">
+                                            <X className="w-6 h-6" />
+                                        </button>
+                                        <div className="absolute bottom-0 inset-x-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                                            <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">{customizingProduct.name}</h3>
+                                            <p className="text-primary font-black italic text-lg">${customizingProduct.price.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-2">Observaciones para Cocina</label>
+                                            <textarea
+                                                className="w-full h-32 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none placeholder:text-slate-300 italic"
+                                                placeholder="Ej: Sin cebolla, término medio, poca sal..."
+                                                value={productNotes}
+                                                onChange={(e) => setProductNotes(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="flex gap-4 pt-2">
+                                            <Button
+                                                onClick={() => { setCustomizingProduct(null); setProductNotes(""); }}
+                                                variant="ghost"
+                                                className="flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100"
+                                            >
+                                                Cancelar
+                                            </Button>
+                                            <Button
+                                                onClick={() => addToCart(customizingProduct, productNotes)}
+                                                className="flex-[2] h-16 rounded-2xl bg-primary text-black font-black uppercase text-lg italic tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+                                            >
+                                                AGREGAR
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

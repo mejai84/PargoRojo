@@ -1,34 +1,40 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { startShift } from "@/actions/pos"
 import { supabase } from "@/lib/supabase/client"
-import { Loader2, Sun, Moon, Sunset, Clock, User } from "lucide-react"
-import { useEffect } from "react"
+import { Loader2, Sun, Moon, Sunset, Clock, CalendarDays, ArrowRight } from "lucide-react"
 
 export default function StartShiftPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [user, setUser] = useState<any>(null)
+    const [shifts, setShifts] = useState<any[]>([])
+    const [fetchingShifts, setFetchingShifts] = useState(true)
 
     useEffect(() => {
-        const getUser = async () => {
+        const init = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
                 setUser({ ...user, profile })
             }
+
+            // Cargar turnos configurados
+            const { data } = await supabase.from('shift_definitions').select('*').eq('is_active', true).order('start_time')
+            setShifts(data || [])
+            setFetchingShifts(false)
         }
-        getUser()
+        init()
     }, [])
 
-    const handleStartShift = async (type: 'MORNING' | 'AFTERNOON' | 'NIGHT' | 'CUSTOM') => {
+    const handleStartShift = async (shiftId: string) => {
         setLoading(true)
         try {
             if (!user) return
-            await startShift(user.id, type)
+            await startShift(user.id, shiftId)
             router.push("/admin/cashier/open-box") // Siguiente paso lógico
         } catch (error: any) {
             alert(error.message)
@@ -36,86 +42,84 @@ export default function StartShiftPage() {
         }
     }
 
-    return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4">
-            <div className="max-w-2xl w-full space-y-8 animate-in fade-in zoom-in-95 duration-500">
+    const getIcon = (name: string) => {
+        const n = name.toLowerCase()
+        if (n.includes('mañana')) return <Sun className="w-12 h-12 text-amber-500" />
+        if (n.includes('tarde')) return <Sunset className="w-12 h-12 text-orange-500" />
+        if (n.includes('noche')) return <Moon className="w-12 h-12 text-indigo-500" />
+        return <Clock className="w-12 h-12 text-slate-400" />
+    }
 
-                <div className="text-center space-y-4">
-                    <div className="inline-flex p-4 rounded-3xl bg-primary/10 text-primary mb-4 ring-1 ring-primary/20">
-                        <Clock className="w-12 h-12" />
+    const getColor = (name: string) => {
+        const n = name.toLowerCase()
+        if (n.includes('mañana')) return "hover:bg-amber-50 hover:border-amber-400 text-amber-600"
+        if (n.includes('tarde')) return "hover:bg-orange-50 hover:border-orange-500 text-orange-600"
+        if (n.includes('noche')) return "hover:bg-indigo-50 hover:border-indigo-600 text-indigo-600"
+        return "hover:bg-slate-50 hover:border-slate-300 text-slate-600"
+    }
+
+    if (fetchingShifts) return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <Loader2 className="w-10 h-10 animate-spin text-slate-300" />
+        </div>
+    )
+
+    return (
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-8">
+            <div className="max-w-4xl w-full space-y-12 animate-in fade-in zoom-in-95 duration-500">
+
+                <div className="text-center space-y-6">
+                    <div className="inline-flex p-6 rounded-[2.5rem] bg-white text-primary mb-4 border border-slate-100 shadow-xl shadow-slate-200/50">
+                        <CalendarDays className="w-16 h-16" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter uppercase italic">
+                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase italic text-slate-900">
                         Iniciar <span className="text-primary">Jornada</span>
                     </h1>
-                    <p className="text-lg text-slate-500 font-medium max-w-md mx-auto">
-                        Hola, <span className="text-slate-900 font-bold">{user?.profile?.full_name || 'Cajero'}</span>.
-                        Selecciona tu turno para comenzar a operar.
+                    <p className="text-xl text-slate-400 font-bold max-w-lg mx-auto uppercase tracking-widest">
+                        Hola, <span className="text-slate-900 italic">{user?.profile?.full_name || 'Cajero'}</span>.
+                        <br />Selecciona tu horario asignado.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button
-                        onClick={() => handleStartShift('MORNING')}
-                        disabled={loading}
-                        className="group relative h-40 bg-white hover:bg-amber-400 border border-slate-200 hover:border-amber-400 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden shadow-sm"
-                    >
-                        <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Sun className="w-24 h-24 text-amber-500 group-hover:text-white" />
-                        </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-black">
-                            <span className="p-3 bg-amber-50 group-hover:bg-white/20 w-fit rounded-xl text-amber-500 group-hover:text-black">
-                                <Sun className="w-6 h-6" />
-                            </span>
-                            <div>
-                                <h3 className="text-2xl font-black uppercase italic tracking-tighter">Mañana</h3>
-                                <p className="text-sm font-bold opacity-60">06:00 AM - 02:00 PM</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {shifts.map(shift => (
+                        <button
+                            key={shift.id}
+                            onClick={() => handleStartShift(shift.id)}
+                            disabled={loading}
+                            className={`group relative h-64 bg-white border border-slate-200 rounded-[3rem] p-8 text-left transition-all duration-300 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 flex flex-col justify-between ${getColor(shift.name)}`}
+                        >
+                            <div className="absolute right-0 top-0 p-8 opacity-5 group-hover:opacity-10 group-hover:scale-150 transition-transform duration-700">
+                                {getIcon(shift.name)}
                             </div>
-                        </div>
-                    </button>
 
-                    <button
-                        onClick={() => handleStartShift('AFTERNOON')}
-                        disabled={loading}
-                        className="group relative h-40 bg-white hover:bg-orange-500 border border-slate-200 hover:border-orange-500 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden shadow-sm"
-                    >
-                        <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Sunset className="w-24 h-24 text-orange-500 group-hover:text-white" />
-                        </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-white">
-                            <span className="p-3 bg-orange-50 group-hover:bg-white/20 w-fit rounded-xl text-orange-500 group-hover:text-white">
-                                <Sunset className="w-6 h-6" />
-                            </span>
-                            <div>
-                                <h3 className="text-2xl font-black uppercase italic tracking-tighter">Tarde</h3>
-                                <p className="text-sm font-bold opacity-60">02:00 PM - 10:00 PM</p>
+                            <div className="relative z-10 flex justify-between items-start">
+                                <span className="p-4 bg-slate-50 group-hover:bg-white w-fit rounded-3xl shadow-sm transition-colors mb-4 block">
+                                    {getIcon(shift.name)}
+                                </span>
                             </div>
-                        </div>
-                    </button>
 
-                    <button
-                        onClick={() => handleStartShift('NIGHT')}
-                        disabled={loading}
-                        className="group relative h-40 bg-white hover:bg-indigo-600 border border-slate-200 hover:border-indigo-600 rounded-[2rem] p-6 text-left transition-all duration-300 overflow-hidden md:col-span-2 shadow-sm"
-                    >
-                        <div className="absolute right-0 top-0 p-8 opacity-10 group-hover:opacity-20 group-hover:scale-125 transition-all">
-                            <Moon className="w-24 h-24 text-indigo-500 group-hover:text-white" />
-                        </div>
-                        <div className="relative z-10 h-full flex flex-col justify-between text-slate-900 group-hover:text-white">
-                            <span className="p-3 bg-indigo-50 group-hover:bg-white/20 w-fit rounded-xl text-indigo-500 group-hover:text-white">
-                                <Moon className="w-6 h-6" />
-                            </span>
-                            <div>
-                                <h3 className="text-2xl font-black uppercase italic tracking-tighter">Noche / Cierre</h3>
-                                <p className="text-sm font-bold opacity-60">10:00 PM - Cierre</p>
+                            <div className="relative z-10">
+                                <h3 className="text-3xl font-black uppercase italic tracking-tighter mb-2 text-slate-900">{shift.name}</h3>
+                                <p className="text-sm font-black opacity-60 uppercase tracking-widest flex items-center gap-2">
+                                    {shift.start_time.slice(0, 5)} <ArrowRight className="w-4 h-4" /> {shift.end_time.slice(0, 5)}
+                                </p>
                             </div>
+                        </button>
+                    ))}
+
+                    {shifts.length === 0 && (
+                        <div className="col-span-full text-center p-12 bg-white rounded-[3rem] border border-dashed border-slate-300">
+                            <p className="text-slate-400 font-black uppercase tracking-widest italic">No hay turnos configurados.</p>
+                            <p className="text-xs text-slate-300 mt-2">Contacta al administrador del sistema.</p>
                         </div>
-                    </button>
+                    )}
                 </div>
 
                 {loading && (
-                    <div className="flex items-center justify-center gap-2 text-primary animate-pulse">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span className="font-bold text-sm tracking-widest uppercase">Asignando turno...</span>
+                    <div className="flex flex-col items-center justify-center gap-4 text-primary animate-pulse py-8">
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                        <span className="font-black text-xs tracking-[0.3em] uppercase italic">Configurando entorno POS...</span>
                     </div>
                 )}
             </div>

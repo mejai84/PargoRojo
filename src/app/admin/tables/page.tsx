@@ -22,11 +22,13 @@ import {
     RotateCcw,
     Circle,
     Square as SquareIcon,
-    Flame
+    Flame,
+    ArrowLeftRight
 } from "lucide-react"
 import Link from "next/link"
 import QRCodeStyling from "qr-code-styling"
 import { cn } from "@/lib/utils"
+import { transferOrderBetweenTables } from "@/actions/orders-fixed"
 
 type Table = {
     id: string
@@ -59,6 +61,61 @@ export default function TablesAdminPage() {
     const [activeZone, setActiveZone] = useState<string>("TODAS")
     const [isHeatmapMode, setIsHeatmapMode] = useState(false)
     const [tableSales, setTableSales] = useState<Record<string, number>>({})
+
+    // Transferencia de Pedidos
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
+    const [transferSourceTable, setTransferSourceTable] = useState<Table | null>(null)
+    const [transferTargetTableId, setTransferTargetTableId] = useState<string>("")
+    const [activeOrderToTransfer, setActiveOrderToTransfer] = useState<string | null>(null)
+
+    // ... (rest of states and effects)
+
+    const initiateTransfer = async (table: Table) => {
+        // Verificar si la mesa tiene orden activa
+        const { data: order } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('table_id', table.id)
+            .in('status', ['pending', 'preparing', 'ready', 'delivered'])
+            .single()
+
+        if (!order) {
+            alert("Esta mesa no tiene un pedido activo para transferir.")
+            return
+        }
+
+        setTransferSourceTable(table)
+        setActiveOrderToTransfer(order.id)
+        setIsTransferModalOpen(true)
+    }
+
+    const handleTransferSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!activeOrderToTransfer || !transferTargetTableId) return
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) { alert("Sesión inválida"); return }
+
+            const result = await transferOrderBetweenTables({
+                order_id: activeOrderToTransfer,
+                target_table_id: transferTargetTableId,
+                user_id: user.id,
+                reason: "Transferencia solicitada desde mapa de mesas"
+            })
+
+            if (result.success) {
+                alert(result.message)
+                setIsTransferModalOpen(false)
+                setTransferSourceTable(null)
+                setActiveOrderToTransfer(null)
+                setTransferTargetTableId("")
+                loadTables()
+            }
+        } catch (error: any) {
+            alert(error.message)
+        }
+    }
 
     // Layout Editor State
     const [draggedTableId, setDraggedTableId] = useState<string | null>(null)
@@ -95,24 +152,38 @@ export default function TablesAdminPage() {
     const saveLayout = async () => {
         setSavingLayout(true)
         try {
+            // Preparar datos para upsert masivo
             const updates = tables.map(t => ({
                 id: t.id,
-                x_pos: t.x_pos,
-                y_pos: t.y_pos,
+                table_number: t.table_number, // Requerido para upsert
+                table_name: t.table_name,     // Requerido para upsert
+                x_pos: Math.round(t.x_pos),
+                y_pos: Math.round(t.y_pos),
                 width: t.width,
                 height: t.height,
                 rotation: t.rotation,
-                shape: t.shape
+                shape: t.shape,
+                // Mantener otros campos requeridos
+                capacity: t.capacity,
+                location: t.location,
+                qr_code: t.qr_code,
+                status: t.status,
+                active: t.active
             }))
 
-            for (const update of updates) {
-                await supabase.from('tables').update(update).eq('id', update.id)
-            }
-            alert("¡Plano de sala guardado exitosamente! 🏰")
-        } catch (error) {
-            alert("Error al guardar diseño")
+            const { error } = await supabase
+                .from('tables')
+                .upsert(updates, { onConflict: 'id' })
+
+            if (error) throw error
+
+            alert("¡Layout guardado exitosamente!")
+        } catch (error: any) {
+            console.error('Error saving layout:', error)
+            alert(`Error al guardar: ${error.message}`)
+        } finally {
+            setSavingLayout(false)
         }
-        setSavingLayout(false)
     }
 
     const handleMouseDown = (e: React.MouseEvent, tableId: string) => {
@@ -411,6 +482,9 @@ export default function TablesAdminPage() {
                                             <button onClick={(e) => { e.stopPropagation(); updateTableDimension(table.id, 'width', table.width + 20) }} title="Aumentar Ancho" className="w-10 h-10 rounded-xl hover:bg-white hover:text-black flex items-center justify-center transition-all"><Maximize2 className="w-4 h-4" /></button>
                                             <button onClick={(e) => { e.stopPropagation(); updateTableDimension(table.id, 'height', table.height + 20) }} title="Aumentar Alto" className="w-10 h-10 rounded-xl hover:bg-white hover:text-black flex items-center justify-center transition-all rotate-90"><Maximize2 className="w-4 h-4" /></button>
                                             <div className="w-px h-6 bg-white/10 self-center mx-1" />
+                                            {table.status !== 'available' && (
+                                                <button onClick={(e) => { e.stopPropagation(); initiateTransfer(table); }} title="Mover Pedido" className="w-10 h-10 rounded-xl hover:bg-blue-500 hover:text-white flex items-center justify-center transition-all"><ArrowLeftRight className="w-4 h-4" /></button>
+                                            )}
                                             <button onClick={(e) => { e.stopPropagation(); setSelectedTable(table); setIsEditModalOpen(true); }} className="w-10 h-10 rounded-xl hover:bg-primary hover:text-black flex items-center justify-center transition-all"><Edit className="w-4 h-4" /></button>
                                             <button onClick={(e) => { e.stopPropagation(); deleteTable(table); }} className="w-10 h-10 rounded-xl hover:bg-rose-500 hover:text-white flex items-center justify-center transition-all"><Trash2 className="w-4 h-4" /></button>
                                         </div>
@@ -449,6 +523,11 @@ export default function TablesAdminPage() {
                                         <Button onClick={() => generateQRCode(table)} variant="ghost" className="flex-1 h-12 bg-slate-50 border border-slate-100 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 hover:text-white transition-all gap-2">
                                             <QrCode className="w-3.5 h-3.5" /> QR
                                         </Button>
+                                        {table.status !== 'available' && (
+                                            <Button onClick={(e) => { e.stopPropagation(); initiateTransfer(table); }} variant="ghost" className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl text-blue-500 hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center">
+                                                <ArrowLeftRight className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                         <Button onClick={() => { setSelectedTable(table); setIsEditModalOpen(true); }} variant="ghost" className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl hover:bg-primary hover:text-black transition-all flex items-center justify-center">
                                             <Edit className="w-4 h-4" />
                                         </Button>
@@ -576,6 +655,50 @@ export default function TablesAdminPage() {
                             <div className="flex gap-4 pt-6">
                                 <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => { setIsEditModalOpen(false); setSelectedTable(null); }}>CANCELAR</Button>
                                 <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all">ACTUALIZAR</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {isTransferModalOpen && transferSourceTable && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white border border-slate-200 p-10 rounded-[3rem] w-full max-w-xl animate-in zoom-in duration-300 shadow-3xl text-slate-900">
+                        <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-4">Mover Pedido</h2>
+                        <p className="mb-6 text-slate-500 font-medium">
+                            Transfiriendo pedido de <span className="text-primary font-black">{transferSourceTable.table_name}</span> a:
+                        </p>
+
+                        <form className="space-y-6" onSubmit={handleTransferSubmit}>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Mesa de Destino</label>
+                                <select
+                                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-slate-900 focus:border-primary font-black italic text-lg"
+                                    value={transferTargetTableId}
+                                    onChange={(e) => setTransferTargetTableId(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Seleccione mesa destino...</option>
+                                    {tables
+                                        .filter(t => t.id !== transferSourceTable.id) // Excluir origen
+                                        .sort((a, b) => a.table_number - b.table_number)
+                                        .map(t => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.table_number} - {t.table_name} ({t.status === 'available' ? 'Libre' : 'Ocupada'})
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                <p className="text-[10px] text-amber-500 font-bold pl-2 pt-1 inline-flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                                    Si la mesa destino está ocupada, los pedidos se FUSIONARÁN.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <Button type="button" variant="ghost" className="flex-1 rounded-2xl font-black italic uppercase" onClick={() => setIsTransferModalOpen(false)}>CANCELAR</Button>
+                                <Button type="submit" className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase italic tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all">
+                                    CONFIRMAR
+                                </Button>
                             </div>
                         </form>
                     </div>

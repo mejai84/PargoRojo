@@ -1,6 +1,6 @@
 # 📋 Tareas Pendientes - Proyecto Pargo Rojo
 
-> **Última actualización:** 26 de enero de 2026, 00:35 CET
+> **Última actualización:** 27 de enero de 2026, 23:21 CET
 > **🤖 REGLA PARA EL AGENTE:** Actualizar este archivo conforme se vayan completando las tareas.
 
 ---
@@ -65,7 +65,24 @@
 
 ## ✅ TAREAS COMPLETADAS
 
-*(Las tareas se moverán aquí cuando estén listas)*
+### 24. ✅ Optimización de Flujos Críticos - Fase 1
+- **Estado:** ✅ COMPLETADO
+- **Fecha:** 27 de enero de 2026
+- **Descripción:**
+  - ✅ Transacciones atómicas para ventas (TODO o NADA)
+  - ✅ Validación preventiva de stock en tiempo real
+  - ✅ Anulaciones con doble autorización y auditoría completa
+  - ✅ Componente de venta optimizado
+  - ✅ Server actions mejoradas
+- **Archivos creados:**
+  - `supabase_migrations/120_atomic_transactions_optimization.sql`
+  - `src/actions/sales-optimized.ts`
+  - `src/components/admin/optimized-sale.tsx`
+  - `docs/core/OPTIMIZACION_FLUJOS_CRITICOS.md`
+  - `OPTIMIZACION_FASE1_RESUMEN.md`
+- **Próximo paso:** Ejecutar migración 120 en Supabase
+
+*(Las tareas anteriores se mantienen aquí)*
 
 ---
 

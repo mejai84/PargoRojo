@@ -474,16 +474,43 @@ export default function AdminOrdersPage() {
                                 </div>
                                 <div className="flex gap-4">
                                     {selectedOrder.status === 'payment_pending' && (
-                                        <Button
-                                            onClick={async () => {
-                                                await supabase.from('orders').update({ status: 'delivered', payment_status: 'paid' }).eq('id', selectedOrder.id)
-                                                if (selectedOrder.table_id) await supabase.from('tables').update({ status: 'available' }).eq('id', selectedOrder.table_id)
-                                                fetchOrders(); setSelectedOrder(null); alert("¡Venta cerrada y puntos asignados! 💰 Client Experience loop activado.")
-                                            }}
-                                            className="h-20 px-10 bg-primary text-black rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase shadow-3xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all gap-4"
-                                        >
-                                            CERRAR Y COBRAR <Receipt className="w-6 h-6" />
-                                        </Button>
+                                        <div className="flex gap-3">
+                                            <Button
+                                                onClick={async () => {
+                                                    if (!currentUser) return alert("Error de sesión")
+                                                    if (!confirm("¿Confirmas el pago en EFECTIVO? Se registrará en Caja.")) return
+
+                                                    try {
+                                                        const { processOrderPayment } = await import("@/actions/pos")
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'cash', selectedOrder.total)
+                                                        fetchOrders(); setSelectedOrder(null)
+                                                        alert("✅ Venta Efectivo Registrada")
+                                                    } catch (e: any) {
+                                                        alert("Error: " + e.message)
+                                                    }
+                                                }}
+                                                className="h-20 px-6 bg-emerald-500 text-white rounded-[1.5rem] font-black text-lg italic tracking-tighter uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all gap-2"
+                                            >
+                                                EFECTIVO 💵
+                                            </Button>
+                                            <Button
+                                                onClick={async () => {
+                                                    if (!currentUser) return alert("Error de sesión")
+
+                                                    try {
+                                                        const { processOrderPayment } = await import("@/actions/pos")
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'card', selectedOrder.total)
+                                                        fetchOrders(); setSelectedOrder(null)
+                                                        alert("✅ Venta Tarjeta Registrada")
+                                                    } catch (e: any) {
+                                                        alert("Error: " + e.message)
+                                                    }
+                                                }}
+                                                className="h-20 px-6 bg-indigo-500 text-white rounded-[1.5rem] font-black text-lg italic tracking-tighter uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all gap-2"
+                                            >
+                                                TARJETA 💳
+                                            </Button>
+                                        </div>
                                     )}
                                     {selectedOrder.status === 'pending' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'preparing' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-slate-900 text-white rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-slate-900/20">MARCAR PREPARANDO <ChefHat className="w-6 h-6" /></Button>}
                                     {selectedOrder.status === 'preparing' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'ready' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-purple-600 text-white rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-purple-600/20">MARCAR LISTO <CheckCircle2 className="w-6 h-6" /></Button>}
