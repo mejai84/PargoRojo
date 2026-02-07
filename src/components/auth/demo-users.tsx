@@ -11,36 +11,36 @@ interface DemoUserProps {
 export function DemoUsers({ onSelect }: DemoUserProps) {
     const users = [
         {
-            email: "demo@pargorojo.com",
-            pass: "DemoUser2026!",
-            role: "Administrador",
+            email: "admin.demo@pargorojo.com",
+            pass: "password123",
+            role: "Administrador (Demo)",
             icon: ShieldCheck,
             color: "text-primary",
             bg: "bg-primary/10"
         },
         {
-            email: "andres.mesero@pargorojo.com",
-            pass: "PargoRojo2024!",
-            role: "Mesero",
+            email: "clara.caja@pargorojo.com",
+            pass: "password123",
+            role: "Cajera (Clara)",
+            icon: Wallet,
+            color: "text-emerald-400",
+            bg: "bg-emerald-400/10"
+        },
+        {
+            email: "marcos.mesero@pargorojo.com",
+            pass: "password123",
+            role: "Mesero (Marcos)",
             icon: UserIcon,
             color: "text-blue-400",
             bg: "bg-blue-400/10"
         },
         {
-            email: "elena.chef@pargorojo.com",
-            pass: "PargoRojo2024!",
-            role: "Chef / Cocina",
+            email: "carlos.chef@pargorojo.com",
+            pass: "password123",
+            role: "Chef / Cocina (Carlos)",
             icon: ChefHat,
             color: "text-orange-400",
             bg: "bg-orange-400/10"
-        },
-        {
-            email: "ana.caja@pargorojo.com",
-            pass: "PargoRojo2024!",
-            role: "Cajero",
-            icon: Wallet,
-            color: "text-emerald-400",
-            bg: "bg-emerald-400/10"
         }
     ]
 
