@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Clock, LogOut, Power } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 export function ShiftGuard({ children }: { children: React.ReactNode }) {
     const [hasActiveShift, setHasActiveShift] = useState<boolean | null>(null)
@@ -12,10 +12,11 @@ export function ShiftGuard({ children }: { children: React.ReactNode }) {
     const [userRole, setUserRole] = useState<string>("")
     const [userId, setUserId] = useState<string>("")
     const router = useRouter()
+    const pathname = usePathname()
 
     useEffect(() => {
         checkShift()
-    }, [])
+    }, [pathname])
 
     const checkShift = async () => {
         const { data: { user } } = await supabase.auth.getUser()
@@ -33,8 +34,38 @@ export function ShiftGuard({ children }: { children: React.ReactNode }) {
         const role = profile?.role || ''
         setUserRole(role)
 
+        // REDIRECCIÓN AUTOMÁTICA SEGÚN EL ROL (solo para /admin exacto)
+        if (pathname === '/admin') {
+            const roleRedirects: Record<string, string> = {
+                'cashier': '/admin/cashier/start-shift',
+                'waiter': '/admin/waiter',
+                'cook': '/admin/kitchen',
+                'chef': '/admin/kitchen',
+                'host': '/admin/reservations',
+                'driver': '/admin/driver'
+            }
+
+            if (roleRedirects[role]) {
+                router.push(roleRedirects[role])
+                return
+            }
+        }
+
+        // Rutas permitidas sin turno activo (para evitar bloqueo circular)
+        const allowedWithoutShift = [
+            '/admin/cashier/start-shift',
+            '/admin/cashier/open-box'
+        ]
+
         // Admin, Owner y Manager no necesitan turno obligatorio para entrar
         if (['admin', 'owner', 'manager'].includes(role)) {
+            setHasActiveShift(true)
+            setLoading(false)
+            return
+        }
+
+        // Si está en una ruta permitida sin turno, permitir acceso
+        if (allowedWithoutShift.includes(pathname)) {
             setHasActiveShift(true)
             setLoading(false)
             return

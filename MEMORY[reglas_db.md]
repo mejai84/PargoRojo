@@ -1,0 +1,20 @@
+# REGLAS DE GESTIÓN DE BASE DE DATOS
+
+## 1. 🛑 REGLA DE ORO: PERMISO EXPLÍCITO
+Cualquier modificación a la base de datos (INSERT, UPDATE, DELETE, ALTER, DROP, GRANT, etc.) requiere **solicitar permiso explícito al usuario antes de ejecutarse**.
+
+**Protocolo de actuación:**
+1.  **Analizar** el problema.
+2.  **Redactar** el script SQL propuesto.
+3.  **Explicar** claramente qué hará el script y qué riesgos implica.
+4.  **Preguntar:** "¿Me das permiso para ejecutar este cambio?"
+5.  **Solo ejecutar** (o pedir al usuario que ejecute) tras recibir un "SÍ".
+
+## 2. 🎮 CONTROL TÉCNICO (AGENTE)
+Para que el Agente pueda tener control y ejecutar las correcciones directamente (evitando el copy-paste manual del usuario), se requiere:
+- Acceso a la `CONNECTION_STRING` (DATABASE_URL) en el archivo `.env.local`.
+- Uso de scripts de automatización (ej: `npm run db:execute`).
+
+## 3. 🛡️ SEGURIDAD
+- Nunca subir credenciales (`service_role`, contraseñas) a repositorios públicos.
+- Realizar backups (dump) antes de operaciones destructivas masivas.

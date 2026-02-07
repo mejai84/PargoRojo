@@ -286,9 +286,11 @@ export default function CashierPage() {
                             <Button onClick={() => { setBillCounts({}); setModalData(prev => ({ ...prev, amount: 0 })); setModalOpen('audit') }} className="h-24 rounded-[2rem] bg-indigo-50/50 hover:bg-white text-indigo-900 border border-indigo-100 flex flex-col gap-1 font-black uppercase text-[9px] tracking-widest italic col-span-1">
                                 <Scale className="w-5 h-5" /> ARQUEO PARCIAL
                             </Button>
-                            <Button onClick={() => { setBillCounts({}); setModalData(prev => ({ ...prev, amount: 0 })); setModalOpen('close') }} className="h-24 rounded-[2rem] bg-white border border-slate-200 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all flex flex-col gap-1 font-black uppercase text-[9px] tracking-widest italic col-span-1 text-slate-900 shadow-lg">
-                                <Lock className="w-5 h-5" /> CERRAR CAJA
-                            </Button>
+                            <Link href="/admin/cashier/close-shift" className="col-span-1">
+                                <Button className="w-full h-24 rounded-[2rem] bg-white border border-slate-200 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all flex flex-col gap-1 font-black uppercase text-[9px] tracking-widest italic text-slate-900 shadow-lg">
+                                    <Lock className="w-5 h-5" /> CERRAR TURNO
+                                </Button>
+                            </Link>
                         </div>
                     </div>
 

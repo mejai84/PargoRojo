@@ -19,7 +19,9 @@ import {
     Activity,
     Smartphone,
     Monitor,
-    Globe
+    Globe,
+    Shield,
+    FileText
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
@@ -221,6 +223,16 @@ export default function AdminDashboard() {
                         <DashboardAction icon={<Users />} label="Clientes" href="/admin/customers" />
                         <DashboardAction icon={<Smartphone />} label="POS APP" href="/admin/cashier" />
                         <DashboardAction icon={<Monitor />} label="Cocinero" href="/admin/kitchen" />
+                    </div>
+
+                    {/* SUPERVISION & SECURITY */}
+                    <div className="pt-8 border-t border-slate-100">
+                        <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic mb-6">Supervisión</h3>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            <DashboardAction icon={<FileText className="text-purple-500" />} label="Auditoría" href="/admin/audit" />
+                            <DashboardAction icon={<Shield className="text-emerald-500" />} label="Permisos" href="/admin/employees" />
+                            <DashboardAction icon={<Users className="text-blue-500" />} label="Staff" href="/admin/employees" />
+                        </div>
                     </div>
                 </div>
             </div>

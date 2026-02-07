@@ -55,7 +55,9 @@ export function Navbar() {
             .single()
 
         if (!error && data) {
-            setIsAdmin(data.role === 'admin' || data.role === 'staff')
+            // Roles con acceso al panel de administración
+            const adminRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook']
+            setIsAdmin(adminRoles.includes(data.role))
         }
     }
 

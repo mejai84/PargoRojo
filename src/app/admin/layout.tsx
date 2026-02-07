@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useOrderNotifications } from "@/hooks/use-order-notifications"
+import { Toaster } from "@/components/ui/sonner"
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -9,6 +11,7 @@ import {
     Settings,
     LogOut,
     Users,
+    User,
     Menu,
     ChefHat,
     BarChart3,
@@ -91,6 +94,12 @@ const sidebarSections = [
             { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
             { icon: Printer, label: "Soporte Impresoras", href: "/admin/settings/printers", roles: ['admin', 'manager'] },
         ]
+    },
+    {
+        title: "MI CUENTA",
+        items: [
+            { icon: User, label: "Mi Perfil", href: "/admin/me", roles: ['admin', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host'] },
+        ]
     }
 ]
 
@@ -104,6 +113,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [userName, setUserName] = useState<string>("")
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+    // Activar Notificaciones Real-Time Globales
+    useOrderNotifications()
+
     useEffect(() => {
         const checkAuth = async () => {
             const { data: { session } } = await supabase.auth.getSession()
@@ -115,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             const { data } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single()
 
-            const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host']
+            const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host', 'driver']
 
             if (!data || !allowedRoles.includes(data.role)) {
                 router.push("/")
@@ -352,6 +364,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                     <PargoBot />
                     <IncomingOrderAlert />
+                    <Toaster />
                 </main>
 
                 <style jsx global>{`

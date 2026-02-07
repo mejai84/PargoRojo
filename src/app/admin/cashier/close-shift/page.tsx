@@ -1,0 +1,327 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
+import {
+    Banknote,
+    Coins,
+    Calculator,
+    ArrowRight,
+    CheckCircle2,
+    AlertTriangle,
+    Loader2,
+    CircleDollarSign,
+    LogOut,
+    Lock
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { formatPrice, cn } from "@/lib/utils"
+import { toast } from "sonner"
+
+// Denominaciones Moneda Colombiana (COP)
+const DENOMINATIONS = [
+    { value: 100000, label: "$100.000", type: 'bill' },
+    { value: 50000, label: "$50.000", type: 'bill' },
+    { value: 20000, label: "$20.000", type: 'bill' },
+    { value: 10000, label: "$10.000", type: 'bill' },
+    { value: 5000, label: "$5.000", type: 'bill' },
+    { value: 2000, label: "$2.000", type: 'bill' },
+    { value: 1000, label: "$1.000", type: 'coin' },
+    { value: 500, label: "$500", type: 'coin' },
+    { value: 200, label: "$200", type: 'coin' },
+    { value: 100, label: "$100", type: 'coin' },
+    { value: 50, label: "$50", type: 'coin' },
+]
+
+export default function CloseShiftPage() {
+    const router = useRouter()
+    const [loading, setLoading] = useState(true)
+    const [step, setStep] = useState(1) // 1: Arqueo, 2: Resumen, 3: Éxito
+    const [counts, setCounts] = useState<Record<number, number>>({})
+    const [systemTotal, setSystemTotal] = useState(0) // Lo que el sistema espera (Ventas Cash + Base Inicial - Egresos)
+    const [baseAmount, setBaseAmount] = useState(0)
+    const [cashSales, setCashSales] = useState(0)
+    const [expenses, setExpenses] = useState(0)
+
+    // Datos de Sesión
+    const [sessionId, setSessionId] = useState<string | null>(null)
+    const [shiftId, setShiftId] = useState<string | null>(null)
+
+    useEffect(() => {
+        loadSessionData()
+    }, [])
+
+    const loadSessionData = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) return
+
+            // 1. Buscar Turno Activo
+            const { data: shift } = await supabase
+                .from('shifts')
+                .select('id')
+                .eq('user_id', user.id)
+                .is('ended_at', null)
+                .single()
+
+            if (!shift) {
+                toast.error("No tienes un turno activo para cerrar")
+                router.push('/admin/cashier/start-shift') // Redirigir a inicio
+                return
+            }
+            setShiftId(shift.id)
+
+            // 2. Buscar Sesión de Caja Activa
+            // Asumimos que la sesión de caja está ligada al usuario o turno
+            // Buscamos la última sesión OPEN de este usuario
+            const { data: session } = await supabase
+                .from('cashbox_sessions')
+                .select('*')
+                .eq('opened_by', user.id)
+                .is('closed_at', null)
+                .order('opened_at', { ascending: false })
+                .limit(1)
+                .single()
+
+            if (session) {
+                setSessionId(session.id)
+                setBaseAmount(session.opening_amount || 0)
+
+                // 3. Calcular Ventas en Efectivo de ESTA sesión
+                // Sumar orders donde payment_method = 'cash' y created_at > session.opened_at
+                const { data: orders } = await supabase
+                    .from('orders') // O payments si existe tabla separada
+                    .select('total_amount, payment_method')
+                    .gte('created_at', session.opened_at)
+                    .eq('status', 'delivered') // Solo pagadas/entregadas
+                    .eq('payment_method', 'cash') // Asumiendo columna simple por ahora
+
+                const calculatedSales = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+                setCashSales(calculatedSales)
+
+                // 4. Calcular Egresos de Caja Menor (si hay sistema)
+                // Por ahora 0
+                const calculatedExpenses = 0
+                setExpenses(calculatedExpenses)
+
+                // TOTAL ESPERADO EN CAJA
+                setSystemTotal((session.opening_amount || 0) + calculatedSales - calculatedExpenses)
+                setLoading(false)
+            } else {
+                // Si no hay sesión de caja pero hay turno (raro), forzamos cierre de turno solamente
+                setSystemTotal(0)
+                setLoading(false)
+            }
+
+        } catch (error) {
+            console.error("Error loading shift", error)
+            setLoading(false)
+        }
+    }
+
+    const handleCountChange = (denom: number, qty: string) => {
+        const val = parseInt(qty) || 0
+        setCounts(prev => ({ ...prev, [denom]: val }))
+    }
+
+    const calculatedTotal = DENOMINATIONS.reduce((sum, d) => sum + (d.value * (counts[d.value] || 0)), 0)
+    const difference = calculatedTotal - systemTotal
+
+    const handleCloseShift = async () => {
+        if (!shiftId) return
+
+        setLoading(true)
+        try {
+            const now = new Date().toISOString()
+
+            // 1. Cerrar Sesión de Caja (si existe)
+            if (sessionId) {
+                await supabase.from('cashbox_sessions').update({
+                    closed_at: now,
+                    closed_by: (await supabase.auth.getUser()).data.user?.id,
+                    closing_amount: calculatedTotal,
+                    difference: difference,
+                    final_notes: "Cierre asistido por Smart Z-Report"
+                }).eq('id', sessionId)
+            }
+
+            // 2. Cerrar Turno
+            await supabase.from('shifts').update({
+                ended_at: now,
+                status: 'CLOSED'
+            }).eq('id', shiftId)
+
+            setStep(3) // Éxito
+            toast.success("Turno cerrado correctamente")
+        } catch (error) {
+            console.error("Error closing", error)
+            toast.error("Error al cerrar el turno")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    if (loading && step !== 3) {
+        return <div className="h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+    }
+
+    if (step === 3) {
+        return (
+            <div className="h-screen flex items-center justify-center bg-slate-50 p-6">
+                <div className="bg-white rounded-[3rem] p-12 text-center max-w-lg w-full shadow-2xl space-y-8 animate-in zoom-in duration-500">
+                    <div className="w-32 h-32 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle2 className="w-16 h-16 text-emerald-600" />
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900 mb-2">¡TURNO CERRADO!</h1>
+                        <p className="text-slate-500 font-medium">Todo ha quedado registrado correctamente.</p>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="font-bold text-slate-400 uppercase">Ventas Total</span>
+                            <span className="font-black text-slate-900">{formatPrice(cashSales)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="font-bold text-slate-400 uppercase">Diferencia Caja</span>
+                            <span className={cn("font-black", difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-rose-500")}>
+                                {difference > 0 ? '+' : ''}{formatPrice(difference)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <Button onClick={() => window.location.href = '/login'} className="w-full h-16 text-xl font-black uppercase tracking-widest bg-slate-900 text-white rounded-2xl hover:bg-slate-800">
+                        <LogOut className="w-6 h-6 mr-2" /> Salir del Sistema
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+            {/* Header */}
+            <div className="bg-slate-900 text-white p-8 rounded-b-[2.5rem] shadow-xl pt-12 pb-16 relative overflow-hidden">
+                <div className="relative z-10 flex justify-between items-center max-w-4xl mx-auto">
+                    <div>
+                        <div className="flex items-center gap-2 text-primary/80 mb-1">
+                            <Lock className="w-4 h-4" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Cierre Seguro</span>
+                        </div>
+                        <h1 className="text-3xl font-black italic uppercase tracking-tighter">ARQUEO DE CAJA</h1>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Esperado en Caja</p>
+                        <p className="text-2xl font-black text-white font-mono">{formatPrice(systemTotal)}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 -mt-8 relative z-20 space-y-6">
+
+                {/* 1. Calculadora de Billetes */}
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                        <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                            <Calculator className="w-6 h-6" />
+                        </div>
+                        <h2 className="text-lg font-black uppercase italic tracking-wide text-slate-800">Conteo de Efectivo</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                        {/* Billetes */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Banknote className="w-4 h-4" /> Billetes</h3>
+                            {DENOMINATIONS.filter(d => d.type === 'bill').map((d) => (
+                                <div key={d.value} className="flex items-center gap-4">
+                                    <div className="w-24 text-right font-bold text-slate-600 text-sm">{d.label}</div>
+                                    <div className="flex-1 relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">x</span>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            className="pl-8 text-right font-mono font-bold bg-slate-50 border-slate-100 h-12 rounded-xl focus:ring-primary/20"
+                                            value={counts[d.value] || ''}
+                                            onChange={(e) => handleCountChange(d.value, e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="w-24 text-right font-bold text-slate-900 font-mono text-sm">
+                                        {formatPrice(d.value * (counts[d.value] || 0)).replace('$ ', '')}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Monedas */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Coins className="w-4 h-4" /> Monedas</h3>
+                            {DENOMINATIONS.filter(d => d.type === 'coin').map((d) => (
+                                <div key={d.value} className="flex items-center gap-4">
+                                    <div className="w-24 text-right font-bold text-slate-600 text-sm">{d.label}</div>
+                                    <div className="flex-1 relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">x</span>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            className="pl-8 text-right font-mono font-bold bg-slate-50 border-slate-100 h-12 rounded-xl focus:ring-primary/20"
+                                            value={counts[d.value] || ''}
+                                            onChange={(e) => handleCountChange(d.value, e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="w-24 text-right font-bold text-slate-900 font-mono text-sm">
+                                        {formatPrice(d.value * (counts[d.value] || 0)).replace('$ ', '')}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center bg-slate-50 p-6 rounded-2xl">
+                        <span className="text-sm font-black uppercase tracking-widest text-slate-500">Total Contado</span>
+                        <span className="text-4xl font-black text-slate-900 tracking-tighter">{formatPrice(calculatedTotal)}</span>
+                    </div>
+                </div>
+
+                {/* 2. Resumen y Acción */}
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 animate-in slide-in-from-bottom-8 duration-700 delay-100">
+                    <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
+                        <div className="flex-1 w-full space-y-2">
+                            <div className="flex justify-between items-center p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Esperado (Sistema)</span>
+                                <span className="font-bold text-slate-900">{formatPrice(systemTotal)}</span>
+                            </div>
+                            <div className={cn(
+                                "flex justify-between items-center p-4 rounded-xl border",
+                                difference === 0 ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
+                                    difference > 0 ? "bg-blue-50 border-blue-100 text-blue-700" : "bg-rose-50 border-rose-100 text-rose-700"
+                            )}>
+                                <span className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                    {difference === 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+                                    Diferencia
+                                </span>
+                                <span className="font-black text-lg">{formatPrice(difference)}</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-auto">
+                            <Button
+                                onClick={handleCloseShift}
+                                disabled={calculatedTotal === 0}
+                                className={cn(
+                                    "h-20 px-12 rounded-2xl text-lg font-black uppercase tracking-widest italic shadow-xl transition-all w-full md:w-auto",
+                                    difference === 0 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20" :
+                                        "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20"
+                                )}
+                            >
+                                {difference === 0 ? 'Confirmar Cierre Perfecto' : 'Cerrar Turno con Diferencia'} <ArrowRight className="w-6 h-6 ml-3" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    )
+}

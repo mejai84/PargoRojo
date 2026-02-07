@@ -1,5 +1,6 @@
 "use client"
 
+import { getUserPermissions, checkPermission, UserPermissions } from "@/lib/permissions"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -59,13 +60,22 @@ export default function EmployeesPage() {
     })
     const [submitting, setSubmitting] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
-
     const [businessInfo, setBusinessInfo] = useState<any>({ name: "PARGO ROJO" })
+    const [currentUserPerms, setCurrentUserPerms] = useState<UserPermissions | null>(null)
 
     useEffect(() => {
         fetchEmployees()
         fetchBusinessInfo()
+        loadPermissions()
     }, [])
+
+    async function loadPermissions() {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            const perms = await getUserPermissions(user.id)
+            setCurrentUserPerms(perms)
+        }
+    }
 
     async function fetchBusinessInfo() {
         const { data } = await supabase.from('settings').select('value').eq('key', 'business_info').single()
@@ -122,13 +132,14 @@ export default function EmployeesPage() {
         setSubmitting(true)
 
         try {
-            // 1. Create Auth User
+            // 1. Create Auth User WITH ROLE IN METADATA (para que el trigger lo tome)
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
                     data: {
                         full_name: formData.full_name,
+                        role: formData.role  // ← CRÍTICO: El trigger busca esto
                     }
                 }
             })
@@ -136,17 +147,27 @@ export default function EmployeesPage() {
             if (authError) throw authError
             if (!authData.user) throw new Error("No se pudo crear el usuario")
 
-            // 2. Profile is usually created by trigger, but we update role and info
+            // 2. Fetch current restaurant ID
+            const { data: { user: currentUser } } = await supabase.auth.getUser()
+            const { data: myProfile } = await supabase.from('profiles').select('restaurant_id').eq('id', currentUser?.id).single()
+            const restaurantId = myProfile?.restaurant_id || (await supabase.from('restaurants').select('id').single()).data?.id
+
+            // 3. Update Profile (El trigger lo creó, ahora lo completamos con datos adicionales)
             const { error: profileError } = await supabase
                 .from('profiles')
-                .update({
+                .upsert({
+                    id: authData.user.id,
+                    email: formData.email,
                     full_name: formData.full_name,
                     phone: formData.phone,
                     role: formData.role,
                     document_id: formData.document_id,
-                    hire_date: formData.hire_date
+                    hire_date: formData.hire_date,
+                    restaurant_id: restaurantId,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'id'  // Update si ya existe
                 })
-                .eq('id', authData.user.id)
 
             if (profileError) throw profileError
 
@@ -297,14 +318,16 @@ export default function EmployeesPage() {
                                             >
                                                 <Edit className="w-4 h-4" />
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="rounded-xl h-10 w-10 hover:bg-red-500/10 hover:text-red-500"
-                                                onClick={() => handleDeleteEmployee(emp.id)}
-                                            >
-                                                <Trash2 className="w-4 h-4 pointer-events-none" />
-                                            </Button>
+                                            {currentUserPerms && checkPermission(currentUserPerms, 'manage_employees') && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="rounded-xl h-10 w-10 hover:bg-red-500/10 hover:text-red-500"
+                                                    onClick={() => handleDeleteEmployee(emp.id)}
+                                                >
+                                                    <Trash2 className="w-4 h-4 pointer-events-none" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
 
@@ -437,7 +460,7 @@ export default function EmployeesPage() {
                                             <input
                                                 required
                                                 type="date"
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold text-white uppercase"
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
                                                 value={formData.hire_date}
                                                 onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
                                             />
