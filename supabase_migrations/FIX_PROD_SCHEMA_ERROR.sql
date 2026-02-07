@@ -4,7 +4,7 @@
 -- Causa: Recursión infinita en políticas RLS de 'profiles'
 -- =========================================================
 
--- 1. ELIMINAR POLÍTICAS PROBLEMÁTICAS EN PROFILES
+-- 1. ELIMINAR POLÍTICAS PROBLEMÁTICAS Y EXISTENTES
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
@@ -13,6 +13,11 @@ DROP POLICY IF EXISTS "Allow individual update access" ON profiles;
 DROP POLICY IF EXISTS "profiles_read_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_insert_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_update_policy" ON profiles;
+
+-- Eliminar también las nuevas por si ya existen (evita error 42710)
+DROP POLICY IF EXISTS "profiles_read_simple" ON profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert_own" ON profiles;
 
 -- 2. CREAR POLÍTICAS NO-RECURSIVAS (SIMPLIFICADAS)
 
