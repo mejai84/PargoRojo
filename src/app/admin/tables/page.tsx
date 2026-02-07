@@ -151,38 +151,120 @@ export default function TablesAdminPage() {
 
     const saveLayout = async () => {
         setSavingLayout(true)
+        console.log('🔄 [SAVE LAYOUT] Iniciando guardado de layout...')
+
         try {
-            // Preparar datos para upsert masivo
-            const updates = tables.map(t => ({
-                id: t.id,
-                table_number: t.table_number, // Requerido para upsert
-                table_name: t.table_name,     // Requerido para upsert
-                x_pos: Math.round(t.x_pos),
-                y_pos: Math.round(t.y_pos),
-                width: t.width,
-                height: t.height,
-                rotation: t.rotation,
-                shape: t.shape,
-                // Mantener otros campos requeridos
-                capacity: t.capacity,
-                location: t.location,
-                qr_code: t.qr_code,
-                status: t.status,
-                active: t.active
-            }))
+            // 1. Verificar autenticación
+            const { data: { user }, error: authError } = await supabase.auth.getUser()
+            if (authError || !user) {
+                throw new Error('Usuario no autenticado')
+            }
+            console.log('✅ [AUTH] Usuario autenticado:', user.email)
 
-            const { error } = await supabase
+            // 2. Verificar permisos del usuario
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+
+            if (profileError || !profile) {
+                throw new Error('No se pudo verificar el rol del usuario')
+            }
+            console.log('✅ [PERMISOS] Rol del usuario:', profile.role)
+
+            if (!['admin', 'staff', 'waiter'].includes(profile.role)) {
+                throw new Error(`Rol insuficiente: ${profile.role}. Se requiere admin/staff/waiter`)
+            }
+
+            // 3. Validar que hay mesas para guardar
+            if (!tables || tables.length === 0) {
+                throw new Error('No hay mesas para guardar')
+            }
+            console.log(`📊 [DATOS] Guardando ${tables.length} mesas...`)
+
+            // 4. Preparar datos con validación
+            const updates = tables.map((t, index) => {
+                const update = {
+                    id: t.id,
+                    table_number: t.table_number,
+                    table_name: t.table_name,
+                    x_pos: Math.round(t.x_pos),
+                    y_pos: Math.round(t.y_pos),
+                    width: t.width || 120,
+                    height: t.height || 120,
+                    rotation: t.rotation || 0,
+                    shape: t.shape || 'rectangle',
+                    capacity: t.capacity,
+                    location: t.location,
+                    qr_code: t.qr_code,
+                    status: t.status,
+                    active: t.active
+                }
+
+                // Log del primer registro para debugging
+                if (index === 0) {
+                    console.log('📋 [SAMPLE] Ejemplo de datos a guardar:', update)
+                }
+
+                return update
+            })
+
+            // 5. Ejecutar update
+            console.log('💾 [UPSERT] Ejecutando upsert en Supabase...')
+            const { data, error, count } = await supabase
                 .from('tables')
-                .upsert(updates, { onConflict: 'id' })
+                .upsert(updates, {
+                    onConflict: 'id',
+                    count: 'exact'
+                })
+                .select()
 
-            if (error) throw error
+            if (error) {
+                console.error('❌ [ERROR] Error de Supabase:', error)
+                throw error
+            }
 
-            alert("¡Layout guardado exitosamente!")
+            console.log('✅ [SUCCESS] Layout guardado exitosamente')
+            console.log(`📊 [RESULT] Registros actualizados: ${count || updates.length}`)
+
+            if (data && data.length > 0) {
+                console.log('✅ [VERIFY] Primer registro guardado:', data[0])
+            }
+
+            // 6. Recargar para verificar
+            console.log('🔄 [RELOAD] Recargando mesas desde BD...')
+            await loadTables()
+
+            alert("✅ ¡Layout guardado exitosamente!\n\n" +
+                `🎯 ${count || updates.length} mesas actualizadas\n` +
+                `📍 Las posiciones se han guardado correctamente`)
+
         } catch (error: any) {
-            console.error('Error saving layout:', error)
-            alert(`Error al guardar: ${error.message}`)
+            console.error('❌ [ERROR FATAL] Error saving layout:', error)
+            console.error('Stack:', error.stack)
+
+            // Mensaje de error más detallado para el usuario
+            let userMessage = '❌ Error al guardar el layout:\n\n'
+
+            if (error.message.includes('autenticado')) {
+                userMessage += '🔒 Sesión expirada. Por favor, vuelve a iniciar sesión.'
+            } else if (error.message.includes('permiso') || error.message.includes('Rol insuficiente')) {
+                userMessage += `🚫 ${error.message}\n\nContacta al administrador para obtener permisos.`
+            } else if (error.code === 'PGRST301') {
+                userMessage += '🔒 Error de permisos en la base de datos.\nVerifica las políticas RLS de la tabla tables.'
+            } else if (error.code === '42501') {
+                userMessage += '🔒 Permiso denegado por PostgreSQL.\nEjecuta la migración 125_fix_tables_rls_and_permissions.sql'
+            } else {
+                userMessage += `⚠️ ${error.message}\n\n` +
+                    `Código: ${error.code || 'N/A'}\n` +
+                    `Revisa la consola para más detalles.`
+            }
+
+            alert(userMessage)
         } finally {
             setSavingLayout(false)
+            console.log('🏁 [FINISH] Proceso de guardado finalizado')
         }
     }
 
