@@ -35,26 +35,36 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
                 // 1. Obtener la sesión actual
                 const { data: { session } } = await supabase.auth.getSession()
 
-                if (session) {
-                    // 2. Si hay sesión, buscamos el restaurant_id en el perfil
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('restaurant_id')
-                        .eq('id', session.user.id)
-                        .single()
+                if (session && session.user) {
+                    try {
+                        // 2. Si hay sesión, buscamos el restaurant_id en el perfil
+                        const { data: profile, error: profileError } = await supabase
+                            .from('profiles')
+                            .select('restaurant_id')
+                            .eq('id', session.user.id)
+                            .maybeSingle() // IMPORTANTE: Usa maybeSingle en vez de single para evitar error si no existe
 
-                    if (profile?.restaurant_id) {
-                        const { data: resData } = await supabase
-                            .from('restaurants')
-                            .select('*')
-                            .eq('id', profile.restaurant_id)
-                            .single()
-
-                        if (resData) {
-                            setRestaurant(resData)
-                            applyBranding(resData)
-                            return
+                        if (profileError) {
+                            console.warn("⚠️ Error leyendo perfil:", profileError);
                         }
+
+                        if (profile?.restaurant_id) {
+                            const { data: resData, error: restError } = await supabase
+                                .from('restaurants')
+                                .select('*')
+                                .eq('id', profile.restaurant_id)
+                                .maybeSingle()
+
+                            if (restError) console.warn("⚠️ Error leyendo restaurante:", restError);
+
+                            if (resData) {
+                                setRestaurant(resData)
+                                applyBranding(resData)
+                                return
+                            }
+                        }
+                    } catch (innerError) {
+                        console.error("🔥 Error interno en Provider:", innerError);
                     }
                 }
 

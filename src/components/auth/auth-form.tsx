@@ -23,16 +23,24 @@ export function AuthForm() {
         setMessage(null)
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            console.log("Intentando login con:", email); // LOG 1
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             })
-            if (error) throw error
+
+            if (error) {
+                console.error("ERROR SUPABASE AUTH:", error); // LOG 2
+                throw error;
+            }
+
+            console.log("Login exitoso:", data); // LOG 3
             router.push('/')
         } catch (error: any) {
+            console.error("ERROR CAPTURADO EN LOGIN:", error);
             setMessage({
                 type: 'error',
-                text: error.message || 'Ocurrió un error al intentar ingresar.'
+                text: error.message || 'Error desconocido (' + JSON.stringify(error) + ')'
             })
         } finally {
             setLoading(false)
