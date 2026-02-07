@@ -32,9 +32,26 @@ export default function Home() {
       const { data: settings } = await supabase.from('settings').select('*')
       if (settings) {
         const info = settings.find(s => s.key === 'business_info')
-        if (info) setBusinessInfo(info.value)
+        if (info && info.value) {
+          try {
+            // Parsear el JSON si viene como string
+            const parsedInfo = typeof info.value === 'string' ? JSON.parse(info.value) : info.value
+            if (parsedInfo && parsedInfo.name) {
+              setBusinessInfo(parsedInfo)
+            }
+          } catch (e) {
+            console.warn('Error parsing business_info:', e)
+          }
+        }
         const flags = settings.find(s => s.key === 'feature_flags')
-        if (flags) setShowImages(flags.value.menu_show_images ?? true)
+        if (flags && flags.value) {
+          try {
+            const parsedFlags = typeof flags.value === 'string' ? JSON.parse(flags.value) : flags.value
+            setShowImages(parsedFlags.menu_show_images ?? true)
+          } catch (e) {
+            console.warn('Error parsing feature_flags:', e)
+          }
+        }
       }
 
       const { data: products } = await supabase
