@@ -3,7 +3,7 @@ const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-const connectionString = "postgresql://postgres:%40Mejai840316*.@db.ryxqoapxzvssxqdsyfzw.supabase.co:5432/postgres";
+const connectionString = "postgresql://postgres:%40Mejai840316*.@[2600:1f1e:75b:4b02:a72e:c2e8:3230:8eb4]:5432/postgres";
 
 async function runSQL(filePath) {
     const client = new Client({ connectionString });
