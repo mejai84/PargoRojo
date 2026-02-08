@@ -124,14 +124,14 @@ export default function OpenBoxPage() {
                         <Button
                             type="submit"
                             disabled={loading || !amount}
-                            className="w-full h-20 rounded-[2rem] bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase text-lg tracking-widest italic shadow-xl shadow-emerald-600/20 hover:scale-[1.02] transition-all"
+                            className="w-full h-20 rounded-[2rem] bg-primary hover:bg-primary/90 text-white font-black uppercase text-lg tracking-widest italic shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
                         >
                             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "CONFIRMAR APERTURA"}
                             {!loading && <ArrowRight className="w-6 h-6 ml-2" />}
                         </Button>
 
                         <p className="text-center mt-6 text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center justify-center gap-2">
-                            <ShieldCheck className="w-3 h-3 text-emerald-500" /> Transacción Segura y Auditada
+                            <ShieldCheck className="w-3 h-3 text-primary" /> Transacción Segura y Auditada
                         </p>
                     </div>
                 </form>
