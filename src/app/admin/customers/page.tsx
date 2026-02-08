@@ -210,32 +210,32 @@ export default function CustomersPage() {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 italic">
-                                        <th className="p-8">Identidad del Usuario</th>
-                                        <th className="p-8">Jerarquía</th>
-                                        <th className="p-8 text-center">Nivel Loyalty</th>
-                                        <th className="p-8 text-center">Frecuencia</th>
-                                        <th className="p-8 text-right">Lifetime Value</th>
-                                        <th className="p-8 text-right">Acciones Tácticas</th>
+                                        <th className="p-4 md:p-8">Identidad del Usuario</th>
+                                        <th className="p-4 md:p-8 hidden md:table-cell">Jerarquía</th>
+                                        <th className="p-4 md:p-8 text-center hidden sm:table-cell">Nivel Loyalty</th>
+                                        <th className="p-4 md:p-8 text-center hidden lg:table-cell">Frecuencia</th>
+                                        <th className="p-4 md:p-8 text-right">Lifetime Value</th>
+                                        <th className="p-4 md:p-8 text-right hidden lg:table-cell">Acciones Tácticas</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {filteredCustomers.map((customer, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="p-8">
-                                                <div className="flex items-center gap-6">
-                                                    <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-xl font-black text-primary italic group-hover:bg-primary group-hover:text-black transition-all">
+                                        <tr key={i} className="hover:bg-slate-50 transition-colors group border-b border-slate-100 last:border-0">
+                                            <td className="p-4 md:p-8">
+                                                <div className="flex items-center gap-3 md:gap-6">
+                                                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-sm md:text-xl font-black text-primary italic group-hover:bg-primary group-hover:text-black transition-all shrink-0">
                                                         {customer.name.charAt(0)}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-black text-xl italic uppercase tracking-tighter text-slate-900">{customer.name}</p>
-                                                        <div className="flex items-center gap-4 mt-2">
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Mail className="w-3 h-3" /> {customer.email || '—'}</span>
-                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Phone className="w-3 h-3 text-primary" /> {customer.phone}</span>
+                                                    <div className="min-w-0">
+                                                        <p className="font-black text-sm md:text-xl italic uppercase tracking-tighter text-slate-900 truncate">{customer.name}</p>
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 md:mt-2">
+                                                            <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 overflow-hidden text-ellipsis"><Mail className="w-2.5 h-2.5 md:w-3 md:h-3" /> <span className="truncate">{customer.email || '—'}</span></span>
+                                                            <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Phone className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary" /> {customer.phone}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="p-8">
+                                            <td className="p-4 md:p-8 hidden md:table-cell">
                                                 <div className={cn(
                                                     "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic border",
                                                     customer.type === 'user' ? "bg-primary/10 border-primary/20 text-primary" : "bg-slate-50 border-slate-100 text-slate-400"
@@ -244,29 +244,29 @@ export default function CustomersPage() {
                                                     {customer.type === 'user' ? 'MEMBRESÍA' : 'INVITADO'}
                                                 </div>
                                             </td>
-                                            <td className="p-8 text-center">
+                                            <td className="p-4 md:p-8 text-center hidden sm:table-cell">
                                                 <div className="flex flex-col items-center gap-1">
                                                     <div className="flex items-center gap-1.5 text-amber-500 font-black italic">
-                                                        <Star className="w-4 h-4 fill-amber-500" />
-                                                        <span className="text-xl">{customer.points}</span>
+                                                        <Star className="w-3 h-3 md:w-4 md:h-4 fill-amber-500" />
+                                                        <span className="text-base md:text-xl">{customer.points}</span>
                                                     </div>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">PUNTOS RAFITA</span>
+                                                    <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest">PUNTOS</span>
                                                 </div>
                                             </td>
-                                            <td className="p-8 text-center">
+                                            <td className="p-4 md:p-8 text-center hidden lg:table-cell">
                                                 <div className="inline-block px-5 py-2 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary/20 transition-all">
                                                     <span className="text-xl font-black italic text-slate-900">{customer.totalOrders}</span>
                                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-2 italic">Visitas</span>
                                                 </div>
                                             </td>
-                                            <td className="p-8 text-right">
-                                                <p className="text-2xl font-black italic tracking-tighter text-primary leading-none group-hover:scale-110 transition-transform origin-right">{formatPrice(customer.totalSpent)}</p>
-                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2 flex items-center justify-end gap-1.5"><Calendar className="w-3 h-3" /> {customer.lastOrder !== 'Sin pedidos' ? new Date(customer.lastOrder).toLocaleDateString() : '—'}</p>
+                                            <td className="p-4 md:p-8 text-right">
+                                                <p className="text-base md:text-2xl font-black italic tracking-tighter text-primary leading-none group-hover:scale-110 transition-transform origin-right">{formatPrice(customer.totalSpent)}</p>
+                                                <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1 md:mt-2 flex items-center justify-end gap-1.5"><Calendar className="w-2.5 h-2.5 md:w-3 md:h-3" /> {customer.lastOrder !== 'Sin pedidos' ? new Date(customer.lastOrder).toLocaleDateString() : '—'}</p>
                                             </td>
-                                            <td className="p-8 text-right">
+                                            <td className="p-4 md:p-8 text-right hidden lg:table-cell">
                                                 <div className="flex justify-end gap-2">
-                                                    <button className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm text-slate-400"><MessageSquare className="w-4 h-4" /></button>
-                                                    <button className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-all"><Send className="w-4 h-4" /></button>
+                                                    <button className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm text-slate-400"><MessageSquare className="w-3.5 h-3.5" /></button>
+                                                    <button className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-all"><Send className="w-3.5 h-3.5" /></button>
                                                 </div>
                                             </td>
                                         </tr>
