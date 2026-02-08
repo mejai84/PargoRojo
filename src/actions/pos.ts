@@ -162,72 +162,100 @@ export async function startShift(shiftDefinitionId: string) {
     }
 }
 
-/**
- * Abre una caja para comenzar a operar.
- * Requiere turno activo. Validación estricta de concurrencia.
- */
 export async function openCashbox(
     userId: string,
     shiftId: string,
     openingAmount: number,
     notes?: string
 ) {
+    console.log("Iniciando apertura de caja para usuario:", userId)
     const supabase = await createClient()
 
-    // 1. Validar que el turno pertenezca al usuario y esté abierto
-    const { data: shift } = await supabase
-        .from('shifts')
-        .select('status')
-        .eq('id', shiftId)
-        .eq('user_id', userId)
-        .single()
+    try {
+        // 1. Validar que el turno pertenezca al usuario y esté abierto
+        const { data: shift, error: shiftError } = await supabase
+            .from('shifts')
+            .select('status, restaurant_id')
+            .eq('id', shiftId)
+            .eq('user_id', userId)
+            .maybeSingle()
 
-    if (!shift || shift.status !== 'OPEN') {
-        throw new Error("Turno inválido o cerrado.")
-    }
+        if (shiftError) {
+            console.error("Error validando turno:", shiftError)
+            return { success: false, error: "Error al validar jornada: " + shiftError.message }
+        }
 
-    // 2. Buscar caja disponible (Por ahora asignamos la 'Caja Principal' por defecto)
-    // En el futuro esto podría venir de un selector si hay múltiples cajas
-    const { data: cashbox } = await supabase
-        .from('cashboxes')
-        .select('id, current_status')
-        .eq('name', 'Caja Principal')
-        .single()
+        if (!shift || shift.status !== 'OPEN') {
+            return { success: false, error: "La jornada actual no es válida o ya se encuentra cerrada." }
+        }
 
-    if (!cashbox) throw new Error("No se encontró la Caja Principal configurada.")
+        // 2. Buscar caja disponible (Por ahora asignamos la 'Caja Principal' por defecto)
+        // Buscamos que pertenezca al restaurante del turno
+        const { data: cashbox, error: cbError } = await supabase
+            .from('cashboxes')
+            .select('id, current_status')
+            .eq('name', 'Caja Principal')
+            .eq('restaurant_id', shift.restaurant_id)
+            .maybeSingle()
 
-    if (cashbox.current_status === 'OPEN') {
-        throw new Error("La Caja Principal ya está abierta por otro usuario.")
-    }
+        if (cbError) {
+            console.error("Error buscando caja:", cbError)
+        }
 
-    // 3. Crear la sesión de caja
-    const { data: session, error } = await supabase
-        .from('cashbox_sessions')
-        .insert({
-            cashbox_id: cashbox.id,
-            shift_id: shiftId,
+        if (!cashbox) {
+            return { success: false, error: "No se encontró la 'Caja Principal' configurada para este restaurante." }
+        }
+
+        if (cashbox.current_status === 'OPEN') {
+            return { success: false, error: "La Caja Principal ya se encuentra abierta." }
+        }
+
+        // 3. Crear la sesión de caja
+        const { data: session, error: sessionError } = await supabase
+            .from('cashbox_sessions')
+            .insert({
+                cashbox_id: cashbox.id,
+                shift_id: shiftId,
+                user_id: userId,
+                restaurant_id: shift.restaurant_id, // SaaS isolation
+                opening_amount: openingAmount,
+                opening_notes: notes,
+                status: 'OPEN',
+                opening_time: new Date().toISOString()
+            })
+            .select()
+            .maybeSingle()
+
+        if (sessionError || !session) {
+            console.error("Error insertando sesión caja:", sessionError)
+            return { success: false, error: "Error al abrir sesión de caja: " + (sessionError?.message || "Error desconocido") }
+        }
+
+        // 4. Registrar el movimiento inicial de dinero (Saldo Inicial)
+        const { error: movementError } = await supabase.from('cash_movements').insert({
+            cashbox_session_id: session.id,
             user_id: userId,
-            opening_amount: openingAmount,
-            opening_notes: notes,
-            status: 'OPEN',
-            opening_time: new Date().toISOString()
+            restaurant_id: shift.restaurant_id, // SaaS isolation
+            movement_type: 'OPENING',
+            amount: openingAmount,
+            description: 'Saldo inicial de apertura'
         })
-        .select()
-        .single()
 
-    if (error) throw new Error(error.message)
+        if (movementError) {
+            console.error("Error registrando saldo inicial:", movementError)
+            // No bloqueamos el éxito porque la sesión ya se creó, pero avisamos.
+        }
 
-    // 4. Registrar el movimiento inicial de dinero (Saldo Inicial)
-    await supabase.from('cash_movements').insert({
-        cashbox_session_id: session.id,
-        user_id: userId,
-        movement_type: 'OPENING',
-        amount: openingAmount,
-        description: 'Saldo inicial de apertura'
-    })
+        console.log("Caja abierta exitosamente:", session.id)
+        revalidatePath('/admin')
+        revalidatePath('/admin/cashier')
 
-    revalidatePath('/admin')
-    return session
+        return { success: true, data: session }
+
+    } catch (e: any) {
+        console.error("Excepción fatal en openCashbox:", e)
+        return { success: false, error: "Error interno del servidor: " + e.message }
+    }
 }
 
 /**
