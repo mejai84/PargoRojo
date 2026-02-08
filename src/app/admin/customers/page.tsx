@@ -205,9 +205,9 @@ export default function CustomersPage() {
                     </div>
 
                     {/* 👥 CUSTOMERS INDUSTRIAL LIST */}
-                    <div className="bg-white border border-slate-200 rounded-[3.5rem] overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                    <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm relative overflow-hidden">
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse min-w-[800px]">
                                 <thead>
                                     <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 italic">
                                         <th className="p-4 md:p-8">Identidad del Usuario</th>
@@ -265,8 +265,26 @@ export default function CustomersPage() {
                                             </td>
                                             <td className="p-4 md:p-8 text-right hidden lg:table-cell">
                                                 <div className="flex justify-end gap-2">
-                                                    <button className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm text-slate-400"><MessageSquare className="w-3.5 h-3.5" /></button>
-                                                    <button className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-all"><Send className="w-3.5 h-3.5" /></button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const phone = customer.phone.replace(/\D/g, '');
+                                                            if (phone) window.open(`https://wa.me/${phone}`, '_blank');
+                                                        }}
+                                                        title="WhatsApp Directo"
+                                                        className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm text-slate-400"
+                                                    >
+                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setSearchTerm(customer.name);
+                                                            setView('notifications');
+                                                        }}
+                                                        title="Ver Notificaciones"
+                                                        className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-all"
+                                                    >
+                                                        <Send className="w-3.5 h-3.5" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
