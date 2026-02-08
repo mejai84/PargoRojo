@@ -373,8 +373,9 @@ export async function performPartialAudit(
 export async function processOrderPayment(
     orderId: string,
     userId: string,
-    paymentMethod: 'cash' | 'card' | 'transfer',
-    amount: number
+    paymentMethod: 'cash' | 'card' | 'transfer' | 'credit',
+    amount: number,
+    tipAmount: number = 0
 ) {
     const supabase = await createClient()
 
@@ -393,7 +394,8 @@ export async function processOrderPayment(
         p_user_id: userId,
         p_cashbox_session_id: sessionId,
         p_payment_method: paymentMethod,
-        p_amount: amount
+        p_amount: amount,
+        p_tip_amount: tipAmount
     })
 
     if (error) {

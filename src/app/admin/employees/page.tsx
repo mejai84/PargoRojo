@@ -35,6 +35,7 @@ interface Employee {
     role: 'admin' | 'staff' | 'waiter' | 'cook' | 'cashier' | 'customer'
     document_id: string | null
     hire_date: string | null
+    waiter_pin: string | null
     created_at: string
 }
 
@@ -56,6 +57,7 @@ export default function EmployeesPage() {
         phone: "",
         role: "staff",
         document_id: "",
+        waiter_pin: "",
         hire_date: new Date().toISOString().split('T')[0]
     })
     const [submitting, setSubmitting] = useState(false)
@@ -108,6 +110,7 @@ export default function EmployeesPage() {
             phone: "",
             role: "staff",
             document_id: "",
+            waiter_pin: "",
             hire_date: new Date().toISOString().split('T')[0]
         })
         setIsAddModalOpen(true)
@@ -122,6 +125,7 @@ export default function EmployeesPage() {
             phone: emp.phone || "",
             role: emp.role,
             document_id: emp.document_id || "",
+            waiter_pin: emp.waiter_pin || "",
             hire_date: emp.hire_date || ""
         })
         setIsEditModalOpen(true)
@@ -162,6 +166,7 @@ export default function EmployeesPage() {
                     phone: formData.phone,
                     role: formData.role,
                     document_id: formData.document_id,
+                    waiter_pin: formData.waiter_pin,
                     hire_date: formData.hire_date,
                     restaurant_id: restaurantId,
                     updated_at: new Date().toISOString()
@@ -194,6 +199,7 @@ export default function EmployeesPage() {
                     phone: formData.phone,
                     role: formData.role,
                     document_id: formData.document_id,
+                    waiter_pin: formData.waiter_pin,
                     hire_date: formData.hire_date
                 })
                 .eq('id', selectedEmployee.id)
@@ -468,18 +474,34 @@ export default function EmployeesPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Correo Electrónico</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
-                                        <input
-                                            required
-                                            type="email"
-                                            disabled={isEditModalOpen}
-                                            className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold disabled:opacity-50"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Correo Electrónico</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                required
+                                                type="email"
+                                                disabled={isEditModalOpen}
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold disabled:opacity-50"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">PIN de Acceso (4 dígitos)</label>
+                                        <div className="relative">
+                                            <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                required={formData.role === 'waiter'}
+                                                maxLength={4}
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold placeholder:opacity-20"
+                                                placeholder="Ej: 1234"
+                                                value={formData.waiter_pin}
+                                                onChange={(e) => setFormData({ ...formData, waiter_pin: e.target.value.replace(/\D/g, '') })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 

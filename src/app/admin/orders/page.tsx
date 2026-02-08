@@ -83,6 +83,7 @@ export default function AdminOrdersPage() {
     const [tables, setTables] = useState<any[]>([])
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [searchTerm, setSearchTerm] = useState("")
+    const [includeTip, setIncludeTip] = useState(true)
 
     // Customer Search State
     const [allCustomers, setAllCustomers] = useState<any[]>([])
@@ -207,8 +208,8 @@ export default function AdminOrdersPage() {
         setCustomerSearch("")
     }
 
-    const activeProcessing = orders.filter(o => ['pending', 'preparing', 'ready', 'out_for_delivery'].includes(o.status))
-    const paymentPending = orders.filter(o => o.status === 'payment_pending')
+    const activeProcessing = orders.filter(o => ['pending', 'preparing'].includes(o.status))
+    const paymentPending = orders.filter(o => ['ready', 'payment_pending', 'out_for_delivery'].includes(o.status))
     const completedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status))
 
     return (
@@ -475,48 +476,130 @@ export default function AdminOrdersPage() {
                                 </div>
                             </div>
 
-                            <div className="pt-10 border-t border-slate-100 flex justify-between items-end">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-2">SUBTOTAL NETO</p>
-                                    <p className="text-5xl font-black italic tracking-tighter text-slate-900 leading-none">${selectedOrder.total.toLocaleString()}</p>
+                            <div className="pt-10 border-t border-slate-100 space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-2">SUBTOTAL NETO</p>
+                                            <p className="text-3xl font-black italic tracking-tighter text-slate-400 leading-none">${selectedOrder.total.toLocaleString()}</p>
+                                        </div>
+
+                                        {restaurant?.apply_service_charge && (
+                                            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-black uppercase text-slate-500">¿Incluir Propina Sugerida? ({restaurant.service_charge_percentage}%)</p>
+                                                    <p className="text-xl font-black italic text-primary">+ ${(selectedOrder.total * (restaurant.service_charge_percentage! / 100)).toLocaleString()}</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setIncludeTip(!includeTip)}
+                                                    className={cn(
+                                                        "w-12 h-6 rounded-full transition-all flex items-center px-1 shadow-inner",
+                                                        includeTip ? "bg-primary" : "bg-slate-200"
+                                                    )}
+                                                >
+                                                    <div className={cn("w-4 h-4 rounded-full bg-white transition-all shadow-md", includeTip ? "translate-x-6" : "translate-x-0")} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-2">TOTAL A COBRAR</p>
+                                        <p className="text-6xl font-black italic tracking-tighter text-slate-900 leading-none">
+                                            ${(selectedOrder.total + (includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0)).toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex gap-4">
-                                    {selectedOrder.status === 'payment_pending' && (
-                                        <div className="flex gap-3">
+
+                                <div className="flex justify-end gap-4">
+                                    {['ready', 'payment_pending', 'out_for_delivery'].includes(selectedOrder.status) && (
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             <Button
                                                 onClick={async () => {
                                                     if (!currentUser) return alert("Error de sesión")
-                                                    if (!confirm("¿Confirmas el pago en EFECTIVO? Se registrará en Caja.")) return
+                                                    const tip = includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0
+                                                    const total = selectedOrder.total + tip
+
+                                                    if (!confirm(`¿Confirmas el pago de $${total.toLocaleString()} en EFECTIVO?`)) return
 
                                                     try {
                                                         const { processOrderPayment } = await import("@/actions/pos")
-                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'cash', selectedOrder.total)
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'cash', total, tip)
                                                         fetchOrders(); setSelectedOrder(null)
                                                         alert("✅ Venta Efectivo Registrada")
                                                     } catch (e: any) {
                                                         alert("Error: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-6 bg-emerald-500 text-white rounded-[1.5rem] font-black text-lg italic tracking-tighter uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all gap-2"
+                                                className="h-20 px-4 bg-emerald-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-1"
                                             >
-                                                EFECTIVO 💵
+                                                <span>EFECTIVO</span>
+                                                <span className="text-lg">💵</span>
                                             </Button>
+
                                             <Button
                                                 onClick={async () => {
                                                     if (!currentUser) return alert("Error de sesión")
+                                                    const tip = includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0
+                                                    const total = selectedOrder.total + tip
 
                                                     try {
                                                         const { processOrderPayment } = await import("@/actions/pos")
-                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'card', selectedOrder.total)
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'card', total, tip)
                                                         fetchOrders(); setSelectedOrder(null)
                                                         alert("✅ Venta Tarjeta Registrada")
                                                     } catch (e: any) {
                                                         alert("Error: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-6 bg-indigo-500 text-white rounded-[1.5rem] font-black text-lg italic tracking-tighter uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all gap-2"
+                                                className="h-20 px-4 bg-indigo-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-1"
                                             >
-                                                TARJETA 💳
+                                                <span>TARJETA</span>
+                                                <span className="text-lg">💳</span>
+                                            </Button>
+
+                                            <Button
+                                                onClick={async () => {
+                                                    if (!currentUser) return alert("Error de sesión")
+                                                    const tip = includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0
+                                                    const total = selectedOrder.total + tip
+
+                                                    try {
+                                                        const { processOrderPayment } = await import("@/actions/pos")
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'transfer', total, tip)
+                                                        fetchOrders(); setSelectedOrder(null)
+                                                        alert("✅ Venta Transferencia Registrada")
+                                                    } catch (e: any) {
+                                                        alert("Error: " + e.message)
+                                                    }
+                                                }}
+                                                className="h-20 px-4 bg-cyan-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-cyan-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                            >
+                                                <span>TRANSF.</span>
+                                                <span className="text-lg">🏦</span>
+                                            </Button>
+
+                                            <Button
+                                                onClick={async () => {
+                                                    if (!currentUser) return alert("Error de sesión")
+                                                    const tip = includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0
+                                                    const total = selectedOrder.total + tip
+
+                                                    if (!confirm(`¿Confirmas el pago de $${total.toLocaleString()} como CRÉDITO PERSONAL?`)) return
+
+                                                    try {
+                                                        const { processOrderPayment } = await import("@/actions/pos")
+                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'credit', total, tip)
+                                                        fetchOrders(); setSelectedOrder(null)
+                                                        alert("✅ Venta a Crédito Registrada")
+                                                    } catch (e: any) {
+                                                        alert("Error: " + e.message)
+                                                    }
+                                                }}
+                                                className="h-20 px-4 bg-amber-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-amber-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                            >
+                                                <span>CRÉDITO</span>
+                                                <span className="text-lg">📋</span>
                                             </Button>
                                         </div>
                                     )}

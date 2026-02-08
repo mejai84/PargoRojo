@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Loader2, Save, MapPin, Phone, Mail, Instagram, Facebook, Youtube, Video, Twitter, Link2, Palette, ShieldCheck, Zap, Globe } from "lucide-react"
+import { Loader2, Save, MapPin, Phone, Mail, Instagram, Facebook, Youtube, Video, Twitter, Link2, Palette, ShieldCheck, Zap, Globe, Receipt } from "lucide-react"
 import { useRestaurant } from "@/providers/RestaurantProvider"
 
 function SimpleSwitch({ checked, onCheckedChange }: { checked: boolean, onCheckedChange: (c: boolean) => void }) {
@@ -65,7 +65,9 @@ export default function SettingsPage() {
                 ...prev,
                 ...info.value,
                 subdomain: restaurant?.subdomain || "",
-                theme: restaurant?.theme || "light"
+                theme: restaurant?.theme || "light",
+                apply_service_charge: restaurant?.apply_service_charge || false,
+                service_charge_percentage: restaurant?.service_charge_percentage || 10
             }))
         }
         setLoading(false)
@@ -99,7 +101,9 @@ export default function SettingsPage() {
                     primary_color: businessInfo.primary_color,
                     logo_url: businessInfo.logo_url,
                     subdomain: businessInfo.subdomain,
-                    theme: businessInfo.theme
+                    theme: businessInfo.theme,
+                    apply_service_charge: businessInfo.apply_service_charge,
+                    service_charge_percentage: Number(businessInfo.service_charge_percentage)
                 }).eq('id', profile.restaurant_id)
             }
 
@@ -280,6 +284,42 @@ export default function SettingsPage() {
                                     onChange={e => setBusinessInfo({ ...businessInfo, tagline: e.target.value })}
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic px-4 flex items-center gap-2">
+                            <Receipt className="w-4 h-4" /> Configuración de Servicios y Propinas
+                        </h2>
+                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-8">
+                            <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                <div className="space-y-1">
+                                    <p className="font-black italic uppercase text-sm text-slate-900">Propina Sugerida (Service Charge)</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Activa el cálculo automático de propina en la cuenta.</p>
+                                </div>
+                                <SimpleSwitch
+                                    checked={businessInfo.apply_service_charge}
+                                    onCheckedChange={(c) => setBusinessInfo({ ...businessInfo, apply_service_charge: c })}
+                                />
+                            </div>
+
+                            {businessInfo.apply_service_charge && (
+                                <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Porcentaje de Propina (%)</label>
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="number"
+                                            className="w-full h-16 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none focus:border-primary font-black italic text-xl transition-all"
+                                            value={businessInfo.service_charge_percentage}
+                                            onChange={e => setBusinessInfo({ ...businessInfo, service_charge_percentage: e.target.value })}
+                                            min="0"
+                                            max="100"
+                                        />
+                                        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xl italic">%</div>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase italic ml-2">Este valor se sugerirá al cliente al momento de cerrar la cuenta.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -10,6 +10,8 @@ interface Restaurant {
     logo_url: string | null
     primary_color: string
     theme?: 'light' | 'dark'
+    apply_service_charge?: boolean
+    service_charge_percentage?: number
 }
 
 interface RestaurantContextType {

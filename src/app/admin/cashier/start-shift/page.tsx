@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { startShift } from "@/actions/pos"
 import { supabase } from "@/lib/supabase/client"
-import { Loader2, Sun, Moon, Sunset, Clock, Users, ArrowRight, CheckCircle2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Loader2, Sun, Moon, Sunset, Clock, Users, ArrowRight, CheckCircle2, Wallet } from "lucide-react"
+import { cn, formatPrice } from "@/lib/utils"
 
 // Removí 'sonner' porque no estoy seguro si está instalado en tu proyecto.
 // Usaré alert/console temporalmente o componentes nativos si fallara.
@@ -18,6 +18,9 @@ export default function StartShiftPage() {
     const [shifts, setShifts] = useState<any[]>([])
     const [fetchingShifts, setFetchingShifts] = useState(true)
     const [recommendedShiftId, setRecommendedShiftId] = useState<string | null>(null)
+    const [activeShift, setActiveShift] = useState<any>(null)
+    const [elapsedTime, setElapsedTime] = useState("")
+    const [shiftTips, setShiftTips] = useState(0)
 
     useEffect(() => {
         const init = async () => {
@@ -38,7 +41,33 @@ export default function StartShiftPage() {
             setShifts(data || [])
             setFetchingShifts(false)
 
-            // 3. Calcular turno recomendado
+            // 3. Verificar si ya hay un turno activo
+            if (user) {
+                const { data: active } = await supabase
+                    .from('shifts')
+                    .select('*, shift_definitions(name)')
+                    .eq('user_id', user.id)
+                    .is('ended_at', null)
+                    .order('started_at', { ascending: false })
+                    .limit(1)
+                    .single()
+
+                if (active) {
+                    setActiveShift(active)
+
+                    // 3.1 Cargar Propinas de ESTE turno
+                    const { data: shiftOrders } = await supabase
+                        .from('orders')
+                        .select('tip_amount')
+                        .eq('waiter_id', user.id)
+                        .gte('created_at', active.started_at)
+
+                    const totalTips = shiftOrders?.reduce((sum, o) => sum + (Number(o.tip_amount) || 0), 0) || 0
+                    setShiftTips(totalTips)
+                }
+            }
+
+            // 4. Calcular turno recomendado
             if (data) {
                 const currentHour = new Date().getHours()
                 // Lógica simple de recomendación basada en hora de inicio
@@ -60,6 +89,24 @@ export default function StartShiftPage() {
         }
         init()
     }, [])
+
+    useEffect(() => {
+        if (!activeShift) return
+
+        const timer = setInterval(() => {
+            const start = new Date(activeShift.started_at).getTime()
+            const now = new Date().getTime()
+            const diff = now - start
+
+            const hours = Math.floor(diff / (1000 * 60 * 60))
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+            setElapsedTime(`${hours}h ${minutes}m ${seconds}s`)
+        }, 1000)
+
+        return () => clearInterval(timer)
+    }, [activeShift])
 
     const handleStartShift = async (shiftDefId: string) => {
         setLoading(true)
@@ -95,10 +142,111 @@ export default function StartShiftPage() {
         return "border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-slate-50"
     }
 
+    const getMotivationalMessage = () => {
+        const hour = new Date().getHours()
+        if (hour < 12) return "¡Buenos días! Que hoy sea un gran servicio con excelentes propinas."
+        if (hour < 18) return "¡Buenas tardes! Mantén la energía alta, el salón se ve genial."
+        return "¡Buenas noches! Vamos por ese último cierre con broche de oro."
+    }
+
+    const getBreakReminder = (elapsedMs: number) => {
+        const hours = elapsedMs / (1000 * 60 * 60)
+        if (hours > 6) return "⚠️ Has superado las 6 horas. ¡No olvides hidratarte!"
+        if (hours > 4) return "🔔 Llevas 4 horas. Buen momento para una pausa corta."
+        return "✨ Servicio estable. ¡Sigue así!"
+    }
+
     if (fetchingShifts) {
         return (
             <div className="h-screen flex items-center justify-center bg-slate-50">
                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    if (activeShift) {
+        const elapsedMs = new Date().getTime() - new Date(activeShift.started_at).getTime()
+
+        return (
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 pb-20">
+                <div className="max-w-4xl w-full space-y-8 animate-in zoom-in duration-500">
+
+                    {/* Tarjeta Principal de Bienvenida */}
+                    <div className="bg-white rounded-[4rem] p-10 md:p-16 shadow-2xl border border-slate-100 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-primary/10 transition-colors" />
+
+                        <div className="relative z-10 flex flex-col items-center text-center space-y-6">
+                            <div className="w-24 h-24 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-emerald-500/20 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                                <CheckCircle2 className="w-12 h-12 text-white" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
+                                    ¡VAMOS CON <span className="text-primary italic">TODA!</span>
+                                </h1>
+                                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] italic">
+                                    {getMotivationalMessage()}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Stats Cards */}
+                            <div className="bg-slate-50 rounded-[2.5rem] p-8 space-y-4 border border-slate-100 hover:scale-105 transition-transform">
+                                <div className="p-3 bg-white w-fit rounded-2xl shadow-sm">
+                                    <Clock className="w-6 h-6 text-slate-900" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">TIEMPO EN SERVICIO</p>
+                                    <p className="text-2xl font-black text-slate-900 font-mono italic">{elapsedTime || '---'}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-emerald-50 rounded-[2.5rem] p-8 space-y-4 border border-emerald-100 hover:scale-105 transition-transform">
+                                <div className="p-3 bg-white w-fit rounded-2xl shadow-sm">
+                                    <Wallet className="w-6 h-6 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest italic">PROPINAS ACUMULADAS</p>
+                                    <p className="text-2xl font-black text-emerald-600 italic">{formatPrice(shiftTips)}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-900 rounded-[2.5rem] p-8 space-y-4 border border-slate-800 hover:scale-105 transition-transform">
+                                <div className="p-3 bg-white/10 w-fit rounded-2xl shadow-sm">
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic text-left">STATUS DE SALUD</p>
+                                    <p className="text-xs font-bold text-white italic text-left leading-tight mt-1">{getBreakReminder(elapsedMs)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-slate-50 rounded-[3rem] border border-slate-100">
+                            <div className="flex items-center gap-6">
+                                <div className="text-left">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">HORA DE ENTRADA</p>
+                                    <p className="text-xl font-black text-slate-900">{new Date(activeShift.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                </div>
+                                <div className="w-[1px] h-10 bg-slate-200" />
+                                <div className="text-left">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">TURNO</p>
+                                    <p className="text-xl font-black text-slate-900 uppercase italic">{activeShift.shift_definitions?.name || '---'}</p>
+                                </div>
+                            </div>
+
+                            <Button
+                                onClick={() => router.push('/admin/orders')}
+                                className="w-full md:w-auto h-20 px-12 bg-primary text-black rounded-[2rem] font-black uppercase italic tracking-tighter text-lg hover:scale-105 transition-all shadow-2xl shadow-primary/20 flex items-center gap-4"
+                            >
+                                IR A COMANDAS <ArrowRight className="w-6 h-6" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] italic">POWERED BY JAMALI OS • CLOUD EDITION</p>
+                </div>
             </div>
         )
     }
@@ -178,8 +326,8 @@ export default function StartShiftPage() {
 
                 {/* Footer Info */}
                 <div className="text-center">
-                    <p className="text-xs text-slate-400 font-medium max-w-md mx-auto">
-                        Al marcar entrada, se registrará tu hora de inicio exacta: <span className="font-mono text-slate-600 font-bold">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>.
+                    <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] max-w-md mx-auto italic">
+                        Al marcar entrada, se registrará tu hora de inicio exacta: <span className="text-slate-500">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </p>
                 </div>
 

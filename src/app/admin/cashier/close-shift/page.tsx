@@ -43,6 +43,9 @@ export default function CloseShiftPage() {
     const [systemTotal, setSystemTotal] = useState(0) // Lo que el sistema espera (Ventas Cash + Base Inicial - Egresos)
     const [baseAmount, setBaseAmount] = useState(0)
     const [cashSales, setCashSales] = useState(0)
+    const [cardSales, setCardSales] = useState(0)
+    const [transferSales, setTransferSales] = useState(0)
+    const [creditSales, setCreditSales] = useState(0)
     const [expenses, setExpenses] = useState(0)
 
     // Datos de Sesión
@@ -95,30 +98,37 @@ export default function CloseShiftPage() {
                 setSessionId(session.id)
                 setBaseAmount(session.opening_amount || 0)
 
-                // 3. Calcular Ventas en Efectivo de ESTA sesión
-                // Sumar orders donde payment_method = 'cash' y created_at > session.opened_at
+                // 3. Calcular Ventas por Método de ESTA sesión
                 const { data: orders } = await supabase
-                    .from('orders') // O payments si existe tabla separada
-                    .select('total_amount, payment_method')
+                    .from('orders')
+                    .select('total, payment_method')
                     .gte('created_at', session.opened_at)
-                    .eq('status', 'delivered') // Solo pagadas/entregadas
-                    .eq('payment_method', 'cash') // Asumiendo columna simple por ahora
+                    .eq('status', 'delivered')
+                    .eq('payment_status', 'paid')
 
-                const calculatedSales = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
-                setCashSales(calculatedSales)
+                const salesByMethod = (orders || []).reduce((acc: any, order) => {
+                    const method = order.payment_method || 'cash'
+                    acc[method] = (acc[method] || 0) + (order.total || 0)
+                    return acc
+                }, {})
+
+                setCashSales(salesByMethod.cash || 0)
+                setCardSales(salesByMethod.card || 0)
+                setTransferSales(salesByMethod.transfer || 0)
+                setCreditSales(salesByMethod.credit || 0)
 
                 // 4. Calcular Egresos de Caja Menor de ESTA sesión
                 const { data: vouchers } = await supabase
                     .from('petty_cash_vouchers')
                     .select('amount')
                     .gte('created_at', session.opened_at)
-                    .eq('restaurant_id', profile.restaurant_id)
+                    .eq('restaurant_id', profile?.restaurant_id)
 
                 const calculatedExpenses = vouchers?.reduce((sum, v) => sum + (v.amount || 0), 0) || 0
                 setExpenses(calculatedExpenses)
 
-                // TOTAL ESPERADO EN CAJA
-                setSystemTotal((session.opening_amount || 0) + calculatedSales - calculatedExpenses)
+                // TOTAL ESPERADO EN CAJA (EL EFECTIVO)
+                setSystemTotal((session.opening_amount || 0) + (salesByMethod.cash || 0) - calculatedExpenses)
                 setLoading(false)
             } else {
                 // Si no hay sesión de caja pero hay turno (raro), forzamos cierre de turno solamente
@@ -190,14 +200,29 @@ export default function CloseShiftPage() {
                         <p className="text-slate-500 font-medium">Todo ha quedado registrado correctamente.</p>
                     </div>
 
-                    <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="font-bold text-slate-400 uppercase">Ventas Total</span>
-                            <span className="font-black text-slate-900">{formatPrice(cashSales)}</span>
+                    <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 space-y-4 text-left">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 italic">Resumen de Recaudación</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Efectivo (Cash)</p>
+                                <p className="font-black text-slate-900">{formatPrice(cashSales)}</p>
+                            </div>
+                            <div className="space-y-1 text-right">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Tarjetas</p>
+                                <p className="font-black text-slate-900">{formatPrice(cardSales)}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Transferencias</p>
+                                <p className="font-black text-slate-900">{formatPrice(transferSales)}</p>
+                            </div>
+                            <div className="space-y-1 text-right">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">Ventas Crédito</p>
+                                <p className="font-black text-slate-900">{formatPrice(creditSales)}</p>
+                            </div>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="font-bold text-slate-400 uppercase">Diferencia Caja</span>
-                            <span className={cn("font-black", difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-rose-500")}>
+                        <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+                            <span className="font-black text-sm uppercase italic">Diferencia Final</span>
+                            <span className={cn("text-xl font-black italic", difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-rose-500")}>
                                 {difference > 0 ? '+' : ''}{formatPrice(difference)}
                             </span>
                         </div>

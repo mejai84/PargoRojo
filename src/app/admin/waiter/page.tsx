@@ -58,7 +58,8 @@ export default function WaiterApp() {
     const [view, setView] = useState<'tables' | 'order'>('tables')
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
     const [pin, setPin] = useState("")
-    const [isAuthenticated, setIsAuthenticated] = useState(false) // Simulado por ahora
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [waiterUser, setWaiterUser] = useState<any>(null)
     const [cart, setCart] = useState<{ product: Product, qty: number }[]>([])
 
     // Data Real (Cargada desde Supabase)
@@ -88,18 +89,38 @@ export default function WaiterApp() {
         if (data) setRealTables(data as any)
     }
 
+    const verifyPin = async (val: string) => {
+        if (!restaurant) return
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('restaurant_id', restaurant.id)
+            .eq('waiter_pin', val)
+            .single()
+
+        if (error || !data) {
+            toast.error("PIN Incorrecto")
+            setPin("")
+            return
+        }
+
+        setWaiterUser(data)
+        setIsAuthenticated(true)
+        toast.success(`Bienvenido, ${data.full_name}`)
+    }
+
     const handleMarchar = async () => {
         if (!selectedTable || cart.length === 0 || submitting) return
 
         setSubmitting(true)
         try {
             const { data: { user } } = await supabase.auth.getUser()
-            if (!user) throw new Error("No autenticado")
+            if (!user && !waiterUser) throw new Error("No autenticado")
 
             const orderData = {
                 restaurant_id: restaurant!.id,
-                user_id: user.id,
-                waiter_id: user.id,
+                user_id: user?.id || waiterUser.id,
+                waiter_id: waiterUser?.id || user?.id,
                 table_id: selectedTable.id,
                 items: cart.map(i => ({
                     product_id: i.product.id,
@@ -130,39 +151,52 @@ export default function WaiterApp() {
     // LOGIN SCREEN
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 animate-in fade-in duration-700">
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-black italic mb-2">WAITER<span className="text-primary">APP</span></h1>
-                    <p className="text-slate-400">Ingresa tu PIN de Mesero</p>
+                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-primary/20">
+                        <Utensils className="w-8 h-8 text-black" />
+                    </div>
+                    <h1 className="text-4xl font-black italic mb-2 text-slate-900 tracking-tighter uppercase">WAITER<span className="text-primary italic">APP</span></h1>
+                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Portal de Autenticación de Meseros</p>
                 </div>
 
-                <div className="flex gap-4 mb-8">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className={cn("w-4 h-4 rounded-full transition-all", i < pin.length ? "bg-primary scale-125" : "bg-white/20")} />
-                    ))}
-                </div>
+                <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 w-full max-w-sm flex flex-col items-center">
+                    <div className="flex gap-4 mb-10">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className={cn("w-5 h-5 rounded-full transition-all duration-300", i < pin.length ? "bg-primary scale-110 shadow-lg shadow-primary/40" : "bg-slate-100 border border-slate-200")} />
+                        ))}
+                    </div>
 
-                <div className="grid grid-cols-3 gap-4 w-full max-w-xs">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                        <button
-                            key={num}
-                            onClick={() => {
-                                const newPin = pin + num
+                    <div className="grid grid-cols-3 gap-4 w-full">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                            <button
+                                key={num}
+                                onClick={() => {
+                                    const newPin = pin + num
+                                    if (newPin.length <= 4) setPin(newPin)
+                                    if (newPin.length === 4) {
+                                        verifyPin(newPin)
+                                    }
+                                }}
+                                className="h-16 rounded-2xl bg-slate-50 border border-slate-100 text-xl font-black italic text-slate-900 active:bg-primary active:scale-95 transition-all hover:bg-white hover:border-primary/30"
+                            >
+                                {num}
+                            </button>
+                        ))}
+                        <div />
+                        <button onClick={() => {
+                            if (pin.length < 4) {
+                                const newPin = pin + "0"
                                 setPin(newPin)
-                                if (newPin.length === 4) {
-                                    setTimeout(() => setIsAuthenticated(true), 300)
-                                }
-                            }}
-                            className="h-20 rounded-2xl bg-white/10 text-2xl font-bold active:bg-primary active:text-black transition-all"
-                        >
-                            {num}
+                                if (newPin.length === 4) verifyPin(newPin)
+                            }
+                        }} className="h-16 rounded-2xl bg-slate-50 border border-slate-100 text-xl font-black italic text-slate-900 active:bg-primary transition-all">0</button>
+                        <button onClick={() => setPin(pin.slice(0, -1))} className="h-16 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 font-bold active:bg-rose-500 active:text-white transition-all">
+                            <X className="w-6 h-6 mx-auto" />
                         </button>
-                    ))}
-                    <div />
-                    <button onClick={() => setPin(pin + "0")} className="h-20 rounded-2xl bg-white/10 text-2xl font-bold active:bg-primary active:text-black transition-all">0</button>
-                    <button onClick={() => setPin(pin.slice(0, -1))} className="h-20 rounded-2xl bg-red-500/20 text-red-500 font-bold active:bg-red-500 active:text-white transition-all">
-                        <X className="w-8 h-8 mx-auto" />
-                    </button>
+                    </div>
+
+                    <p className="mt-8 text-[9px] font-black text-slate-300 uppercase tracking-widest italic">Terminal Segura POS-JAMALI</p>
                 </div>
             </div>
         )
@@ -177,11 +211,11 @@ export default function WaiterApp() {
                 {/* Header */}
                 <header className="bg-white px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-10">
                     <div>
-                        <h2 className="text-xl font-black italic">SALÓN PRINCIPAL</h2>
-                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Hola, Juan Pérez</p>
+                        <h2 className="text-xl font-black italic uppercase tracking-tighter">SALÓN</h2>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest italic">{waiterUser?.full_name || 'Iniciando...'}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => setIsAuthenticated(false)}>
-                        <LogOut className="w-5 h-5 text-slate-400" />
+                    <Button variant="ghost" size="icon" onClick={() => { setIsAuthenticated(false); setWaiterUser(null); setPin(""); }}>
+                        <LogOut className="w-5 h-5 text-rose-500" />
                     </Button>
                 </header>
 
@@ -291,7 +325,7 @@ export default function WaiterApp() {
                     </div>
 
                     {/* Grid Productos */}
-                    <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
+                    <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 content-start custom-scrollbar">
                         {filteredProducts.map(product => {
                             const inCartQty = cart.find(c => c.product.id === product.id)?.qty || 0
                             return (
@@ -299,22 +333,22 @@ export default function WaiterApp() {
                                     key={product.id}
                                     onClick={() => addToCart(product)}
                                     className={cn(
-                                        "bg-white p-4 rounded-2xl border shadow-sm flex flex-col text-left transition-all active:scale-95",
-                                        inCartQty > 0 ? "border-primary ring-1 ring-primary" : "border-slate-200"
+                                        "bg-white p-3 rounded-2xl border flex flex-col text-left transition-all active:scale-95 hover:border-primary/40 relative",
+                                        inCartQty > 0 ? "border-primary ring-1 ring-primary shadow-lg shadow-primary/10" : "border-slate-200 shadow-sm"
                                     )}
                                 >
                                     <div className="flex justify-between items-start w-full">
-                                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-lg font-bold">
+                                        <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100 uppercase italic">
                                             {product.name.charAt(0)}
                                         </div>
                                         {inCartQty > 0 && (
-                                            <span className="bg-primary text-black text-xs font-black px-2 py-0.5 rounded-full">
-                                                {inCartQty}
+                                            <span className="bg-primary text-black text-[9px] font-black px-1.5 py-0.5 rounded-lg shadow-sm">
+                                                {inCartQty}X
                                             </span>
                                         )}
                                     </div>
-                                    <h4 className="font-bold text-sm mt-3 leading-tight text-slate-900 line-clamp-2">{product.name}</h4>
-                                    <p className="text-xs font-black text-slate-400 mt-1">{formatPrice(product.price)}</p>
+                                    <h4 className="font-bold text-[11px] mt-2 leading-tight text-slate-900 line-clamp-2 uppercase italic tracking-tighter">{product.name}</h4>
+                                    <p className="text-[10px] font-black text-slate-400 mt-1 italic">{formatPrice(product.price)}</p>
                                 </button>
                             )
                         })}
