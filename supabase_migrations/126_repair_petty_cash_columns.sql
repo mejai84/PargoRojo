@@ -32,6 +32,11 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'petty_cash_vouchers' AND column_name = 'cargo') THEN
         ALTER TABLE public.petty_cash_vouchers ADD COLUMN cargo TEXT;
     END IF;
+
+    -- 7. restaurant_id (Crítico para RLS)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'petty_cash_vouchers' AND column_name = 'restaurant_id') THEN
+        ALTER TABLE public.petty_cash_vouchers ADD COLUMN restaurant_id UUID REFERENCES public.restaurants(id) DEFAULT '00000000-0000-0000-0000-000000000000';
+    END IF;
 END $$;
 
 -- Asegurar permisos para el rol de cajero también
