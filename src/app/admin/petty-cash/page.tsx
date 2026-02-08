@@ -303,6 +303,18 @@ export default function PettyCashPage() {
         try {
             setLoading(true);
 
+            // Obtener el restaurant_id del perfil del usuario actual
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error("No se encontró sesión de usuario");
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('restaurant_id')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile?.restaurant_id) throw new Error("No se encontró restaurant_id en el perfil");
+
             // Construimos el objeto con todos los campos
             const voucherToSave = {
                 beneficiary_name: formData.beneficiary_name,
@@ -314,7 +326,8 @@ export default function PettyCashPage() {
                 category: formData.category,
                 date: new Date().toISOString().split('T')[0],
                 status: 'paid',
-                signature_data: signature
+                signature_data: signature,
+                restaurant_id: profile.restaurant_id
             };
 
             const { data, error } = await supabase
