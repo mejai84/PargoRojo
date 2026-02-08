@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 
 export type ShiftType = 'MORNING' | 'AFTERNOON' | 'NIGHT' | 'CUSTOM'
 
@@ -59,6 +60,14 @@ export async function getPosStatus(userId: string): Promise<PosStatus> {
  * Valida que no exista uno previo.
  */
 export async function startShift(shiftDefinitionId: string) {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return { success: false, error: "ERROR CRÍTICO: Variables de entorno Supabase no configuradas en el servidor." }
+    }
+
+    const cookieStore = await cookies()
+    const allCookies = cookieStore.getAll()
+    console.log("COOKIES RECIBIDAS EN SERVIDOR:", allCookies.map((c: any) => c.name))
+
     console.log("Iniciando startShift para:", shiftDefinitionId)
     const supabase = await createClient()
 
