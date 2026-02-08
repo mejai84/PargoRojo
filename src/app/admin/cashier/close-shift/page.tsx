@@ -58,7 +58,13 @@ export default function CloseShiftPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
 
-            // 1. Buscar Turno Activo
+            // 1. Buscar Perfil y Turno Activo
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('id, restaurant_id')
+                .eq('id', user.id)
+                .single()
+
             const { data: shift } = await supabase
                 .from('shifts')
                 .select('id')
@@ -101,9 +107,14 @@ export default function CloseShiftPage() {
                 const calculatedSales = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
                 setCashSales(calculatedSales)
 
-                // 4. Calcular Egresos de Caja Menor (si hay sistema)
-                // Por ahora 0
-                const calculatedExpenses = 0
+                // 4. Calcular Egresos de Caja Menor de ESTA sesión
+                const { data: vouchers } = await supabase
+                    .from('petty_cash_vouchers')
+                    .select('amount')
+                    .gte('created_at', session.opened_at)
+                    .eq('restaurant_id', profile.restaurant_id)
+
+                const calculatedExpenses = vouchers?.reduce((sum, v) => sum + (v.amount || 0), 0) || 0
                 setExpenses(calculatedExpenses)
 
                 // TOTAL ESPERADO EN CAJA
