@@ -1,9 +1,9 @@
-> **Versión:** 1.8 - Pargo OS Enterprise Edition | **Documento:** Fuente Única de Verdad | **Actualizado:** 24 Ene 2026 (18:35)
+> **Versión:** 2.0 - Jamali OS Enterprise Edition | **Documento:** Fuente Única de Verdad | **Actualizado:** 8 Feb 2026 (23:15)
 
 ---
 
 ## 1. INTRODUCCIÓN GENERAL DEL SISTEMA
-Pargo Rojo es una plataforma POS modular en modelo SaaS diseñada para la gestión integral de establecimientos de alimentos, bebidas y retail. El sistema centraliza la operación financiera, administrativa y de producción, garantizando una trazabilidad total desde el ingreso de un pedido hasta el arqueo final de caja.
+Jamali OS es una plataforma POS modular en modelo SaaS diseñada para la gestión integral de establecimientos de alimentos, bebidas y retail. El sistema centraliza la operación financiera, administrativa y de producción, garantizando una trazabilidad total desde el ingreso de un pedido hasta el arqueo final de caja.
 
 ### 🎯 Objetivos de la Plataforma
 - **Optimización Operativa:** Reducción de tiempos de comunicación entre salón y cocina.
@@ -39,9 +39,9 @@ El sistema utiliza un Control de Acceso Basado en Roles (RBAC) para proteger la 
 
 ## 4. DESCRIPCIÓN DETALLADA DE MÓDULOS
 
-### 🏰 4.1. Command Center & Pargo Bot (IA)
-El centro neurálgico del sistema permite monitorear la salud del establecimiento bajo la arquitectura Pargo OS Enterprise.
-- **Pargo Bot (Asistente IA):** Motor de inteligencia artificial que responde consultas en lenguaje natural sobre ventas, stock y productos top directamente en el dashboard.
+### 🏰 4.1. Command Center & Jamali Bot (IA)
+El centro neurálgico del sistema permite monitorear la salud del establecimiento bajo la arquitectura Jamali OS Enterprise.
+- **Jamali Bot (Asistente IA):** Motor de inteligencia artificial que responde consultas en lenguaje natural sobre ventas, stock y productos top directamente en el dashboard.
 - **KPIs en Tiempo Real:** Visualización instantánea de ventas brutas, flujo de caja y ocupación activa del local.
 - **Navegación Estructurada:** Sidebar inteligente agrupado por departamentos.
 

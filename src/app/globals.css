@@ -58,6 +58,23 @@
   --radius: 1rem;
 }
 
+.dark {
+  --background: #020617; /* Slate 950 */
+  --foreground: #f8fafc; /* Slate 50 */
+  
+  --card: #1e293b; /* Slate 800 */
+  --card-foreground: #f8fafc;
+  
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  
+  --muted: #0f172a;
+  --muted-foreground: #94a3b8;
+  
+  --border: #334155;
+  --input: #334155;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

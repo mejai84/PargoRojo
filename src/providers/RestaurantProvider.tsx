@@ -9,6 +9,7 @@ interface Restaurant {
     subdomain: string
     logo_url: string | null
     primary_color: string
+    theme?: 'light' | 'dark'
 }
 
 interface RestaurantContextType {
@@ -86,17 +87,42 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
             }
         }
 
+        const fetchBySubdomain = async () => {
+            const hostname = window.location.hostname
+            if (hostname.includes('.') && !hostname.startsWith('localhost') && !hostname.includes('127.0.0.1')) {
+                const subdomain = hostname.split('.')[0]
+                const { data: resBySub } = await supabase
+                    .from('restaurants')
+                    .select('*')
+                    .eq('subdomain', subdomain)
+                    .maybeSingle()
+
+                if (resBySub) {
+                    setRestaurant(resBySub)
+                    applyBranding(resBySub)
+                }
+            }
+        }
+
         fetchRestaurantData()
+        fetchBySubdomain()
     }, [])
 
     const applyBranding = (res: Restaurant) => {
-        // Aplicar color primario dinámicamente al CSS
+        // 1. Aplicar color primario dinámicamente
         if (res.primary_color) {
             document.documentElement.style.setProperty('--primary', res.primary_color)
             const r = parseInt(res.primary_color.slice(1, 3), 16)
             const g = parseInt(res.primary_color.slice(3, 5), 16)
             const b = parseInt(res.primary_color.slice(5, 7), 16)
             document.documentElement.style.setProperty('--primary-rgb', `${r}, ${g}, ${b}`)
+        }
+
+        // 2. Aplicar Tema (Oscuro/Claro)
+        if (res.theme === 'dark') {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
         }
     }
 

@@ -44,102 +44,135 @@ export default function ReportsPage() {
     const [topSellers, setTopSellers] = useState<TopSeller[]>([])
     const [loading, setLoading] = useState(true)
 
+    const loadData = async () => {
+        setLoading(true)
+        try {
+            // Load KPIs
+            const { data: kpiData } = await supabase.rpc('get_dashboard_kpis')
+            if (kpiData && kpiData[0]) {
+                setKpis(kpiData[0])
+            } else {
+                // Fallback: Frontend Calculation if RPC fails or is empty
+                const startOfMonth = new Date()
+                startOfMonth.setDate(1)
+                startOfMonth.setHours(0, 0, 0, 0)
+
+                const { data: monthOrders } = await supabase
+                    .from('orders')
+                    .select('total')
+                    .gte('created_at', startOfMonth.toISOString())
+                    .in('status', ['completed', 'paid', 'delivered'])
+
+                if (monthOrders) {
+                    const totalM = monthOrders.reduce((acc, o) => acc + (o.total || 0), 0)
+                    const countM = monthOrders.length
+                    setKpis({
+                        total_revenue_month: totalM,
+                        total_orders_month: countM,
+                        avg_ticket: countM > 0 ? totalM / countM : 0,
+                        total_customers: 0
+                    })
+                }
+            }
+
+            // Load Daily Sales
+            const { data: salesData } = await supabase.rpc('get_sales_daily')
+            if (salesData) setDailySales(salesData)
+
+            // Load Top Products
+            const { data: productsData } = await supabase.rpc('get_top_products')
+            if (productsData) setTopProducts(productsData)
+
+            // Load Petty Cash Today
+            const today = new Date().toISOString().split('T')[0]
+            const { data: voucherData } = await supabase
+                .from('petty_cash_vouchers')
+                .select('*')
+                .eq('date', today)
+
+            if (voucherData) {
+                const total = voucherData.reduce((acc, v) => acc + (v.amount || 0), 0)
+                setPettyCashToday(total)
+            }
+
+            // Load Recent Vouchers for the report
+            const { data: allVouchers } = await supabase
+                .from('petty_cash_vouchers')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(10)
+
+            if (allVouchers) {
+                setRecentVouchers(allVouchers)
+                const categories: Record<string, number> = {}
+                allVouchers.forEach(v => {
+                    categories[v.category] = (categories[v.category] || 0) + (v.amount || 0)
+                })
+                setCategoryExpenses(Object.entries(categories)
+                    .map(([category, total]) => ({ category, total }))
+                    .sort((a, b) => b.total - a.total)
+                )
+            }
+
+            // Load Today's Sales directly for Net Profit
+            const { data: todayOrders } = await supabase
+                .from('orders')
+                .select(`
+                    total, 
+                    status,
+                    preparation_started_at, 
+                    preparation_finished_at, 
+                    guest_info,
+                    waiter:profiles!orders_waiter_id_fkey (full_name)
+                `)
+                .gte('created_at', today + 'T00:00:00Z')
+                .in('status', ['completed', 'paid', 'delivered'])
+
+            if (todayOrders) {
+                const totalS = todayOrders.reduce((acc, o) => acc + (o.total || 0), 0)
+                setTodaySales(totalS)
+
+                const timedOrders = todayOrders.filter(o => o.preparation_started_at && o.preparation_finished_at)
+                if (timedOrders.length > 0) {
+                    const totalMinutes = timedOrders.reduce((acc, o) => {
+                        const diff = new Date(o.preparation_finished_at).getTime() - new Date(o.preparation_started_at).getTime()
+                        return acc + (diff / 60000)
+                    }, 0)
+                    setAvgPrepTime(Math.round(totalMinutes / timedOrders.length))
+                }
+
+                const sellerStats: Record<string, { orders: number, revenue: number }> = {}
+                todayOrders.forEach((o: any) => {
+                    const name = o.waiter?.full_name || o.guest_info?.name || "Mostrador / Otros"
+                    if (!sellerStats[name]) sellerStats[name] = { orders: 0, revenue: 0 }
+                    sellerStats[name].orders += 1
+                    sellerStats[name].revenue += (o.total || 0)
+                })
+
+                const sortedSellers = Object.entries(sellerStats)
+                    .map(([name, stats]) => ({
+                        name,
+                        total_orders: stats.orders,
+                        total_revenue: stats.revenue
+                    }))
+                    .sort((a, b) => b.total_revenue - a.total_revenue)
+                    .slice(0, 5)
+
+                setTopSellers(sortedSellers)
+            }
+        } catch (error) {
+            console.error("Error loading reports data:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
         loadData()
     }, [])
 
-    const loadData = async () => {
-        // Load KPIs
-        const { data: kpiData } = await supabase.rpc('get_dashboard_kpis')
-        if (kpiData && kpiData[0]) setKpis(kpiData[0])
 
-        // Load Daily Sales
-        const { data: salesData } = await supabase.rpc('get_sales_daily')
-        if (salesData) setDailySales(salesData)
-
-        // Load Top Products
-        const { data: productsData } = await supabase.rpc('get_top_products')
-        if (productsData) setTopProducts(productsData)
-
-        // Load Petty Cash Today
-        const today = new Date().toISOString().split('T')[0]
-        const { data: voucherData } = await supabase
-            .from('petty_cash_vouchers')
-            .select('*')
-            .eq('date', today)
-
-        if (voucherData) {
-            const total = voucherData.reduce((acc, v) => acc + (v.amount || 0), 0)
-            setPettyCashToday(total)
-        }
-
-        // Load Recent Vouchers for the report
-        const { data: allVouchers } = await supabase
-            .from('petty_cash_vouchers')
-            .select('*')
-            .order('date', { ascending: false })
-            .limit(10)
-
-        if (allVouchers) {
-            setRecentVouchers(allVouchers)
-            const categories: Record<string, number> = {}
-            allVouchers.forEach(v => {
-                categories[v.category] = (categories[v.category] || 0) + (v.amount || 0)
-            })
-            setCategoryExpenses(Object.entries(categories)
-                .map(([category, total]) => ({ category, total }))
-                .sort((a, b) => b.total - a.total)
-            )
-        }
-
-        // Load Today's Sales directly for Net Profit
-        const { data: todayOrders } = await supabase
-            .from('orders')
-            .select(`
-                total, 
-                preparation_started_at, 
-                preparation_finished_at, 
-                guest_info,
-                waiter:profiles!orders_waiter_id_fkey (full_name)
-            `)
-            .gte('created_at', today + 'T00:00:00Z')
-
-        if (todayOrders) {
-            const totalS = todayOrders.reduce((acc, o) => acc + (o.total || 0), 0)
-            setTodaySales(totalS)
-
-            const timedOrders = todayOrders.filter(o => o.preparation_started_at && o.preparation_finished_at)
-            if (timedOrders.length > 0) {
-                const totalMinutes = timedOrders.reduce((acc, o) => {
-                    const diff = new Date(o.preparation_finished_at).getTime() - new Date(o.preparation_started_at).getTime()
-                    return acc + (diff / 60000)
-                }, 0)
-                setAvgPrepTime(Math.round(totalMinutes / timedOrders.length))
-            }
-
-            // Calculation for Top Sellers
-            const sellerStats: Record<string, { orders: number, revenue: number }> = {}
-            todayOrders.forEach((o: any) => {
-                const name = o.waiter?.full_name || o.guest_info?.name || "Mostrador / Otros"
-                if (!sellerStats[name]) sellerStats[name] = { orders: 0, revenue: 0 }
-                sellerStats[name].orders += 1
-                sellerStats[name].revenue += (o.total || 0)
-            })
-
-            const sortedSellers = Object.entries(sellerStats)
-                .map(([name, stats]) => ({
-                    name,
-                    total_orders: stats.orders,
-                    total_revenue: stats.revenue
-                }))
-                .sort((a, b) => b.total_revenue - a.total_revenue)
-                .slice(0, 5)
-
-            setTopSellers(sortedSellers)
-        }
-
-        setLoading(false)
-    }
+    const maxSales = Math.max(...dailySales.map((d: DailySales) => d.total_sales), 1)
 
     if (loading) {
         return (
@@ -148,8 +181,6 @@ export default function ReportsPage() {
             </div>
         )
     }
-
-    const maxSales = Math.max(...dailySales.map(d => d.total_sales), 1)
 
     return (
         <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-8 font-sans selection:bg-primary selection:text-black relative overflow-hidden">

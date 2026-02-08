@@ -28,6 +28,7 @@ import { supabase } from "@/lib/supabase/client"
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
+import { useRestaurant } from "@/providers/RestaurantProvider"
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true)
@@ -42,6 +43,8 @@ export default function AdminDashboard() {
     const [recentOrders, setRecentOrders] = useState<any[]>([])
     const [topProducts, setTopProducts] = useState<any[]>([])
     const [currentTime, setCurrentTime] = useState(new Date())
+    const { restaurant } = useRestaurant()
+    const [userName, setUserName] = useState("Admin")
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -59,6 +62,12 @@ export default function AdminDashboard() {
 
     const fetchData = async () => {
         setLoading(true)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+            const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', session.user.id).single()
+            if (profile) setUserName(profile.full_name)
+        }
+
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         const todayISO = today.toISOString()
@@ -105,27 +114,30 @@ export default function AdminDashboard() {
         <div className="space-y-12 animate-in fade-in duration-700">
 
             {/* 👑 VIP HERO HEADER */}
-            <div className="relative group rounded-[3rem] overflow-hidden bg-white border border-slate-200 p-8 md:p-12 shadow-sm">
+            <div className="relative group rounded-[3rem] overflow-hidden bg-card border border-border p-8 md:p-12 shadow-sm">
                 <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
                 <div className="relative z-10 flex flex-col lg:flex-row justify-between lg:items-center gap-8">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2">
-                                <Activity className="w-3 h-3" /> SISTEMA OPERATIVO
+                                <Zap className="w-3 h-3 fill-primary" /> JAMALI OS v2.0
                             </span>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{currentTime.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                         </div>
-                        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
-                            COMMAND <span className="text-primary italic">CENTER</span>
-                        </h1>
+                        <div className="space-y-1">
+                            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em]">Bienvenido de nuevo, {userName}</h2>
+                            <h1 className="text-3xl sm:text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-foreground leading-none">
+                                {restaurant?.name || "COMMAND"} <span className="text-primary italic">HUB</span>
+                            </h1>
+                        </div>
                         <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] flex items-center gap-4">
                             <span className="flex items-center gap-1.5"><Globe className="w-3 h-3 text-emerald-600" /> Cloud Sync Active</span>
-                            <span className="flex items-center gap-1.5 font-mono text-slate-900">{currentTime.toLocaleTimeString('es-CO')}</span>
+                            <span className="flex items-center gap-1.5 font-mono text-foreground">{currentTime.toLocaleTimeString('es-CO')}</span>
                         </p>
                     </div>
 
                     <div className="flex gap-4">
-                        <button onClick={fetchData} className="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center hover:bg-primary hover:text-black hover:border-primary transition-all group-hover:rotate-180 duration-500 shadow-sm">
+                        <button onClick={fetchData} className="w-14 h-14 rounded-2xl bg-card border border-border flex items-center justify-center hover:bg-primary hover:text-black hover:border-primary transition-all group-hover:rotate-180 duration-500 shadow-sm">
                             <RefreshCw className="w-6 h-6" />
                         </button>
                         <Link href="/admin/orders">
@@ -140,7 +152,7 @@ export default function AdminDashboard() {
             {/* 📊 CORE METRICS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <HighEndKPI label="Ventas Brutas" value={formatPrice(stats.todayRevenue)} trend="+12.5%" trendUp={true} delay="0" color="text-primary" />
-                <HighEndKPI label="Flujo de Caja" value={stats.totalOrdersToday} subValue="Órdenes hoy" trend="+4%" trendUp={true} delay="100" color="text-slate-900" />
+                <HighEndKPI label="Flujo de Caja" value={stats.totalOrdersToday} subValue="Órdenes hoy" trend="+4%" trendUp={true} delay="100" color="text-foreground" />
                 <HighEndKPI label="Ocupación Live" value={stats.activeOrders} subValue="Mesas activas" trend="High" trendUp={true} delay="200" color="text-emerald-600" />
                 <HighEndKPI label="Fidelización" value="24" subValue="Nuevos Clientes" trend="+8%" trendUp={true} delay="300" color="text-blue-600" />
             </div>
@@ -155,16 +167,16 @@ export default function AdminDashboard() {
                         <Link href="/admin/orders" className="text-[10px] font-black text-primary hover:underline italic uppercase tracking-widest">Auditar Todo</Link>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-[3rem] overflow-hidden shadow-sm">
-                        <div className="divide-y divide-slate-100">
+                    <div className="bg-card border border-border rounded-[3rem] overflow-hidden shadow-sm">
+                        <div className="divide-y divide-border">
                             {recentOrders.map((order, i) => (
                                 <div key={order.id} className="p-6 md:p-8 hover:bg-slate-50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
                                     <div className="flex items-center gap-4 md:gap-6">
-                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-mono text-[10px] font-black text-slate-400 group-hover:border-primary/30 group-hover:text-primary transition-all">
+                                        <div className="w-12 h-12 rounded-2xl bg-background border border-border flex items-center justify-center font-mono text-[10px] font-black text-slate-400 group-hover:border-primary/30 group-hover:text-primary transition-all">
                                             #{order.id.split('-')[0].toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="font-black italic uppercase tracking-tight text-slate-900">{order.guest_info?.name || 'Mostrador'}</p>
+                                            <p className="font-black italic uppercase tracking-tight text-foreground">{order.guest_info?.name || 'Mostrador'}</p>
                                             <div className="flex items-center gap-3 mt-1">
                                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">{new Date(order.created_at).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}</span>
                                                 <div className="w-1 h-1 rounded-full bg-slate-200" />
@@ -173,7 +185,7 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6">
-                                        <span className="text-lg font-black italic tracking-tighter text-slate-900">${(order.total || 0).toLocaleString()}</span>
+                                        <span className="text-lg font-black italic tracking-tighter text-foreground">${(order.total || 0).toLocaleString()}</span>
                                         <div className={cn(
                                             "px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest border italic",
                                             order.status === 'delivered' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
@@ -194,7 +206,7 @@ export default function AdminDashboard() {
                         <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic">Preferencia HOY</h3>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-[3rem] p-8 shadow-sm relative overflow-hidden">
+                    <div className="bg-card border border-border rounded-[3rem] p-8 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-5 text-primary rotate-12">
                             <TrendingUp className="w-40 h-40" />
                         </div>
@@ -203,9 +215,9 @@ export default function AdminDashboard() {
                                 <div key={idx} className="space-y-2">
                                     <div className="flex justify-between items-baseline">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">{p.name}</span>
-                                        <span className="text-xs font-black italic text-slate-900">{p.qty}u</span>
+                                        <span className="text-xs font-black italic text-foreground">{p.qty}u</span>
                                     </div>
-                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-primary transition-all duration-1000"
                                             style={{ width: `${Math.min((p.qty / (topProducts[0]?.qty || 1)) * 100, 100)}%` }}
@@ -226,7 +238,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* SUPERVISION & SECURITY */}
-                    <div className="pt-8 border-t border-slate-100">
+                    <div className="pt-8 border-t border-border">
                         <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic mb-6">Supervisión</h3>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                             <DashboardAction icon={<FileText className="text-purple-500" />} label="Auditoría" href="/admin/audit" />
@@ -242,7 +254,7 @@ export default function AdminDashboard() {
 
 function HighEndKPI({ label, value, trend, trendUp, delay, color, subValue }: any) {
     return (
-        <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm relative overflow-hidden group hover:border-primary/50 transition-all">
+        <div className="bg-card border border-border p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm relative overflow-hidden group hover:border-primary/50 transition-all">
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 group-hover:rotate-6 transition-all duration-700">
                 <Zap className={cn("w-12 h-12", color)} />
             </div>
@@ -266,8 +278,8 @@ function HighEndKPI({ label, value, trend, trendUp, delay, color, subValue }: an
 function DashboardAction({ icon, label, href }: any) {
     return (
         <Link href={href}>
-            <div className="p-6 rounded-[2rem] bg-white border border-slate-100 hover:border-primary/50 hover:bg-slate-50 transition-all flex flex-col items-center gap-3 group shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+            <div className="p-6 rounded-[2rem] bg-card border border-border hover:border-primary/50 hover:bg-background transition-all flex flex-col items-center gap-3 group shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
                     {icon}
                 </div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">{label}</span>

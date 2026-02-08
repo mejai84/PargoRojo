@@ -47,6 +47,7 @@ type Table = {
     height: number
     rotation: number
     shape: 'rectangle' | 'circle' | 'square'
+    restaurant_id: string
 }
 
 export default function TablesAdminPage() {
@@ -161,10 +162,10 @@ export default function TablesAdminPage() {
             }
             console.log('✅ [AUTH] Usuario autenticado:', user.email)
 
-            // 2. Verificar permisos del usuario
+            // 2. Verificar permisos del usuario y obtener restaurant_id
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('role, restaurant_id')
                 .eq('id', user.id)
                 .single()
 
@@ -199,7 +200,8 @@ export default function TablesAdminPage() {
                     location: t.location,
                     qr_code: t.qr_code,
                     status: t.status,
-                    active: t.active
+                    active: t.active,
+                    restaurant_id: profile.restaurant_id // ✅ Asegurar restaurant_id para aislamiento SaaS
                 }
 
                 // Log del primer registro para debugging
@@ -645,7 +647,8 @@ export default function TablesAdminPage() {
                                 y_pos: 300,
                                 width: 120,
                                 height: 120,
-                                rotation: 0
+                                rotation: 0,
+                                restaurant_id: (await supabase.from('profiles').select('restaurant_id').eq('id', (await supabase.auth.getUser()).data.user?.id).single()).data?.restaurant_id
                             }).select().single();
 
                             if (!error && newTable) {

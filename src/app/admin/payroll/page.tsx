@@ -26,9 +26,9 @@ interface Employee {
 
 interface Shift {
     id: string
-    employee_id: string
-    start_time: string
-    end_time: string | null
+    user_id: string
+    started_at: string
+    ended_at: string | null
     total_hours: number | null
     total_payment: number | null
     status: string
@@ -60,7 +60,7 @@ export default function PayrollPage() {
             const { data: shiftData } = await supabase
                 .from('shifts')
                 .select('*, employee:profiles(*)')
-                .eq('status', 'active')
+                .eq('status', 'OPEN')
 
             if (shiftData) setActiveShifts(shiftData)
 
@@ -71,12 +71,16 @@ export default function PayrollPage() {
     }
 
     const startShift = async (employeeId: string) => {
+        const { data: profile } = await supabase.from('profiles').select('restaurant_id').eq('id', employeeId).single()
+        if (!profile?.restaurant_id) return
+
         const { error } = await supabase
             .from('shifts')
             .insert([{
-                employee_id: employeeId,
-                status: 'active',
-                start_time: new Date().toISOString()
+                user_id: employeeId,
+                restaurant_id: profile.restaurant_id,
+                status: 'OPEN',
+                started_at: new Date().toISOString()
             }])
 
         if (!error) fetchData()
@@ -87,7 +91,7 @@ export default function PayrollPage() {
         if (!shift) return
 
         const endTime = new Date()
-        const startTime = new Date(shift.start_time)
+        const startTime = new Date(shift.started_at)
         const diffMs = endTime.getTime() - startTime.getTime()
         const diffHours = diffMs / (1000 * 60 * 60)
 
@@ -98,10 +102,10 @@ export default function PayrollPage() {
         const { error } = await supabase
             .from('shifts')
             .update({
-                end_time: endTime.toISOString(),
+                ended_at: endTime.toISOString(),
                 total_hours: parseFloat(diffHours.toFixed(2)),
                 total_payment: Math.round(totalPay),
-                status: 'completed'
+                status: 'CLOSED'
             })
             .eq('id', shiftId)
 
@@ -156,7 +160,7 @@ export default function PayrollPage() {
                                                 <div className="font-black italic uppercase text-lg text-slate-900 leading-none mb-1">{shift.employee.full_name}</div>
                                                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                                                     <span className="bg-slate-100 px-2 py-0.5 rounded italic">{shift.employee.role}</span>
-                                                    <span className="italic">• Inicio: {new Date(shift.start_time).toLocaleTimeString()}</span>
+                                                    <span className="italic">• Inicio: {new Date(shift.started_at).toLocaleTimeString()}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -165,7 +169,7 @@ export default function PayrollPage() {
                                                 <div className="text-[10px] text-slate-400 uppercase font-black tracking-widest italic leading-none mb-1">Tiempo Transcurrido</div>
                                                 <div className="font-mono text-xl font-black text-primary animate-pulse italic">
                                                     {(() => {
-                                                        const diff = new Date().getTime() - new Date(shift.start_time).getTime()
+                                                        const diff = new Date().getTime() - new Date(shift.started_at).getTime()
                                                         const hours = Math.floor(diff / 3600000)
                                                         const minutes = Math.floor((diff % 3600000) / 60000)
                                                         return `${hours}h ${minutes}m`
@@ -206,7 +210,7 @@ export default function PayrollPage() {
                         </div>
                         <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar pt-2">
                             {employees
-                                .filter(e => e.full_name.toLowerCase().includes(searchQuery.toLowerCase()) && !activeShifts.find(s => s.employee_id === e.id))
+                                .filter(e => e.full_name.toLowerCase().includes(searchQuery.toLowerCase()) && !activeShifts.find(s => s.user_id === e.id))
                                 .map(employee => (
                                     <div key={employee.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:border-primary/20 hover:bg-white transition-all flex items-center justify-between group">
                                         <span className="font-black italic uppercase text-xs text-slate-900">{employee.full_name}</span>

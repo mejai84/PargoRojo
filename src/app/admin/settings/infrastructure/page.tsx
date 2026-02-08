@@ -36,7 +36,7 @@ export default function InfrastructurePage() {
         latency: 0,
         storage: "12%",
         lastBackup: "Hace 12h",
-        version: "Pargo Rojo OS v1.6.2 Enterprise"
+        version: "Jamali OS v2.0 Enterprise"
     })
     const [loading, setLoading] = useState(false)
     const [exporting, setExporting] = useState<string | null>(null)
@@ -63,7 +63,7 @@ export default function InfrastructurePage() {
             const url = URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = `pargorojo_backup_${table}_${new Date().toISOString().split('T')[0]}.json`
+            a.download = `jamali_backup_${table}_${new Date().toISOString().split('T')[0]}.json`
             document.body.appendChild(a)
             a.click()
             document.body.removeChild(a)
@@ -90,7 +90,7 @@ export default function InfrastructurePage() {
                             <div className="flex items-center gap-3">
                                 <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">CORE <span className="text-primary italic">INFRA</span></h1>
                                 <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-600 tracking-widest italic uppercase">
-                                    SaaS Node v1.6
+                                    SaaS Node v2.0
                                 </div>
                             </div>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">

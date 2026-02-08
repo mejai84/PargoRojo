@@ -62,7 +62,18 @@ export async function startShift(shiftDefinitionId: string) {
     if (!user) throw new Error("No autenticado")
     const userId = user.id
 
-    // Validar si ya existe
+    // Obtener restaurant_id del perfil
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('restaurant_id')
+        .eq('id', userId)
+        .single()
+
+    if (!profile?.restaurant_id) {
+        throw new Error("El usuario no tiene un restaurante asignado.")
+    }
+
+    // Validar si ya existe un turno abierto
     const { data: existing } = await supabase
         .from('shifts')
         .select('id')
@@ -87,7 +98,8 @@ export async function startShift(shiftDefinitionId: string) {
         .from('shifts')
         .insert({
             user_id: userId,
-            shift_type: def.name, // Mantener compatibilidad con columna legacy
+            restaurant_id: profile.restaurant_id, // ✅ SaaS Isolation
+            shift_type: def.name,
             shift_definition_id: shiftDefinitionId,
             status: 'OPEN',
             started_at: new Date().toISOString()
@@ -95,9 +107,13 @@ export async function startShift(shiftDefinitionId: string) {
         .select()
         .single()
 
-    if (error) throw new Error(error.message)
+    if (error) {
+        console.error("Error creating shift:", error)
+        throw new Error(error.message)
+    }
 
-    revalidatePath('/admin') // Refrescar UI si es necesario
+    revalidatePath('/admin/cashier')
+    revalidatePath('/admin')
     return data
 }
 

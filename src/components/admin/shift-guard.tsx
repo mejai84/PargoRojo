@@ -76,7 +76,7 @@ export function ShiftGuard({ children }: { children: React.ReactNode }) {
             .from('shifts')
             .select('*')
             .eq('user_id', user.id)
-            .is('end_time', null)
+            .is('ended_at', null)
             .maybeSingle()
 
         setHasActiveShift(!!shift)
@@ -86,9 +86,52 @@ export function ShiftGuard({ children }: { children: React.ReactNode }) {
     const startShift = async () => {
         setLoading(true)
         try {
+            // 1. Obtener restaurant_id del perfil
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('restaurant_id')
+                .eq('id', userId)
+                .single()
+
+            if (!profile?.restaurant_id) {
+                throw new Error("No tienes un restaurante asignado.")
+            }
+
+            // 2. Intentar obtener una definición de turno automática
+            const { data: defs } = await supabase
+                .from('shift_definitions')
+                .select('*')
+                .eq('is_active', true)
+
+            let shiftDefId = null
+            let shiftType = 'General'
+
+            if (defs && defs.length > 0) {
+                const currentHour = new Date().getHours()
+                const recommended = defs.find(s => {
+                    const startArr = s.start_time.split(':')
+                    const endArr = s.end_time.split(':')
+                    const start = parseInt(startArr[0])
+                    const end = parseInt(endArr[0])
+                    if (start > end) return currentHour >= start || currentHour < end
+                    return currentHour >= start && currentHour < end
+                })
+                if (recommended) {
+                    shiftDefId = recommended.id
+                    shiftType = recommended.name
+                } else {
+                    shiftDefId = defs[0].id
+                    shiftType = defs[0].name
+                }
+            }
+
             const { error } = await supabase.from('shifts').insert({
                 user_id: userId,
-                start_time: new Date().toISOString()
+                restaurant_id: profile.restaurant_id,
+                status: 'OPEN',
+                shift_type: shiftType,
+                shift_definition_id: shiftDefId,
+                started_at: new Date().toISOString()
             })
 
             if (error) throw error
@@ -148,7 +191,7 @@ export function ShiftGuard({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">
-                    Pargo OS • Time Tracking
+                    Jamali OS • Time Tracking
                 </p>
             </div>
         </div>

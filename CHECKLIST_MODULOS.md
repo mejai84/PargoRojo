@@ -9,7 +9,7 @@ Este documento detalla el estado actual de implementación del sistema POS para 
 | :--- | :---: | :--- |
 | **Arquitectura Multi-tenant** | ✅ | Base de datos normalizada con `restaurant_id`. Aislamiento total. |
 | **Seguridad RLS (Row Level Security)** | ✅ | Políticas de Supabase activas para aislamiento de datos entre negocios. |
-| **Branding Dinámico (Marca Blanca)** | ✅ | Contexto de restaurante inyectado en toda la App (Logos, Colores, Nombres). |
+| **Branding Dinámico (Jamali OS)** | ✅ | Branding premium Jamali OS inyectado en toda la App (Logos, Colores, Nombres). |
 | **Reglas de Auditoría Inmutable** | ✅ | Tabla `audit_logs` y módulo de visualización para Administradores. |
 | **Onboarding de Empresas** | 🏗️ | Base de datos lista; falta flujo de registro público. |
 
@@ -59,4 +59,4 @@ Este documento detalla el estado actual de implementación del sistema POS para 
 - **Fase 5 (Escalado):** 🏗️ Planes Monetización, Onboarding Público.
 
 ---
-*Checklist actualizado según nueva arquitectura SaaS - 26 de enero de 2026*
+*Checklist actualizado según nueva arquitectura SaaS - 8 de febrero de 2026*

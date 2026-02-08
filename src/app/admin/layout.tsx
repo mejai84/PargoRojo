@@ -170,7 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Zap className="w-12 h-12 text-primary animate-pulse" />
                     <div className="space-y-2 text-center">
                         <p className="font-black italic uppercase text-[10px] tracking-[0.4em] text-primary">Encriptando Sesión</p>
-                        <p className="text-gray-600 text-[9px] font-bold uppercase tracking-widest">Pargo Rojo Cloud Framework</p>
+                        <p className="text-gray-600 text-[9px] font-bold uppercase tracking-widest">Jamali Cloud Framework</p>
                     </div>
                 </div>
             </div>
@@ -181,9 +181,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <ShiftGuard>
-            <div className="flex min-h-screen bg-slate-50/50 selection:bg-primary selection:text-black">
+            <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary selection:text-black">
                 {/* 🏰 ENTERPRISE SIDEBAR */}
-                <aside className="w-72 border-r border-slate-200 bg-white hidden lg:flex flex-col sticky top-0 h-screen shadow-sm">
+                <aside className="w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shadow-sm">
 
                     {/* Brand Header */}
                     <div className="p-8 pb-4 flex items-center justify-between">
@@ -198,10 +198,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-sm font-black italic uppercase tracking-tighter text-slate-900">
-                                    {restaurant?.name || "PARGO OS"} <span className="text-primary italic">OS</span>
+                                <span className="text-sm font-black italic uppercase tracking-tighter text-foreground">
+                                    {restaurant?.name || "RESTAURANTE"} <span className="text-primary italic">JAMALI OS</span>
                                 </span>
-                                <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em] uppercase">Enterprise v1.6</span>
+                                <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em] uppercase">Enterprise v2.0</span>
                             </div>
                         </div>
                     </div>
@@ -209,11 +209,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {/* Profile Card Mini */}
                     <div className="px-6 py-4 mb-4">
                         <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-200 shadow-sm font-black text-primary italic">
+                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shadow-sm font-black text-primary italic">
                                 {userName.charAt(0)}
                             </div>
                             <div className="flex flex-col overflow-hidden">
-                                <span className="text-xs font-black italic text-slate-900 uppercase truncate">{userName}</span>
+                                <span className="text-xs font-black italic text-foreground uppercase truncate">{userName}</span>
                                 <div className="flex items-center gap-1.5 pt-0.5">
                                     <ShieldCheck className="w-3 h-3 text-emerald-600" />
                                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{userRole}</span>
@@ -231,7 +231,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 placeholder="Buscar módulo..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all font-sans"
+                                className="w-full h-10 pl-10 pr-4 rounded-xl bg-background border border-border outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all font-sans"
                             />
                         </div>
                     </div>
@@ -297,7 +297,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* 📺 MAIN COMMAND CENTER */}
                 <main className="flex-1 flex flex-col min-w-0">
                     {/* Mobile Floating Header */}
-                    <header className="h-16 border-b border-slate-200 flex items-center px-6 lg:hidden justify-between bg-white/80 backdrop-blur-md sticky top-0 z-50">
+                    <header className="h-16 border-b border-border flex items-center px-6 lg:hidden justify-between bg-card/80 backdrop-blur-md sticky top-0 z-50">
                         <div className="flex items-center gap-3">
                             {restaurant?.logo_url ? (
                                 <img src={restaurant.logo_url} className="w-6 h-6 object-contain" alt="Logo" />
@@ -305,7 +305,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <Zap className="w-5 h-5 text-primary" />
                             )}
                             <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">
-                                {restaurant?.name || "PARGO OS"} <span className="text-primary italic">OS</span>
+                                {restaurant?.name || "JAMALI OS"} <span className="text-primary italic">JAMALI OS</span>
                             </span>
                         </div>
                         <Button
@@ -329,7 +329,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <Zap className="w-5 h-5 text-primary" />
-                                        <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">PARGO <span className="text-primary italic">OS</span></span>
+                                        <span className="font-black italic text-sm tracking-tighter uppercase text-slate-900">JAMALI <span className="text-primary italic">OS</span></span>
                                     </div>
                                     <Button size="icon" variant="ghost" onClick={() => setIsMobileMenuOpen(false)}>
                                         <X className="w-5 h-5" />

@@ -21,7 +21,14 @@ export function ClientBot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
-            content: "¡Hola! 👋 Bienvenido a Pargo Rojo. ¿En qué puedo ayudarte hoy? 😊"
+            content: (
+                <div className="space-y-2">
+                    <p>¡Hola! 👋 Soy tu asistente de **Pargo Rojo**. ¿En qué puedo ayudarte hoy?</p>
+                    <div className="text-[11px] bg-slate-100 p-2 rounded-lg italic">
+                        Puedes preguntarme como: "¿Cómo comprar?", "¿Tienen ceviche?", o "¿Qué me recomiendas?"
+                    </div>
+                </div>
+            )
         }
     ])
     const [input, setInput] = useState("")
@@ -46,51 +53,137 @@ export function ClientBot() {
     const processQuery = async (query: string) => {
         setLoading(true)
         const q = query.toLowerCase()
-        let responseContent: React.ReactNode = "Lo siento, no entendí tu pregunta. ¿Podrías intentar con las opciones de abajo? 👇"
+        let responseContent: React.ReactNode = "Hmm, esa es una excelente pregunta. 🤔 No tengo la respuesta exacta en este momento, pero puedes llamarnos directamente o preguntar por nuestro menú del día. ¿Te gustaría ver las recomendaciones?"
 
-        // Simular pequeño delay para naturalidad
-        await new Promise(r => setTimeout(r, 600))
+        await new Promise(r => setTimeout(r, 800))
 
-        if (q.includes('horario') || q.includes('abierto') || q.includes('abre')) {
-            responseContent = "Estamos abiertos todos los días de 11:00 AM a 10:00 PM. ¡Te esperamos! 🕙"
+        // 1. PROCESO DE COMPRA Y LOGÍSTICA
+        if (q.includes('comprar') || q.includes('pedido') || q.includes('ordenar') || q.includes('pasos')) {
+            responseContent = "Para pedir: 1. Ve al Menú. 2. Añade tus platos con el botón (+). 3. Toca el carrito arriba a la derecha. 4. Confirma por WhatsApp. ¡Es súper fácil! 🛒"
         }
-        else if (q.includes('ubicacion') || q.includes('direccion') || q.includes('donde')) {
-            responseContent = (
-                <div className="flex flex-col gap-2">
-                    <span>Nos encontramos en:</span>
-                    <span className="font-bold">{businessInfo?.address || "C.Cial. Cauca Centro, Caucasia"}</span>
-                    <a
-                        href={`https://maps.google.com/?q=${businessInfo?.address || "Pargo Rojo Caucasia"}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline text-xs mt-1 block"
-                    >
-                        Ver en mapa 📍
-                    </a>
-                </div>
-            )
+        else if (q.includes('domicilio') || q.includes('envi') || q.includes('lleva')) {
+            responseContent = "¡Llegamos a todo Caucasia! 🛵 El costo varía según el barrio, pero suele estar entre $3.000 y $6.000. ¿A qué sector necesitas el envío?"
         }
-        else if (q.includes('telefono') || q.includes('contacto') || q.includes('llamar')) {
-            responseContent = (
-                <div className="flex flex-col gap-2">
-                    <span>Puedes contactarnos al:</span>
-                    <a href={`tel:${businessInfo?.phone}`} className="font-bold text-lg text-primary">{businessInfo?.phone || "320 784 8287"}</a>
-                </div>
-            )
+        else if (q.includes('tiempo') || q.includes('demora') || q.includes('tard')) {
+            responseContent = "Nuestros platos de mar se preparan al momento para máxima frescura 🍤. El tiempo promedio es de 20 a 35 minutos según la complejidad del plato."
         }
-        else if (q.includes('menu') || q.includes('carta') || q.includes('platos')) {
-            responseContent = (
-                <div className="flex flex-col gap-2">
-                    <span>¡Tenemos una carta deliciosa! Especialidad en comida de mar y asados.</span>
-                    <Link href="/menu" onClick={() => setIsOpen(false)} className="bg-primary text-black px-4 py-2 rounded-xl font-bold text-center mt-2 hover:opacity-90 transition-opacity">
-                        Ver Menú Completo 🍽️
-                    </Link>
-                </div>
-            )
+        else if (q.includes('cancela') || q.includes('arrepenti')) {
+            responseContent = "Si necesitas cancelar, por favor llámanos de inmediato al 320 784 8287. Si el plato ya entró a cocina, es posible que no podamos cancelarlo. ⚠️"
         }
-        else if (q.includes('sugerencia') || q.includes('recomienda') || q.includes('rico')) {
-            // Podríamos hacer fetch random, por ahora hardcodeamos un top seller
-            responseContent = "¡Te recomiendo probar nuestra 'Cazuela de Mariscos' o el 'Pargo Rojo Frito'! Son los favoritos de la casa. 🦐🐟"
+
+        // 2. MÉTODOS DE PAGO Y DINERO
+        else if (q.includes('pago') || q.includes('pagar') || q.includes('metodo') || q.includes('nequi') || q.includes('daviplata')) {
+            responseContent = "Aceptamos Efectivo, Nequi, Daviplata y todas las tarjetas de crédito o débito (Visa, Master, Amex). 💳"
+        }
+        else if (q.includes('propina')) {
+            responseContent = "La propina es voluntaria (10% sugerido). Nuestros meseros te lo agradecerán mucho, ¡dan lo mejor de sí! 👨‍🍳"
+        }
+        else if (q.includes('barato') || q.includes('economico') || q.includes('precio')) {
+            responseContent = "Tenemos opciones para todos los bolsillos, desde entradas de $12.000 hasta pargos gigantes premium. ¡Revisa nuestra sección de 'Combos' para ahorrar! 💸"
+        }
+
+        // 3. MENÚ Y COMIDA (ESPECÍFICOS)
+        else if (q.includes('pargo')) {
+            responseContent = "¡Nuestra especialidad! 🐟 Lo servimos frito, a la plancha o en salsa marinera. Viene con patacones, arroz de coco y ensalada. ¡Es una joya!"
+        }
+        else if (q.includes('ceviche') || q.includes('camaron') || q.includes('marisco')) {
+            responseContent = "Usamos mariscos frescos que llegan cada madrugada. Te recomiendo el Ceviche Gran Pargo, ¡es una explosión de sabor! 🍋🦐"
+        }
+        else if (q.includes('carne') || q.includes('asado') || q.includes('res') || q.includes('cerdo')) {
+            responseContent = "No todo es mar; nuestros cortes de res premium y costillitas BBQ son famosos en Caucasia. 🥩🔥"
+        }
+        else if (q.includes('niño') || q.includes('kids') || q.includes('infantil')) {
+            responseContent = "¡Claro! Tenemos Nuggets de pollo y deditos de pescado que a los niños les encantan. Incluyen papitas fritas. 🍟👶"
+        }
+        else if (q.includes('vegetariano') || q.includes('ensalada') || q.includes('saludable')) {
+            responseContent = "Tenemos ensaladas frescas y platos a base de vegetales. También puedes pedir nuestro arroz de coco con vegetales salteados. 🥗"
+        }
+        else if (q.includes('bebida') || q.includes('jugo') || q.includes('tomar') || q.includes('cerveza') || q.includes('vino')) {
+            responseContent = "Tenemos jugos naturales de la región (Mango, Lulo, Limonada de Coco), gaseosas bien frías y una selección de cervezas y vinos para maridar. 🍹🍷"
+        }
+        else if (q.includes('postre') || q.includes('dulce')) {
+            responseContent = "Prueba nuestro postre de Natas o el Brownie con helado. ¡El final perfecto! 🍨"
+        }
+
+        // 4. SOBRE EL LOCAL Y SERVICIOS
+        else if (q.includes('reserva') || q.includes('mesa') || q.includes('apartar')) {
+            responseContent = "¡Claro! Escríbenos por WhatsApp con la fecha, hora y número de personas para asegurarte el mejor lugar. 🗓️"
+        }
+        else if (q.includes('cumpleaños') || q.includes('aniversario') || q.includes('festejar')) {
+            responseContent = "¡Nos encanta celebrar contigo! 🎂 Avísanos al reservar y podemos decorar tu mesa o tener un detalle especial para el cumpleañero."
+        }
+        else if (q.includes('mascota') || q.includes('perro') || q.includes('animal') || q.includes('pet')) {
+            responseContent = "En nuestra zona de terraza somos 100% Pet Friendly. ¡Trae a tu mejor amigo! 🐾"
+        }
+        else if (q.includes('wifi') || q.includes('internet')) {
+            responseContent = "¡Sí! Tenemos WiFi de alta velocidad para nuestros clientes. Pide la clave a tu mesero favorito. 📶"
+        }
+        else if (q.includes('parqueadero') || q.includes('carro') || q.includes('moto')) {
+            responseContent = "Estamos en el C.Cial Cauca Centro, tenemos parqueadero seguro y vigilado para que comas tranquilo. 🚗"
+        }
+        else if (q.includes('clima') || q.includes('aire') || q.includes('calor')) {
+            responseContent = "Nuestro salón interior cuenta con un excelente aire acondicionado para que disfrutes sin calor. ❄️"
+        }
+        else if (q.includes('musica') || q.includes('show') || q.includes('vivo')) {
+            responseContent = "Los fines de semana solemos tener música en vivo o ambiente alegre. ¡Pregúntanos qué hay para este sábado! 🎶"
+        }
+
+        // 5. MARCA, HISTORIA Y PERSONALIDAD
+        else if (q.includes('quien es') || q.includes('rafa')) {
+            responseContent = "Gran Rafa es el alma de este restaurante. 👨‍🍳 Un apasionado por la cocina tradicional de mar con años de experiencia consintiendo a los caucasianos."
+        }
+        else if (q.includes('historia') || q.includes('tradicion') || q.includes('años')) {
+            responseContent = "Pargo Rojo nació del amor por la cocina de mar. Llevamos años siendo el punto de encuentro favorito en Caucasia gracias a nuestra sazón única. 🌊"
+        }
+        else if (q.includes('trabajo') || q.includes('empleo') || q.includes('hoja de vida')) {
+            responseContent = "¡Siempre buscamos talento! Envía tu hoja de vida a contacto@pargorojo.com o déjala físicamente en el local. 📄"
+        }
+        else if (q.includes('queja') || q.includes('reclamo') || q.includes('malo')) {
+            responseContent = "Lamentamos mucho si algo no salió bien. Por favor, habla con el capitán de meseros o escríbenos a nuestro WhatsApp para solucionarlo de inmediato. Queremos que seas feliz. 🙏"
+        }
+        else if (q.includes('gracias') || q.includes('chao') || q.includes('adios')) {
+            responseContent = "¡Con gusto! Aquí estaré siempre que me necesites. ¡Que tengas un día excelente! 😊🐟"
+        }
+        else if (q.includes('chiste') || q.includes('risa')) {
+            responseContent = "¿Por qué los peces no usan computadora? ¡Porque les da miedo la red! 😆 ¡Espero que te haya gustado!"
+        }
+
+        // 6. FALLBACK INTELIGENTE (PRODUCTOS Y GENERAL)
+        else {
+            const { data: found } = await supabase.from('products').select('name, price, description').ilike('name', `%${q}%`).eq('is_available', true).limit(2)
+            if (found && found.length > 0) {
+                responseContent = (
+                    <div className="space-y-3">
+                        <p className="font-bold">✅ Mira lo que encontré:</p>
+                        {found.map((p, i) => (
+                            <div key={i} className="bg-slate-50 p-3 rounded-xl border border-primary/20">
+                                <p className="font-black text-sm uppercase italic">{p.name}</p>
+                                <p className="font-black text-primary">${p.price.toLocaleString()}</p>
+                            </div>
+                        ))}
+                    </div>
+                )
+            } else if (q.includes('horario') || q.includes('abierto') || q.includes('abre')) {
+                responseContent = "Estamos abiertos todos los días de 11:00 AM a 10:00 PM. ¡Te esperamos para el almuerzo o la cena! 🕙"
+            } else if (q.includes('ubicacion') || q.includes('direccion') || q.includes('donde')) {
+                responseContent = (
+                    <div className="flex flex-col gap-2">
+                        <span className="font-bold">📍 Nuestra ubicación:</span>
+                        <span className="text-xs">{businessInfo?.address || "C.Cial. Cauca Centro, Caucasia"}</span>
+                        <a href={`https://maps.google.com/?q=${businessInfo?.address || "Pargo Rojo Caucasia"}`} target="_blank" rel="noreferrer" className="bg-slate-900 text-white px-3 py-2 rounded-lg text-center text-[10px] font-bold uppercase tracking-widest mt-1">Abrir Google Maps</a>
+                    </div>
+                )
+            } else if (q.includes('menu') || q.includes('carta') || q.includes('platos') || q.includes('recomienda') || q.includes('sugerencia')) {
+                const { data: suggestions } = await supabase.from('products').select('name, price').eq('is_available', true).limit(3)
+                if (suggestions) {
+                    responseContent = (
+                        <div className="space-y-2">
+                            <p className="font-bold">✨ Recomendados:</p>
+                            {suggestions.map((p, i) => <div key={i} className="flex justify-between text-xs bg-slate-50 p-2 rounded-lg border border-slate-100"><span className="font-medium uppercase">{p.name}</span><span className="font-black text-primary">${p.price.toLocaleString()}</span></div>)}
+                        </div>
+                    )
+                }
+            }
         }
 
         setMessages(prev => [...prev, { role: 'assistant', content: responseContent }])
