@@ -341,7 +341,14 @@ export default function CustomersPage() {
                                 ))}
                             </div>
                             <Button
-                                onClick={() => { setEditingTemplate(templates[0]); setIsTemplateModalOpen(true); }}
+                                onClick={() => {
+                                    if (templates && templates.length > 0) {
+                                        setEditingTemplate(templates[0]);
+                                        setIsTemplateModalOpen(true);
+                                    } else {
+                                        alert("No hay plantillas configuradas todavía.");
+                                    }
+                                }}
                                 variant="ghost"
                                 className="w-full h-14 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest italic gap-2 hover:bg-slate-900 hover:text-white transition-all text-slate-500"
                             >
