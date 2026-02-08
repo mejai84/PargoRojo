@@ -7,11 +7,10 @@ const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 async function check() {
-    const { data, error } = await supabase.from('settings').select('*').limit(1);
-    if (error) {
-        console.log('Error reading settings:', error.message);
-    } else {
-        console.log('Settings columns:', Object.keys(data[0] || {}));
-    }
+    const { data: res } = await supabase.rpc('query_sql', {
+        query_text: `SELECT policyname, cmd FROM pg_policies WHERE tablename = 'audit_logs'`
+    });
+    console.log('Audit Logs Policies:', res);
 }
+
 check();

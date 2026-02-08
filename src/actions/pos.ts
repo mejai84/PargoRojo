@@ -59,77 +59,85 @@ export async function getPosStatus(userId: string): Promise<PosStatus> {
  * Valida que no exista uno previo.
  */
 export async function startShift(shiftDefinitionId: string) {
+    console.log("Iniciando startShift para:", shiftDefinitionId)
     const supabase = await createClient()
 
-    // Obtener el usuario de la sesión para seguridad
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error("No autenticado")
-    const userId = user.id
+    try {
+        // Obtener el usuario de la sesión
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
+            return { success: false, error: "Sesión expirada o no válida. Por favor, inicia sesión de nuevo." }
+        }
+        const userId = user.id
 
-    // Obtener restaurant_id del perfil de forma segura
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('restaurant_id')
-        .eq('id', userId)
-        .maybeSingle()
+        // Obtener restaurant_id del perfil de forma segura
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('restaurant_id')
+            .eq('id', userId)
+            .maybeSingle()
 
-    if (profileError) {
-        console.error("Error fetching profile:", profileError)
-        throw new Error("Error al obtener perfil del usuario: " + profileError.message)
+        if (profileError) {
+            console.error("Error perfil:", profileError)
+            return { success: false, error: "Error al consultar perfil: " + profileError.message }
+        }
+
+        if (!profile?.restaurant_id) {
+            return { success: false, error: "Tu usuario no tiene un restaurante asignado. Contacta al administrador." }
+        }
+
+        // Validar si ya existe un turno abierto
+        const { data: existing, error: existingError } = await supabase
+            .from('shifts')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('status', 'OPEN')
+            .maybeSingle()
+
+        if (existingError) console.error("Error validando turno previo:", existingError)
+        if (existing) {
+            return { success: false, error: "Ya tienes un turno activo abierto." }
+        }
+
+        // Obtener info de la definición del turno
+        const { data: def, error: defError } = await supabase
+            .from('shift_definitions')
+            .select('name')
+            .eq('id', shiftDefinitionId)
+            .maybeSingle()
+
+        if (defError || !def) {
+            return { success: false, error: "La definición del turno no es válida o fue eliminada." }
+        }
+
+        const { data, error: insertError } = await supabase
+            .from('shifts')
+            .insert({
+                user_id: userId,
+                restaurant_id: profile.restaurant_id,
+                shift_type: def.name,
+                shift_definition_id: shiftDefinitionId,
+                status: 'OPEN',
+                started_at: new Date().toISOString()
+            })
+            .select()
+            .maybeSingle()
+
+        if (insertError) {
+            console.error("Error inserción turno:", insertError)
+            return { success: false, error: "Error de Base de Datos: " + insertError.message }
+        }
+
+        console.log("Turno iniciado con éxito:", data?.id)
+        revalidatePath('/admin/cashier')
+        revalidatePath('/admin')
+
+        return { success: true, data }
+
+    } catch (e: any) {
+        console.error("Excepción fatal en startShift:", e)
+        return { success: false, error: "Ocurrió un error inesperado en el servidor: " + e.message }
     }
-
-    if (!profile?.restaurant_id) {
-        throw new Error("El usuario no tiene un restaurante asignado en su perfil.")
-    }
-
-    // Validar si ya existe un turno abierto (usando maybeSingle)
-    const { data: existing, error: existingError } = await supabase
-        .from('shifts')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('status', 'OPEN')
-        .maybeSingle()
-
-    if (existingError) {
-        console.error("Error checking existing shift:", existingError)
-    }
-
-    if (existing) {
-        throw new Error("Ya tienes un turno activo. Debes cerrarlo antes de iniciar otro.")
-    }
-
-    // Obtener info de la definición del turno
-    const { data: def, error: defError } = await supabase
-        .from('shift_definitions')
-        .select('name')
-        .eq('id', shiftDefinitionId)
-        .maybeSingle()
-
-    if (defError || !def) {
-        throw new Error("Turno no válido, desactivado o eliminado de la configuración.")
-    }
-
-    const { data, error } = await supabase
-        .from('shifts')
-        .insert({
-            user_id: userId,
-            restaurant_id: profile.restaurant_id,
-            shift_type: def.name,
-            shift_definition_id: shiftDefinitionId,
-            status: 'OPEN',
-            started_at: new Date().toISOString()
-        })
-        .select()
-        .maybeSingle()
-
-    if (error) {
-        console.error("Error creating shift insertion:", error)
-        throw new Error("Base de Datos: " + (error.message || "Error desconocido al insertar jornada"))
-    }
-
-    revalidatePath('/admin/cashier')
-    revalidatePath('/admin')
-    return data
 }
 
 /**

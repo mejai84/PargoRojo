@@ -6,12 +6,20 @@ const SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-async function check() {
-    const { data, error } = await supabase.from('settings').select('*').limit(1);
+async function checkProducts() {
+    console.log('--- TEST: QUERY PRODUCTS ---');
+    const { data, error } = await supabase
+        .from('products')
+        .select('id, name, category_id, image_url, price')
+        .is('deleted_at', null)
+        .eq('is_available', true)
+        .limit(8);
+
     if (error) {
-        console.log('Error reading settings:', error.message);
+        console.error('Error:', error);
     } else {
-        console.log('Settings columns:', Object.keys(data[0] || {}));
+        console.log('Products:', data);
     }
 }
-check();
+
+checkProducts();

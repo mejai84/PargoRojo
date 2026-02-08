@@ -71,7 +71,15 @@ export function Navbar() {
             if (features) setShowCombos(!!features.value.enable_combos)
 
             const info = data.find(s => s.key === 'business_info')
-            if (info) setBusinessInfo(info.value)
+            if (info) {
+                try {
+                    const parsedInfo = typeof info.value === 'string' ? JSON.parse(info.value) : info.value
+                    setBusinessInfo(parsedInfo)
+                } catch (e) {
+                    console.warn("Error parsing business_info:", e)
+                    setBusinessInfo({ name: info.value || "JAMALI OS", logo_url: "" })
+                }
+            }
         }
     }
 

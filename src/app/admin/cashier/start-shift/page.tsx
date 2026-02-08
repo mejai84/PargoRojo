@@ -64,12 +64,17 @@ export default function StartShiftPage() {
     const handleStartShift = async (shiftDefId: string) => {
         setLoading(true)
         try {
-            await startShift(shiftDefId)
-            // Éxito
-            router.push("/admin/cashier/open-box")
+            const result = await startShift(shiftDefId)
+
+            if (result.success) {
+                router.push("/admin/cashier/open-box")
+            } else {
+                alert("Atención: " + (result.error || "Error desconocido"))
+                setLoading(false)
+            }
         } catch (error: any) {
-            console.error(error)
-            alert("Error al iniciar turno: " + error.message)
+            console.error("Error en el cliente:", error)
+            alert("Error crítico: " + error.message)
             setLoading(false)
         }
     }
