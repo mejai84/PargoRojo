@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
+import { useRestaurant } from "@/providers/RestaurantProvider"
 
 // Helper para tiempo transcurrido
 const getElapsed = (dateString: string) => {
@@ -66,6 +67,7 @@ interface Order {
 }
 
 export default function AdminOrdersPage() {
+    const { restaurant } = useRestaurant()
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
     const [orders, setOrders] = useState<Order[]>([])
     const [products, setProducts] = useState<Product[]>([])
@@ -100,6 +102,7 @@ export default function AdminOrdersPage() {
                     ),
                     tables (table_name)
                 `)
+                .eq('restaurant_id', restaurant?.id)
                 .order('created_at', { ascending: false })
 
             if (error) {
@@ -140,11 +143,15 @@ export default function AdminOrdersPage() {
     }
 
     useEffect(() => {
-        fetchOrders()
-        fetchInitialData()
-        const interval = setInterval(() => fetchOrders(), 30000)
+        if (restaurant) {
+            fetchOrders()
+            fetchInitialData()
+        }
+        const interval = setInterval(() => {
+            if (restaurant) fetchOrders()
+        }, 30000)
         return () => clearInterval(interval)
-    }, [])
+    }, [restaurant])
 
     const handleCreateOrder = async () => {
         if (newOrderItems.length === 0) return alert("Añade productos")
@@ -152,6 +159,7 @@ export default function AdminOrdersPage() {
         try {
             const total = newOrderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
             const orderData = {
+                restaurant_id: restaurant?.id, // ✅ Multi-tenancy
                 status: 'pending',
                 order_type: 'pickup',
                 total: total,

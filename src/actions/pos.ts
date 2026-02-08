@@ -54,8 +54,13 @@ export async function getPosStatus(userId: string): Promise<PosStatus> {
  * Inicia un nuevo turno de trabajo basado en una definición configurada.
  * Valida que no exista uno previo.
  */
-export async function startShift(userId: string, shiftDefinitionId: string) {
+export async function startShift(shiftDefinitionId: string) {
     const supabase = await createClient()
+
+    // Obtener el usuario de la sesión para seguridad
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("No autenticado")
+    const userId = user.id
 
     // Validar si ya existe
     const { data: existing } = await supabase

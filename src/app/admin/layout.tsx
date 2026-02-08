@@ -33,7 +33,8 @@ import {
     X,
     ShieldAlert,
     Clock,
-    History
+    History,
+    Server
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -108,6 +109,7 @@ const sidebarSections = [
         items: [
             { icon: Settings, label: "Configuración", href: "/admin/settings", roles: ['admin'] },
             { icon: Printer, label: "Soporte Impresoras", href: "/admin/settings/printers", roles: ['admin', 'manager'] },
+            { icon: Server, label: "Infraestructura Core", href: "/admin/settings/infrastructure", roles: ['admin'] },
         ]
     },
     {
@@ -127,6 +129,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [userRole, setUserRole] = useState<string>("")
     const [userName, setUserName] = useState<string>("")
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
 
     // Activar Notificaciones Real-Time Globales
     useOrderNotifications()
@@ -226,20 +229,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <input
                                 type="text"
                                 placeholder="Buscar módulo..."
-                                className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full h-10 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-slate-300 transition-all font-sans"
                             />
                         </div>
                     </div>
 
-                    {/* Sections ScrollArea */}
                     <div className="flex-1 overflow-y-auto px-4 custom-scrollbar space-y-8 pb-10">
-                        {sidebarSections.map((section, idx) => (
-                            <div key={idx} className="space-y-3">
-                                <h4 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">{section.title}</h4>
-                                <div className="space-y-1">
-                                    {section.items
-                                        .filter(item => userRole === 'admin' || item.roles.includes(userRole))
-                                        .map((item) => {
+                        {sidebarSections.map((section, idx) => {
+                            const filteredItems = section.items.filter(item => {
+                                const hasRole = userRole === 'admin' || item.roles.includes(userRole)
+                                const matchesSearch = item.label.toLowerCase().includes(searchTerm.toLowerCase())
+                                return hasRole && matchesSearch
+                            })
+
+                            if (filteredItems.length === 0) return null
+
+                            return (
+                                <div key={idx} className="space-y-3">
+                                    <h4 className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] font-mono">{section.title}</h4>
+                                    <div className="space-y-1">
+                                        {filteredItems.map((item) => {
                                             const Icon = item.icon
                                             const isActive = pathname === item.href
 
@@ -260,9 +271,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                 </Link>
                                             )
                                         })}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
 
                     {/* Footer Actions */}

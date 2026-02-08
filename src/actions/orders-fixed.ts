@@ -29,7 +29,7 @@ export interface OrderItemWithNotes {
 }
 
 export interface CreateOrderData {
-    // restaurant_id: string; // Eliminado en ST
+    restaurant_id: string; // ✅ Re-habilitado para multi-tenancy
     user_id: string;
     waiter_id: string; // ✅ Obligatorio para auditoría
     table_id?: string;
@@ -70,6 +70,7 @@ export async function createOrderWithNotes(orderData: CreateOrderData) {
         const { data: order, error: orderError } = await supabase
             .from('orders')
             .insert({
+                restaurant_id: orderData.restaurant_id, // ✅ SaaS Isolation
                 user_id: orderData.user_id,
                 waiter_id: orderData.waiter_id, // ✅ Registrar mesero
                 table_id: orderData.table_id,

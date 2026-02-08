@@ -49,18 +49,33 @@ interface PendingNotification {
     customer_name?: string
 }
 
+interface WhatsAppTemplate {
+    id: string
+    slug: string
+    name: string
+    content: string
+    variables: string[]
+    is_active: boolean
+}
+
 export default function CustomersPage() {
     const [view, setView] = useState<'database' | 'loyalty' | 'notifications'>('database')
     const [customers, setCustomers] = useState<Customer[]>([])
     const [notifications, setNotifications] = useState<PendingNotification[]>([])
+    const [templates, setTemplates] = useState<WhatsAppTemplate[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
+
+    // Modal State
+    const [editingTemplate, setEditingTemplate] = useState<WhatsAppTemplate | null>(null)
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
 
     const fetchInitialData = async () => {
         setLoading(true)
         const { data: profiles } = await supabase.from('profiles').select('*')
         const { data: orders } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
         const { data: pendingNotifs } = await supabase.from('customer_notifications').select('*, profiles!customer_id(full_name)').eq('status', 'pending')
+        const { data: templateData } = await supabase.from('whatsapp_templates').select('*').order('name')
 
         if (orders) {
             const customerMap = new Map<string, Customer>()
@@ -92,6 +107,7 @@ export default function CustomersPage() {
         }
 
         if (pendingNotifs) setNotifications(pendingNotifs.map(n => ({ ...n, customer_name: n.profiles?.full_name })))
+        if (templateData) setTemplates(templateData)
         setLoading(false)
     }
 
@@ -105,6 +121,22 @@ export default function CustomersPage() {
         // Mark as sent
         await supabase.from('customer_notifications').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', notif.id)
         fetchInitialData()
+    }
+
+    const handleUpdateTemplate = async () => {
+        if (!editingTemplate) return
+        try {
+            const { error } = await supabase
+                .from('whatsapp_templates')
+                .update({ content: editingTemplate.content, is_active: editingTemplate.is_active })
+                .eq('id', editingTemplate.id)
+
+            if (error) throw error
+            setIsTemplateModalOpen(false)
+            fetchInitialData()
+        } catch (e: any) {
+            alert("Error: " + e.message)
+        }
     }
 
     const filteredCustomers = customers.filter(c =>
@@ -294,14 +326,25 @@ export default function CustomersPage() {
                         <div className="p-8 bg-white border border-slate-200 rounded-[3rem] space-y-6 shadow-sm">
                             <h3 className="text-sm font-black uppercase italic tracking-widest text-slate-900 border-b border-slate-100 pb-4">PLANTILLAS AUTOMÁTICAS</h3>
                             <div className="space-y-4">
-                                {['Bienvenida', 'Puntos Earned', 'Encuesta NPS', 'Orden Lista'].map(t => (
-                                    <div key={t} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-primary/20 transition-all cursor-pointer">
-                                        <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-900 uppercase italic">{t}</span>
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                {templates.map(t => (
+                                    <div
+                                        key={t.id}
+                                        onClick={() => { setEditingTemplate(t); setIsTemplateModalOpen(true); }}
+                                        className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-primary/20 transition-all cursor-pointer"
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-900 uppercase italic leading-none">{t.name}</span>
+                                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Motor: {t.slug}</span>
+                                        </div>
+                                        <div className={cn("w-2 h-2 rounded-full", t.is_active ? "bg-emerald-500 animate-pulse" : "bg-slate-300")} />
                                     </div>
                                 ))}
                             </div>
-                            <Button variant="ghost" className="w-full h-14 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest italic gap-2 hover:bg-slate-900 hover:text-white transition-all text-slate-500">
+                            <Button
+                                onClick={() => { setEditingTemplate(templates[0]); setIsTemplateModalOpen(true); }}
+                                variant="ghost"
+                                className="w-full h-14 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest italic gap-2 hover:bg-slate-900 hover:text-white transition-all text-slate-500"
+                            >
                                 <Settings2 className="w-4 h-4" /> CONFIGURAR MOTOR
                             </Button>
                         </div>
@@ -311,6 +354,75 @@ export default function CustomersPage() {
                             <h3 className="text-[10px] font-black uppercase text-primary tracking-widest mb-4 italic">INSIGHT DEL DÍA</h3>
                             <p className="text-lg font-black italic uppercase tracking-tighter text-slate-900 mb-2">TASA DE APERTURA: 98%</p>
                             <p className="text-xs font-bold text-slate-500 leading-tight">La mensajería multicanal ha incrementado la recompra en un 12.5% esta semana.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 🛠️ MODAL CONFIGURACIÓN DE PLANTILLA */}
+            {isTemplateModalOpen && editingTemplate && (
+                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter">Editar Plantilla <span className="text-primary">{editingTemplate.name}</span></h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Identificador: {editingTemplate.slug}</p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setIsTemplateModalOpen(false)} className="rounded-2xl">
+                                <X className="w-6 h-6" />
+                            </Button>
+                        </div>
+                        <div className="p-10 space-y-8">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Contenido del Mensaje</h4>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[8px] font-black uppercase text-slate-400">Estado:</span>
+                                        <button
+                                            onClick={() => setEditingTemplate({ ...editingTemplate, is_active: !editingTemplate.is_active })}
+                                            className={cn(
+                                                "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest italic transition-all",
+                                                editingTemplate.is_active ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-slate-100 text-slate-400 border border-slate-200"
+                                            )}
+                                        >
+                                            {editingTemplate.is_active ? 'Activo' : 'Inactivo'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea
+                                    value={editingTemplate.content}
+                                    onChange={(e) => setEditingTemplate({ ...editingTemplate, content: e.target.value })}
+                                    className="w-full h-40 bg-slate-50 border border-slate-200 rounded-[2rem] p-6 text-sm font-bold italic text-slate-700 outline-none focus:border-primary/50 transition-all font-sans"
+                                    placeholder="Escribe el mensaje aquí..."
+                                />
+                                <div className="flex flex-wrap gap-2">
+                                    {editingTemplate.variables?.map(v => (
+                                        <span key={v} className="px-2 py-1 bg-slate-100 rounded-md text-[8px] font-mono text-slate-500">{"{{" + v + "}}"}</span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-amber-50 rounded-2xl border border-amber-200/50 flex gap-4">
+                                <Zap className="w-6 h-6 text-amber-500 shrink-0" />
+                                <p className="text-[10px] font-bold text-amber-900 leading-relaxed italic">
+                                    Estas plantillas son despachadas automáticamente a la cola de notificaciones cuando ocurren ciertos triggers en el sistema. Puedes pre-estructurar el mensaje usando variables.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+                            <Button
+                                onClick={handleUpdateTemplate}
+                                className="flex-1 h-14 bg-primary text-black hover:bg-slate-900 hover:text-white font-black rounded-2xl gap-2 uppercase text-xs tracking-widest italic"
+                            >
+                                <CheckCircle2 className="w-5 h-5" /> GUARDAR CONFIGURACIÓN
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsTemplateModalOpen(false)}
+                                className="px-8 h-14 border-slate-200 text-slate-500 font-black rounded-2xl uppercase text-xs tracking-widest italic"
+                            >
+                                CANCELAR
+                            </Button>
                         </div>
                     </div>
                 </div>

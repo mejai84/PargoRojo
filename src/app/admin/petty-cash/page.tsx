@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Plus, Search, Printer, Trash2, Loader2, X, FileText, CheckCircle, Wallet, ArrowLeft } from "lucide-react"
+import { Plus, Search, Printer, Trash2, Loader2, X, FileText, CheckCircle, Wallet, ArrowLeft, Eye } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -90,6 +90,8 @@ export default function PettyCashPage() {
     const [employees, setEmployees] = useState<Employee[]>([])
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+    const [previewVoucher, setPreviewVoucher] = useState<PettyCashVoucher | null>(null)
     const [searchTerm, setSearchTerm] = useState("")
     const [signature, setSignature] = useState<string | null>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -450,7 +452,18 @@ export default function PettyCashPage() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 text-right">
-                                            <div className="flex justify-end gap-3 items-center">
+                                            <div className="flex justify-end gap-2 items-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-10 w-10 text-slate-400 hover:bg-slate-100 hover:text-slate-900 opacity-0 group-hover:opacity-100 transition-all rounded-xl"
+                                                    onClick={() => {
+                                                        setPreviewVoucher(voucher);
+                                                        setIsPreviewOpen(true);
+                                                    }}
+                                                >
+                                                    <Eye className="w-5 h-5" />
+                                                </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -651,27 +664,141 @@ export default function PettyCashPage() {
                                             </div>
                                         </div>
 
-                                        <Button
-                                            type="submit"
-                                            disabled={loading || !signature || !formData.beneficiary_name || formData.amount <= 0}
-                                            className={cn(
-                                                "w-full h-24 text-3xl font-black uppercase tracking-[0.2em] transition-all rounded-[2.5rem] shadow-xl italic border-none",
-                                                (!signature || loading || !formData.beneficiary_name || formData.amount <= 0)
-                                                    ? "bg-slate-100 text-slate-300 cursor-not-allowed opacity-50"
-                                                    : "bg-primary text-black hover:bg-slate-900 hover:text-white hover:scale-[1.02] shadow-primary/20 active:scale-95"
-                                            )}
-                                        >
-                                            {loading ? (
-                                                <div className="flex items-center gap-4">
-                                                    <Loader2 className="w-10 h-10 animate-spin" />
-                                                    PROCESANDO
-                                                </div>
-                                            ) : (
-                                                "EMITIR COMPROBANTE"
-                                            )}
-                                        </Button>
+                                        <div className="flex gap-4">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    const tempVoucher: PettyCashVoucher = {
+                                                        id: 'preview',
+                                                        voucher_number: 0, // Simulación
+                                                        date: new Date().toLocaleDateString('es-CO'),
+                                                        beneficiary_name: formData.beneficiary_name,
+                                                        cargo: formData.cargo || 'OPERADOR',
+                                                        amount: formData.amount,
+                                                        amount_in_words: formData.amount_in_words,
+                                                        concept: formData.concept,
+                                                        accounting_code: formData.accounting_code,
+                                                        category: formData.category,
+                                                        signature_data: signature
+                                                    };
+                                                    setPreviewVoucher(tempVoucher);
+                                                    setIsPreviewOpen(true);
+                                                }}
+                                                disabled={!formData.beneficiary_name || formData.amount <= 0 || !signature}
+                                                className="w-1/3 h-24 text-xl font-black uppercase tracking-widest border-2 border-slate-200 rounded-[2.5rem] text-slate-400 hover:text-slate-900 hover:border-slate-900 transition-all italic"
+                                            >
+                                                <Eye className="w-6 h-6 mr-2" /> VISTA PREVIA
+                                            </Button>
+
+                                            <Button
+                                                type="submit"
+                                                disabled={loading || !signature || !formData.beneficiary_name || formData.amount <= 0}
+                                                className={cn(
+                                                    "flex-1 h-24 text-3xl font-black uppercase tracking-[0.2em] transition-all rounded-[2.5rem] shadow-xl italic border-none",
+                                                    (!signature || loading || !formData.beneficiary_name || formData.amount <= 0)
+                                                        ? "bg-slate-100 text-slate-300 cursor-not-allowed opacity-50"
+                                                        : "bg-primary text-black hover:bg-slate-900 hover:text-white hover:scale-[1.02] shadow-primary/20 active:scale-95"
+                                                )}
+                                            >
+                                                {loading ? (
+                                                    <div className="flex items-center gap-4">
+                                                        <Loader2 className="w-10 h-10 animate-spin" />
+                                                        PROCESANDO
+                                                    </div>
+                                                ) : (
+                                                    "EMITIR COMPROBANTE"
+                                                )}
+                                            </Button>
+                                        </div>
                                     </form>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal de Vista Previa */}
+                {isPreviewOpen && previewVoucher && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-primary/10 rounded-xl">
+                                        <Eye className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <h3 className="text-xl font-black uppercase italic tracking-tighter">Vista Previa del Comprobante</h3>
+                                </div>
+                                <Button variant="ghost" size="icon" className="rounded-2xl" onClick={() => setIsPreviewOpen(false)}>
+                                    <X className="w-6 h-6" />
+                                </Button>
+                            </div>
+
+                            <div className="p-10 overflow-y-auto">
+                                <div className="border-2 border-slate-100 rounded-[2rem] p-8 space-y-8 bg-slate-50/30">
+                                    {/* Cabecera del Voucher */}
+                                    <div className="flex justify-between items-start border-b border-slate-100 pb-6">
+                                        <div className="space-y-1">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Establecimiento</div>
+                                            <div className="text-lg font-black uppercase italic">PARGO ROJO RESTAURANTE</div>
+                                        </div>
+                                        <div className="text-right space-y-1">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Comprobante No.</div>
+                                            <div className="text-2xl font-black italic text-primary">#{String(previewVoucher.voucher_number || '0000').padStart(4, '0')}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Cuerpo del Voucher */}
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-1">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Fecha</div>
+                                            <div className="font-bold text-slate-900">{previewVoucher.date}</div>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Monto</div>
+                                            <div className="text-xl font-black text-slate-900">${previewVoucher.amount.toLocaleString('es-CO')}</div>
+                                        </div>
+                                        <div className="col-span-2 space-y-1">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Beneficiario</div>
+                                            <div className="font-black text-slate-900 uppercase italic">{previewVoucher.beneficiary_name}</div>
+                                            <div className="text-[10px] text-slate-400 font-bold uppercase">{previewVoucher.cargo}</div>
+                                        </div>
+                                        <div className="col-span-2 space-y-1">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Concepto / Motivo</div>
+                                            <div className="font-medium text-slate-700 italic">"{previewVoucher.concept}"</div>
+                                        </div>
+                                        <div className="col-span-2 p-4 bg-white rounded-2xl border border-slate-100">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Valor en letras</div>
+                                            <div className="text-xs font-bold uppercase italic text-slate-500">{previewVoucher.amount_in_words}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Firma */}
+                                    {previewVoucher.signature_data && (
+                                        <div className="pt-6 border-t border-slate-100 flex flex-col items-center">
+                                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Firma del Beneficiario</div>
+                                            <div className="w-full h-32 bg-white rounded-2xl border border-slate-100 p-2 overflow-hidden flex items-center justify-center">
+                                                <img src={previewVoucher.signature_data} alt="Firma" className="max-h-full max-w-full object-contain" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+                                <Button
+                                    onClick={() => handlePrint(previewVoucher)}
+                                    className="flex-1 h-14 bg-primary text-black hover:bg-slate-900 hover:text-white font-black rounded-2xl gap-2 uppercase text-xs tracking-widest italic"
+                                >
+                                    <Printer className="w-5 h-5" /> IMPRIMIR AHORA
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsPreviewOpen(false)}
+                                    className="px-8 h-14 border-slate-200 text-slate-500 font-black rounded-2xl uppercase text-xs tracking-widest italic"
+                                >
+                                    CERRAR
+                                </Button>
                             </div>
                         </div>
                     </div>

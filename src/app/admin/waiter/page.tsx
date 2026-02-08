@@ -12,21 +12,26 @@ import {
     Minus,
     Search,
     X,
-    CheckCircle2
+    CheckCircle2,
+    Loader2
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useRestaurant } from "@/providers/RestaurantProvider"
+import { createOrderWithNotes } from "@/actions/orders-fixed"
+import { toast } from "sonner"
 import { cn, formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
 
 // ----------------------------------------------------------------------
 // TIPOS (Mock y Reales)
 // ----------------------------------------------------------------------
 type Table = {
     id: string
-    name: string
+    table_name: string
     status: 'free' | 'occupied' | 'reserved'
     capacity: number
     active_order_id?: string
+    location?: string
 }
 
 type Product = {
@@ -42,21 +47,13 @@ type Category = {
     name: string
 }
 
-// ----------------------------------------------------------------------
-// DATA MOCKUP (Para demo inmediata)
-// ----------------------------------------------------------------------
-const MOCK_TABLES: Table[] = Array.from({ length: 12 }).map((_, i) => ({
-    id: `table-${i + 1}`,
-    name: `Mesa ${i + 1}`,
-    status: i === 2 || i === 5 ? 'occupied' : i === 8 ? 'reserved' : 'free',
-    capacity: 4,
-    active_order_id: i === 2 ? 'ord-123' : undefined
-}))
+// Eliminado MOCK_TABLES
 
 // ----------------------------------------------------------------------
 // COMPONENTE PRINCIPAL
 // ----------------------------------------------------------------------
 export default function WaiterApp() {
+    const { restaurant } = useRestaurant()
     const router = useRouter()
     const [view, setView] = useState<'tables' | 'order'>('tables')
     const [selectedTable, setSelectedTable] = useState<Table | null>(null)
@@ -67,18 +64,67 @@ export default function WaiterApp() {
     // Data Real (Cargada desde Supabase)
     const [categories, setCategories] = useState<Category[]>([])
     const [products, setProducts] = useState<Product[]>([])
+    const [realTables, setRealTables] = useState<Table[]>([])
+    const [submitting, setSubmitting] = useState(false)
     const [activeCategory, setActiveCategory] = useState<string>('all')
 
     useEffect(() => {
-        fetchMenu()
-    }, [])
+        if (restaurant) {
+            fetchMenu()
+            fetchTables()
+        }
+    }, [restaurant])
 
     const fetchMenu = async () => {
-        const { data: cats } = await supabase.from('categories').select('*')
-        const { data: prods } = await supabase.from('products').select('*').eq('is_available', true)
+        const { data: cats } = await supabase.from('categories').select('*').eq('restaurant_id', restaurant?.id)
+        const { data: prods } = await supabase.from('products').select('*').eq('restaurant_id', restaurant?.id).eq('is_available', true)
 
         if (cats) setCategories(cats)
         if (prods) setProducts(prods)
+    }
+
+    const fetchTables = async () => {
+        const { data } = await supabase.from('tables').select('*').eq('restaurant_id', restaurant?.id).order('table_name')
+        if (data) setRealTables(data as any)
+    }
+
+    const handleMarchar = async () => {
+        if (!selectedTable || cart.length === 0 || submitting) return
+
+        setSubmitting(true)
+        try {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) throw new Error("No autenticado")
+
+            const orderData = {
+                restaurant_id: restaurant!.id,
+                user_id: user.id,
+                waiter_id: user.id,
+                table_id: selectedTable.id,
+                items: cart.map(i => ({
+                    product_id: i.product.id,
+                    quantity: i.qty,
+                    unit_price: i.product.price,
+                    subtotal: i.product.price * i.qty
+                })),
+                subtotal: cartTotal,
+                total: cartTotal
+            }
+
+            await createOrderWithNotes(orderData)
+
+            // Actualizar estado de mesa
+            await supabase.from('tables').update({ status: 'occupied' }).eq('id', selectedTable.id)
+
+            toast.success("¡Comanda enviada a cocina!")
+            setCart([])
+            setView('tables')
+            fetchTables()
+        } catch (e: any) {
+            toast.error("Error: " + e.message)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     // LOGIN SCREEN
@@ -141,7 +187,7 @@ export default function WaiterApp() {
 
                 {/* Grid Mesas */}
                 <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {MOCK_TABLES.map(table => (
+                    {realTables.map(table => (
                         <button
                             key={table.id}
                             onClick={() => {
@@ -153,8 +199,7 @@ export default function WaiterApp() {
                                 table.status === 'free' ? "bg-white border-slate-200 hover:border-emerald-500/50" :
                                     table.status === 'occupied' ? "bg-rose-50 border-rose-500/20" :
                                         "bg-amber-50 border-amber-500/20"
-                            )}
-                        >
+                            )}>
                             <div className={cn(
                                 "w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-sm",
                                 table.status === 'free' ? "bg-emerald-100 text-emerald-600" :
@@ -165,7 +210,7 @@ export default function WaiterApp() {
                                     table.status === 'occupied' ? <Users className="w-6 h-6" /> :
                                         <CheckCircle2 className="w-6 h-6" />}
                             </div>
-                            <span className="text-lg font-black italic text-slate-900">{table.name}</span>
+                            <span className="text-lg font-black italic text-slate-900">{table.table_name}</span>
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                 {table.status === 'free' ? 'Libre' : table.status === 'occupied' ? 'Ocupada' : 'Reservada'}
                             </span>
@@ -208,7 +253,7 @@ export default function WaiterApp() {
                         <X className="w-6 h-6" />
                     </Button>
                     <div>
-                        <h2 className="text-lg font-black italic leading-none">{selectedTable?.name}</h2>
+                        <h2 className="text-lg font-black italic leading-none">{selectedTable?.table_name}</h2>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Nueva Comanda</p>
                     </div>
                 </div>
@@ -302,8 +347,13 @@ export default function WaiterApp() {
                                 <span className="text-sm font-bold text-slate-500">Total</span>
                                 <span className="text-2xl font-black italic text-slate-900">{formatPrice(cartTotal)}</span>
                             </div>
-                            <Button className="w-full h-14 bg-black text-white hover:bg-primary hover:text-black rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl">
-                                MARCHAR COMANDA <ChefHat className="w-5 h-5 ml-2" />
+                            <Button
+                                onClick={handleMarchar}
+                                disabled={submitting}
+                                className="w-full h-14 bg-black text-white hover:bg-primary hover:text-black rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl gap-2"
+                            >
+                                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChefHat className="w-5 h-5" />}
+                                MARCHAR COMANDA
                             </Button>
                         </div>
                     </div>
