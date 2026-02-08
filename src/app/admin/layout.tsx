@@ -31,7 +31,9 @@ import {
     Search,
     Bell,
     X,
-    ShieldAlert
+    ShieldAlert,
+    Clock,
+    History
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -67,6 +69,20 @@ const sidebarSections = [
         ]
     },
     {
+        title: "CONTROL DE ASISTENCIA",
+        items: [
+            { icon: Clock, label: "Mi Turno / Entrada", href: "/admin/cashier/start-shift", roles: ['admin', 'manager', 'staff', 'waiter', 'cook', 'chef', 'cashier', 'cleaner', 'host', 'driver'] },
+            { icon: History, label: "Historial Turnos", href: "/admin/payroll", roles: ['admin', 'manager'] },
+        ]
+    },
+    {
+        title: "TALENTO HUMANO",
+        items: [
+            { icon: Users, label: "Gestión de Personal", href: "/admin/employees", roles: ['admin', 'manager'] },
+            { icon: BadgeDollarSign, label: "Nómina y Pagos", href: "/admin/payroll", roles: ['admin', 'manager'] },
+        ]
+    },
+    {
         title: "BACKOFFICE & STOCK",
         items: [
             { icon: Package, label: "Stock e Insumos", href: "/admin/inventory", roles: ['admin', 'manager', 'chef'] },
@@ -80,11 +96,10 @@ const sidebarSections = [
         ]
     },
     {
-        title: "Negocio & Estrategia",
+        title: "ESTRATEGIA & SAAS",
         items: [
             { icon: Zap, label: "Pargo Hub Live", href: "/admin/hub", roles: ['admin'] },
-            { icon: BarChart3, label: "Reportes & Analytics", href: "/admin/reports", roles: ['admin'] },
-            { icon: ShieldCheck, label: "Seguridad & Roles", href: "/admin/employees", roles: ['admin'] },
+            { icon: ShieldCheck, label: "Auditoría / Roles", href: "/admin/employees", roles: ['admin'] },
             { icon: ShieldAlert, label: "Trazabilidad SaaS", href: "/admin/audit", roles: ['admin'] },
         ]
     },
