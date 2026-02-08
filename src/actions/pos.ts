@@ -20,23 +20,27 @@ export interface PosStatus {
 export async function getPosStatus(userId: string): Promise<PosStatus> {
     const supabase = await createClient()
 
-    // 1. Buscar turno activo
-    const { data: shift } = await supabase
+    // 1. Buscar turno activo (usando maybeSingle para evitar error si no hay ninguno)
+    const { data: shift, error: shiftError } = await supabase
         .from('shifts')
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'OPEN')
-        .single()
+        .maybeSingle()
+
+    if (shiftError) console.warn("Aviso: Error buscando turno activo:", shiftError.message)
 
     // 2. Si hay turno, buscar sesión de caja activa para ese turno
     let cashboxSession = null
     if (shift) {
-        const { data: session } = await supabase
+        const { data: session, error: sessionError } = await supabase
             .from('cashbox_sessions')
             .select('*, cashbox:cashboxes(*)')
             .eq('shift_id', shift.id)
             .eq('status', 'OPEN')
-            .single()
+            .maybeSingle()
+
+        if (sessionError) console.warn("Aviso: Error buscando caja activa:", sessionError.message)
         cashboxSession = session
     }
 
@@ -62,54 +66,65 @@ export async function startShift(shiftDefinitionId: string) {
     if (!user) throw new Error("No autenticado")
     const userId = user.id
 
-    // Obtener restaurant_id del perfil
-    const { data: profile } = await supabase
+    // Obtener restaurant_id del perfil de forma segura
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('restaurant_id')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
-    if (!profile?.restaurant_id) {
-        throw new Error("El usuario no tiene un restaurante asignado.")
+    if (profileError) {
+        console.error("Error fetching profile:", profileError)
+        throw new Error("Error al obtener perfil del usuario: " + profileError.message)
     }
 
-    // Validar si ya existe un turno abierto
-    const { data: existing } = await supabase
+    if (!profile?.restaurant_id) {
+        throw new Error("El usuario no tiene un restaurante asignado en su perfil.")
+    }
+
+    // Validar si ya existe un turno abierto (usando maybeSingle)
+    const { data: existing, error: existingError } = await supabase
         .from('shifts')
         .select('id')
         .eq('user_id', userId)
         .eq('status', 'OPEN')
-        .single()
+        .maybeSingle()
+
+    if (existingError) {
+        console.error("Error checking existing shift:", existingError)
+    }
 
     if (existing) {
         throw new Error("Ya tienes un turno activo. Debes cerrarlo antes de iniciar otro.")
     }
 
     // Obtener info de la definición del turno
-    const { data: def } = await supabase
+    const { data: def, error: defError } = await supabase
         .from('shift_definitions')
         .select('name')
         .eq('id', shiftDefinitionId)
-        .single()
+        .maybeSingle()
 
-    if (!def) throw new Error("Turno no válido o eliminado")
+    if (defError || !def) {
+        throw new Error("Turno no válido, desactivado o eliminado de la configuración.")
+    }
 
     const { data, error } = await supabase
         .from('shifts')
         .insert({
             user_id: userId,
-            restaurant_id: profile.restaurant_id, // ✅ SaaS Isolation
+            restaurant_id: profile.restaurant_id,
             shift_type: def.name,
             shift_definition_id: shiftDefinitionId,
             status: 'OPEN',
             started_at: new Date().toISOString()
         })
         .select()
-        .single()
+        .maybeSingle()
 
     if (error) {
-        console.error("Error creating shift:", error)
-        throw new Error(error.message)
+        console.error("Error creating shift insertion:", error)
+        throw new Error("Base de Datos: " + (error.message || "Error desconocido al insertar jornada"))
     }
 
     revalidatePath('/admin/cashier')
