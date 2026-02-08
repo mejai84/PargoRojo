@@ -63,12 +63,25 @@ export async function startShift(shiftDefinitionId: string) {
     const supabase = await createClient()
 
     try {
-        // Obtener el usuario de la sesión
+        // Obtener el usuario de la sesión con diagnóstico
         const { data: { user }, error: authError } = await supabase.auth.getUser()
+
         if (authError || !user) {
-            return { success: false, error: "Sesión expirada o no válida. Por favor, inicia sesión de nuevo." }
+            console.error("Auth Error en startShift:", authError)
+            // Intento de respaldo: getSession (menos seguro pero útil para diagnóstico)
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.user) {
+                console.log("Sesión recuperada vía getSession (getUser falló)")
+                var userId = session.user.id
+            } else {
+                return {
+                    success: false,
+                    error: `Sesión no encontrada. (Detalle: ${authError?.message || 'No hay usuario activo'})`
+                }
+            }
+        } else {
+            var userId = user.id
         }
-        const userId = user.id
 
         // Obtener restaurant_id del perfil de forma segura
         const { data: profile, error: profileError } = await supabase
