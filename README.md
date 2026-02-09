@@ -401,9 +401,13 @@ Este proyecto es privado y pertenece a Pargo Rojo Restaurante.
 - [x] Configuración persistente
 - [x] Exportación de datos
 
-**Versión:** 2.0  
-**Última actualización:** 2026-01-20  
+**Versión:** 2.1  
+**Última actualización:** 2026-02-09  
 **Estado:** ✅ Producción Ready
+
+### 📚 Documentación
+- [Manual Técnico Completo](docs/TECHNICAL_MANUAL.md) - Arquitectura, Roles, Inventario y Pagos.
+- [Manual de Usuario](docs/USER_MANUAL.md) - Guía operativa para el personal.
 
 ---
 
