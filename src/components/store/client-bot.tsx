@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MessageCircle, Send, X, MapPin, Clock, Phone, Utensils, Sparkles } from "lucide-react"
+import { MessageCircle, Send, X, MapPin, Clock, Phone, Utensils, Sparkles, Search } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -25,7 +25,7 @@ export function ClientBot() {
                 <div className="space-y-2">
                     <p>¡Hola! 👋 Soy tu asistente de **Pargo Rojo**. ¿En qué puedo ayudarte hoy?</p>
                     <div className="text-[11px] bg-slate-100 p-2 rounded-lg italic">
-                        Puedes preguntarme como: "¿Cómo comprar?", "¿Tienen ceviche?", o "¿Qué me recomiendas?"
+                        Puedes preguntarme como: "¿Cómo comprar?", "¿Tienen ceviche?", o "Consultar mi pedido"
                     </div>
                 </div>
             )
@@ -57,8 +57,45 @@ export function ClientBot() {
 
         await new Promise(r => setTimeout(r, 800))
 
+        // CHECK IF IT'S A TICKET ID (Approx 8 chars hex or uuid)
+        const ticketMatch = query.match(/\b[a-fA-F0-9]{8}\b/) || query.match(/\b[a-fA-F0-9-]{36}\b/)
+
+        if (ticketMatch) {
+            const ticketId = ticketMatch[0]
+            const { data: order } = await supabase.from('orders').select('status, id').ilike('id', `${ticketId}%`).maybeSingle()
+
+            if (order) {
+                const statusMap: any = {
+                    pending: 'Recibido 📝',
+                    preparing: 'En Cocina 🔥',
+                    ready: 'Listo para entregar 🎁',
+                    delivered: 'Entregado ✅',
+                    cancelled: 'Cancelado ❌'
+                }
+                const statusText = statusMap[order.status] || 'En proceso ⏳'
+
+                responseContent = (
+                    <div className="space-y-2">
+                        <p>¡Encontré tu pedido! 🕵️‍♂️</p>
+                        <div className="bg-slate-100 p-3 rounded-xl border border-primary/20">
+                            <p className="text-xs text-gray-500 uppercase font-bold">Ticket #{order.id.slice(0, 8)}</p>
+                            <p className="text-lg font-black text-primary">{statusText}</p>
+                        </div>
+                        <Link href={`/checkout/status/${order.id}`} className="block w-full text-center bg-primary text-black py-2 rounded-lg text-xs font-bold uppercase hover:bg-white border hover:border-primary transition-all">
+                            Ver Detalles
+                        </Link>
+                    </div>
+                )
+            } else {
+                responseContent = "Lo siento, no encuentro ningún pedido con ese número de ticket. 😢 Por favor verifica que esté bien escrito."
+            }
+        }
+        // 0. CONSULTA DE ESTADO DE PEDIDO
+        else if (q.includes('donde esta') || q.includes('estado') || (q.includes('consultar') && q.includes('pedido')) || q.includes('rastrear')) {
+            responseContent = "¡Claro! Para buscar tu pedido, por favor escribe el **número de ticket** (son los primeros 8 caracteres, ejemplo: e397d3dc). 👇"
+        }
         // 1. PROCESO DE COMPRA Y LOGÍSTICA
-        if (q.includes('comprar') || q.includes('pedido') || q.includes('ordenar') || q.includes('pasos')) {
+        else if (q.includes('comprar') || q.includes('pedido') || q.includes('ordenar') || q.includes('pasos')) {
             responseContent = "Para pedir: 1. Ve al Menú. 2. Añade tus platos con el botón (+). 3. Toca el carrito arriba a la derecha. 4. Confirma por WhatsApp. ¡Es súper fácil! 🛒"
         }
         else if (q.includes('domicilio') || q.includes('envi') || q.includes('lleva')) {
@@ -219,7 +256,7 @@ export function ClientBot() {
             </button>
 
             {isOpen && (
-                <div className="fixed bottom-0 right-0 md:bottom-28 md:right-8 w-full md:w-[380px] h-full md:h-[550px] bg-white md:rounded-3xl shadow-3xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in border border-gray-100 font-sans">
+                <div className="fixed bottom-0 right-0 md:bottom-28 md:right-8 w-full md:w-[380px] h-full md:h-[550px] md:max-h-[calc(100vh-140px)] bg-white md:rounded-3xl shadow-3xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in border border-gray-100 font-sans">
 
                     {/* Header */}
                     <div className="bg-primary p-4 flex items-center justify-between text-black">
@@ -270,8 +307,8 @@ export function ClientBot() {
                     <div className="p-2 bg-slate-50 overflow-x-auto flex gap-2 w-full scrollbar-none px-4 pb-2">
                         {[
                             { icon: Clock, label: "Horario", val: "horario" },
+                            { icon: Search, label: "Mi Pedido", val: "consultar mi pedido" },
                             { icon: MapPin, label: "Ubicación", val: "ubicacion" },
-                            { icon: Utensils, label: "Menú", val: "menu" },
                             { icon: Sparkles, label: "Sugerencia", val: "sugerencia" },
                         ].map((action, i) => (
                             <button

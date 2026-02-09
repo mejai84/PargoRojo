@@ -190,37 +190,37 @@ export default function CloseShiftPage() {
 
     if (step === 3) {
         return (
-            <div className="h-screen flex items-center justify-center bg-slate-50 p-6">
-                <div className="bg-white rounded-[3rem] p-12 text-center max-w-lg w-full shadow-2xl space-y-8 animate-in zoom-in duration-500">
+            <div className="h-screen flex items-center justify-center bg-muted p-6">
+                <div className="bg-card rounded-[3rem] p-12 text-center max-w-lg w-full shadow-2xl space-y-8 animate-in zoom-in duration-500">
                     <div className="w-32 h-32 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-16 h-16 text-emerald-600" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900 mb-2">¡TURNO CERRADO!</h1>
-                        <p className="text-slate-500 font-medium">Todo ha quedado registrado correctamente.</p>
+                        <h1 className="text-4xl font-black italic uppercase tracking-tighter text-foreground mb-2">¡TURNO CERRADO!</h1>
+                        <p className="text-muted-foreground font-medium">Todo ha quedado registrado correctamente.</p>
                     </div>
 
-                    <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 space-y-4 text-left">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 italic">Resumen de Recaudación</h4>
+                    <div className="bg-muted/50 rounded-3xl p-8 border border-border space-y-4 text-left">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 italic">Resumen de Recaudación</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">Efectivo (Cash)</p>
-                                <p className="font-black text-slate-900">{formatPrice(cashSales)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase">Efectivo (Cash)</p>
+                                <p className="font-black text-foreground">{formatPrice(cashSales)}</p>
                             </div>
                             <div className="space-y-1 text-right">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">Tarjetas</p>
-                                <p className="font-black text-slate-900">{formatPrice(cardSales)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase">Tarjetas</p>
+                                <p className="font-black text-foreground">{formatPrice(cardSales)}</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">Transferencias</p>
-                                <p className="font-black text-slate-900">{formatPrice(transferSales)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase">Transferencias</p>
+                                <p className="font-black text-foreground">{formatPrice(transferSales)}</p>
                             </div>
                             <div className="space-y-1 text-right">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">Ventas Crédito</p>
-                                <p className="font-black text-slate-900">{formatPrice(creditSales)}</p>
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase">Ventas Crédito</p>
+                                <p className="font-black text-foreground">{formatPrice(creditSales)}</p>
                             </div>
                         </div>
-                        <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+                        <div className="pt-4 border-t border-border flex justify-between items-center">
                             <span className="font-black text-sm uppercase italic">Diferencia Final</span>
                             <span className={cn("text-xl font-black italic", difference === 0 ? "text-emerald-500" : difference > 0 ? "text-blue-500" : "text-rose-500")}>
                                 {difference > 0 ? '+' : ''}{formatPrice(difference)}
@@ -228,7 +228,7 @@ export default function CloseShiftPage() {
                         </div>
                     </div>
 
-                    <Button onClick={() => window.location.href = '/login'} className="w-full h-16 text-xl font-black uppercase tracking-widest bg-slate-900 text-white rounded-2xl hover:bg-slate-800">
+                    <Button onClick={() => window.location.href = '/login'} className="w-full h-16 text-xl font-black uppercase tracking-widest bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90">
                         <LogOut className="w-6 h-6 mr-2" /> Salir del Sistema
                     </Button>
                 </div>
@@ -237,9 +237,9 @@ export default function CloseShiftPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+        <div className="min-h-screen bg-muted pb-20 font-sans">
             {/* Header */}
-            <div className="bg-slate-900 text-white p-8 rounded-b-[2.5rem] shadow-xl pt-12 pb-16 relative overflow-hidden">
+            <div className="bg-card text-foreground p-8 rounded-b-[2.5rem] shadow-xl pt-12 pb-16 relative overflow-hidden">
                 <div className="relative z-10 flex justify-between items-center max-w-4xl mx-auto">
                     <div>
                         <div className="flex items-center gap-2 text-primary/80 mb-1">
@@ -249,8 +249,8 @@ export default function CloseShiftPage() {
                         <h1 className="text-3xl font-black italic uppercase tracking-tighter">ARQUEO DE CAJA</h1>
                     </div>
                     <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Esperado en Caja</p>
-                        <p className="text-2xl font-black text-white font-mono">{formatPrice(systemTotal)}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Esperado en Caja</p>
+                        <p className="text-2xl font-black text-foreground font-mono">{formatPrice(systemTotal)}</p>
                     </div>
                 </div>
             </div>
@@ -258,32 +258,32 @@ export default function CloseShiftPage() {
             <div className="max-w-4xl mx-auto px-4 -mt-8 relative z-20 space-y-6">
 
                 {/* 1. Calculadora de Billetes */}
-                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 animate-in slide-in-from-bottom-8 duration-700">
-                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-50">
+                <div className="bg-card rounded-[2.5rem] p-8 shadow-sm border border-border animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border">
                         <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
                             <Calculator className="w-6 h-6" />
                         </div>
-                        <h2 className="text-lg font-black uppercase italic tracking-wide text-slate-800">Conteo de Efectivo</h2>
+                        <h2 className="text-lg font-black uppercase italic tracking-wide text-foreground">Conteo de Efectivo</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                         {/* Billetes */}
                         <div className="space-y-4">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Banknote className="w-4 h-4" /> Billetes</h3>
+                            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2"><Banknote className="w-4 h-4" /> Billetes</h3>
                             {DENOMINATIONS.filter(d => d.type === 'bill').map((d) => (
                                 <div key={d.value} className="flex items-center gap-4">
-                                    <div className="w-24 text-right font-bold text-slate-600 text-sm">{d.label}</div>
+                                    <div className="w-24 text-right font-bold text-muted-foreground text-sm">{d.label}</div>
                                     <div className="flex-1 relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">x</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 font-bold">x</span>
                                         <Input
                                             type="number"
                                             placeholder="0"
-                                            className="pl-8 text-right font-mono font-bold bg-slate-50 border-slate-100 h-12 rounded-xl focus:ring-primary/20"
+                                            className="pl-8 text-right font-mono font-bold bg-muted border-border h-12 rounded-xl focus:ring-primary/20"
                                             value={counts[d.value] || ''}
                                             onChange={(e) => handleCountChange(d.value, e.target.value)}
                                         />
                                     </div>
-                                    <div className="w-24 text-right font-bold text-slate-900 font-mono text-sm">
+                                    <div className="w-24 text-right font-bold text-foreground font-mono text-sm">
                                         {formatPrice(d.value * (counts[d.value] || 0)).replace('$ ', '')}
                                     </div>
                                 </div>
@@ -292,21 +292,21 @@ export default function CloseShiftPage() {
 
                         {/* Monedas */}
                         <div className="space-y-4">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Coins className="w-4 h-4" /> Monedas</h3>
+                            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2"><Coins className="w-4 h-4" /> Monedas</h3>
                             {DENOMINATIONS.filter(d => d.type === 'coin').map((d) => (
                                 <div key={d.value} className="flex items-center gap-4">
-                                    <div className="w-24 text-right font-bold text-slate-600 text-sm">{d.label}</div>
+                                    <div className="w-24 text-right font-bold text-muted-foreground text-sm">{d.label}</div>
                                     <div className="flex-1 relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold">x</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 font-bold">x</span>
                                         <Input
                                             type="number"
                                             placeholder="0"
-                                            className="pl-8 text-right font-mono font-bold bg-slate-50 border-slate-100 h-12 rounded-xl focus:ring-primary/20"
+                                            className="pl-8 text-right font-mono font-bold bg-muted border-border h-12 rounded-xl focus:ring-primary/20"
                                             value={counts[d.value] || ''}
                                             onChange={(e) => handleCountChange(d.value, e.target.value)}
                                         />
                                     </div>
-                                    <div className="w-24 text-right font-bold text-slate-900 font-mono text-sm">
+                                    <div className="w-24 text-right font-bold text-foreground font-mono text-sm">
                                         {formatPrice(d.value * (counts[d.value] || 0)).replace('$ ', '')}
                                     </div>
                                 </div>
@@ -314,19 +314,19 @@ export default function CloseShiftPage() {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center bg-slate-50 p-6 rounded-2xl">
-                        <span className="text-sm font-black uppercase tracking-widest text-slate-500">Total Contado</span>
-                        <span className="text-4xl font-black text-slate-900 tracking-tighter">{formatPrice(calculatedTotal)}</span>
+                    <div className="mt-8 pt-6 border-t border-border flex justify-between items-center bg-muted/50 p-6 rounded-2xl">
+                        <span className="text-sm font-black uppercase tracking-widest text-muted-foreground">Total Contado</span>
+                        <span className="text-4xl font-black text-foreground tracking-tighter">{formatPrice(calculatedTotal)}</span>
                     </div>
                 </div>
 
                 {/* 2. Resumen y Acción */}
-                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 animate-in slide-in-from-bottom-8 duration-700 delay-100">
+                <div className="bg-card rounded-[2.5rem] p-8 shadow-sm border border-border animate-in slide-in-from-bottom-8 duration-700 delay-100">
                     <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
                         <div className="flex-1 w-full space-y-2">
-                            <div className="flex justify-between items-center p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Esperado (Sistema)</span>
-                                <span className="font-bold text-slate-900">{formatPrice(systemTotal)}</span>
+                            <div className="flex justify-between items-center p-4 rounded-xl bg-muted/50 border border-border">
+                                <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Esperado (Sistema)</span>
+                                <span className="font-bold text-foreground">{formatPrice(systemTotal)}</span>
                             </div>
                             <div className={cn(
                                 "flex justify-between items-center p-4 rounded-xl border",
@@ -348,7 +348,7 @@ export default function CloseShiftPage() {
                                 className={cn(
                                     "h-20 px-12 rounded-2xl text-lg font-black uppercase tracking-widest italic shadow-xl transition-all w-full md:w-auto",
                                     difference === 0 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20" :
-                                        "bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20"
+                                        "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
                                 )}
                             >
                                 {difference === 0 ? 'Confirmar Cierre Perfecto' : 'Cerrar Turno con Diferencia'} <ArrowRight className="w-6 h-6 ml-3" />

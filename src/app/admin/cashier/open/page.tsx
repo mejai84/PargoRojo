@@ -110,13 +110,13 @@ export default function OpenCashPage() {
     }
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="min-h-screen flex items-center justify-center bg-background">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 md:p-8 font-sans selection:bg-primary selection:text-black">
+        <div className="min-h-screen bg-background text-foreground p-4 md:p-8 font-sans selection:bg-primary selection:text-black">
             <div className="max-w-4xl mx-auto py-10">
                 {/* Header Premium */}
                 <div className="text-center mb-12 space-y-2">
@@ -126,27 +126,27 @@ export default function OpenCashPage() {
                     <h1 className="text-5xl md:text-6xl font-black tracking-tighter uppercase italic">
                         Apertura de <span className="text-primary">Caja</span>
                     </h1>
-                    <p className="text-gray-500 font-medium text-lg italic">Inicia el turno operativo para habilitar ventas</p>
+                    <p className="text-muted-foreground font-medium text-lg italic">Inicia el turno operativo para habilitar ventas</p>
                 </div>
 
                 <form onSubmit={handleOpenCash} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Columna Izquierda: Datos y Montos */}
                     <div className="lg:col-span-7 space-y-6">
                         {/* Bloque 1: Operador */}
-                        <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl">
+                        <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-2xl">
                             <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                                 <UserIcon className="w-4 h-4" /> Datos del Operador
                             </h3>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Usuario</label>
-                                    <div className="h-14 bg-black border border-white/10 rounded-2xl flex items-center px-4 font-black text-white italic truncate">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Usuario</label>
+                                    <div className="h-14 bg-muted/50 border border-border rounded-2xl flex items-center px-4 font-black text-foreground italic truncate">
                                         {currentUser?.full_name?.toUpperCase() || "CARGANDO..."}
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Rol</label>
-                                    <div className="h-14 bg-black border border-white/10 rounded-2xl flex items-center px-4 font-black text-primary italic uppercase">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Rol</label>
+                                    <div className="h-14 bg-muted/50 border border-border rounded-2xl flex items-center px-4 font-black text-primary italic uppercase">
                                         {currentUser?.role || "STAFF"}
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@ export default function OpenCashPage() {
                         </div>
 
                         {/* Bloque 2: Fondos Iniciales */}
-                        <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+                        <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <Wallet className="w-32 h-32" />
                             </div>
@@ -172,7 +172,7 @@ export default function OpenCashPage() {
                                     <input
                                         type="number"
                                         placeholder="0.00"
-                                        className="w-full h-24 bg-black border-2 border-white/10 group-focus-within:border-primary rounded-3xl pl-40 pr-8 outline-none text-4xl font-black text-right transition-all"
+                                        className="w-full h-24 bg-muted border-2 border-border group-focus-within:border-primary rounded-3xl pl-40 pr-8 outline-none text-4xl font-black text-right text-foreground transition-all"
                                         value={amounts.cash || ""}
                                         onChange={e => setAmounts({ ...amounts, cash: parseFloat(e.target.value) || 0 })}
                                         required
@@ -183,28 +183,28 @@ export default function OpenCashPage() {
                                 {/* OTROS MEDIOS */}
                                 <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1">
-                                        <div className="h-14 bg-black border border-white/10 rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
+                                        <div className="h-14 bg-muted/30 border border-border rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
                                             <CreditCard className="w-4 h-4" />
                                             <span className="text-[10px] font-black tracking-tight">TARJETA</span>
                                             <span className="ml-auto font-black text-xs">$0</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <div className="h-14 bg-black border border-white/10 rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
+                                        <div className="h-14 bg-muted/30 border border-border rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
                                             <Smartphone className="w-4 h-4" />
                                             <span className="text-[10px] font-black tracking-tight">TRANSF.</span>
                                             <span className="ml-auto font-black text-xs">$0</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <div className="h-14 bg-black border border-white/10 rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
+                                        <div className="h-14 bg-muted/30 border border-border rounded-2xl flex items-center px-3 gap-2 opacity-50 cursor-not-allowed">
                                             <QrCode className="w-4 h-4" />
                                             <span className="text-[10px] font-black tracking-tight">QR / APP</span>
                                             <span className="ml-auto font-black text-xs">$0</span>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-gray-500 italic mt-2">
+                                <p className="text-[10px] text-muted-foreground italic mt-2">
                                     * Normalmente solo el efectivo inicia con fondo de cambio.
                                 </p>
                             </div>
@@ -213,16 +213,16 @@ export default function OpenCashPage() {
 
                     {/* Columna Derecha: Observaciones y Acción */}
                     <div className="lg:col-span-5 space-y-6">
-                        <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col">
+                        <div className="bg-card border border-border rounded-[2.5rem] p-8 shadow-2xl h-full flex flex-col">
                             <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
                                 <Clock className="w-4 h-4" /> Registro de Turno
                             </h3>
 
                             <div className="space-y-6 flex-1">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observaciones de Apertura</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Observaciones de Apertura</label>
                                     <textarea
-                                        className="w-full h-32 bg-black border border-white/10 rounded-3xl p-6 outline-none focus:border-primary/50 transition-all font-medium text-sm resize-none"
+                                        className="w-full h-32 bg-muted/50 border border-border rounded-3xl p-6 outline-none focus:border-primary/50 transition-all font-medium text-sm resize-none"
                                         placeholder="Ej: Iniciando turno tarde con base de cambio completa..."
                                         value={observations}
                                         onChange={e => setObservations(e.target.value)}
@@ -239,12 +239,12 @@ export default function OpenCashPage() {
                                 </div>
 
                                 <div className="space-y-1 pt-4">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">PIN DE AUTORIZACIÓN (Opcional)</label>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">PIN DE AUTORIZACIÓN (Opcional)</label>
                                     <div className="relative">
                                         <input
                                             type="password"
                                             maxLength={4}
-                                            className="w-full h-16 bg-black border border-white/10 rounded-2xl px-6 outline-none focus:border-primary transition-all text-center tracking-[1em] font-black text-2xl"
+                                            className="w-full h-16 bg-muted/50 border border-border rounded-2xl px-6 outline-none focus:border-primary transition-all text-center tracking-[1em] font-black text-2xl"
                                             placeholder="••••"
                                             value={pin}
                                             onChange={e => setPin(e.target.value)}
@@ -259,8 +259,8 @@ export default function OpenCashPage() {
                                 className={cn(
                                     "w-full h-24 mt-8 rounded-[2rem] text-2xl font-black uppercase tracking-[0.2em] italic transition-all group",
                                     (submitting || amounts.cash < 0)
-                                        ? "bg-gray-800 text-gray-500"
-                                        : "bg-primary text-black hover:bg-white hover:scale-[1.02] shadow-[0_0_30px_rgba(255,215,0,0.2)]"
+                                        ? "bg-muted text-muted-foreground"
+                                        : "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] shadow-[0_0_30px_rgba(255,215,0,0.2)]"
                                 )}
                             >
                                 {submitting ? (

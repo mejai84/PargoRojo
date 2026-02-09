@@ -15,7 +15,16 @@ import {
     CheckCircle2,
     Loader2,
     ArrowLeftRight,
-    Receipt
+    Receipt,
+    Zap,
+    Signal,
+    Activity,
+    Smartphone,
+    ShieldCheck,
+    Briefcase,
+    Globe,
+    Lock,
+    ArrowLeft
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useRestaurant } from "@/providers/RestaurantProvider"
@@ -120,14 +129,14 @@ export default function WaiterApp() {
             .single()
 
         if (error || !data) {
-            toast.error("PIN Incorrecto")
+            toast.error("PIN de Acceso Denegado")
             setPin("")
             return
         }
 
         setWaiterUser(data)
         setIsAuthenticated(true)
-        toast.success(`Bienvenido, ${data.full_name}`)
+        toast.success(`Protocolo Iniciado: ${data.full_name}`)
     }
 
     const handleMarchar = async () => {
@@ -137,7 +146,7 @@ export default function WaiterApp() {
         try {
             const { data: { user } } = await supabase.auth.getUser()
             const userId = user?.id || waiterUser?.id
-            if (!userId) throw new Error("No autenticado")
+            if (!userId) throw new Error("Terminal no autorizada")
 
             const items = cart.map(i => ({
                 product_id: i.product.id,
@@ -147,11 +156,9 @@ export default function WaiterApp() {
             }))
 
             if (selectedTable.status === 'occupied' && selectedTableOrder) {
-                // ADICIONAR A ORDEN EXISTENTE
                 await addItemsToOrder(selectedTableOrder.id, items)
-                toast.success("¡Adición enviada!")
+                toast.success("Adición enviada al Kernel de Cocina")
             } else {
-                // NUEVA ORDEN
                 const orderData = {
                     restaurant_id: restaurant!.id,
                     user_id: userId,
@@ -163,7 +170,7 @@ export default function WaiterApp() {
                 }
                 await createOrderWithNotes(orderData)
                 await supabase.from('tables').update({ status: 'occupied' }).eq('id', selectedTable.id)
-                toast.success("¡Comanda enviada!")
+                toast.success("Misión de Comanda Iniciada")
             }
 
             setCart([])
@@ -171,7 +178,7 @@ export default function WaiterApp() {
             setSelectedTableOrder(null)
             fetchTables()
         } catch (e: any) {
-            toast.error("Error: " + e.message)
+            toast.error("Error de Sincronización: " + e.message)
         } finally {
             setSubmitting(false)
         }
@@ -181,61 +188,86 @@ export default function WaiterApp() {
     // UI SCREENS
     // ----------------------------------------------------------------------
 
-    // A. LOGIN
+    // A. LOGIN (PIN PAD REFINED)
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-white to-slate-100">
-                <div className="text-center mb-10">
-                    <div className="w-20 h-20 bg-primary rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20 animate-bounce">
-                        <ChefHat className="w-10 h-10 text-black" />
+            <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+                {/* 🌌 AMBIANCE */}
+                <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
+                <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-40 z-0 animate-pulse" />
+
+                <div className="relative z-10 text-center mb-12">
+                    <div className="w-24 h-24 bg-primary rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-3xl shadow-primary/20 animate-bounce relative group">
+                        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 group-hover:scale-175 transition-transform" />
+                        <Lock className="w-10 h-10 text-black relative z-10" />
                     </div>
-                    <h1 className="text-4xl font-black italic mb-2 tracking-tighter uppercase">JAMALI<span className="text-primary italic">OS</span></h1>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Terminal de Meseros V2.0</p>
+                    <h1 className="text-5xl font-black italic mb-4 tracking-tighter uppercase text-white leading-none">JAMALI<span className="text-primary italic">OS</span></h1>
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="h-[2px] w-8 bg-primary/20" />
+                        <p className="text-primary/60 font-black uppercase tracking-[0.5em] text-[10px] italic">WAITER TERMINAL v8.4</p>
+                        <div className="h-[2px] w-8 bg-primary/20" />
+                    </div>
                 </div>
 
-                <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-slate-200 border border-slate-100 w-full max-w-sm flex flex-col items-center">
-                    <div className="flex gap-4 mb-10">
+                <div className="bg-card/40 backdrop-blur-3xl p-12 rounded-[4.5rem] shadow-3xl border border-white/5 w-full max-w-sm flex flex-col items-center animate-in zoom-in-95 duration-500">
+                    <div className="flex gap-6 mb-12">
                         {[0, 1, 2, 3].map((i) => (
-                            <div key={i} className={cn("w-6 h-6 rounded-2xl transition-all duration-300 border-2", i < pin.length ? "bg-primary border-primary scale-110" : "bg-slate-50 border-slate-100")} />
+                            <div key={i} className={cn(
+                                "w-6 h-6 rounded-2xl transition-all duration-500 border-4",
+                                i < pin.length ? "bg-primary border-primary scale-125 shadow-[0_0_20px_rgba(255,77,0,0.6)]" : "bg-white/5 border-white/10"
+                            )} />
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 w-full">
+                    <div className="grid grid-cols-3 gap-6 w-full">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                             <button key={num} onClick={() => {
                                 const newPin = pin + num
                                 if (newPin.length <= 4) setPin(newPin)
                                 if (newPin.length === 4) verifyPin(newPin)
-                            }} className="h-20 rounded-[1.5rem] bg-slate-50 border border-slate-100 text-2xl font-black italic active:bg-primary transition-all active:scale-95">{num}</button>
+                            }} className="h-24 rounded-[2rem] bg-white/5 border border-white/10 text-3xl font-black italic text-white active:bg-primary active:text-black transition-all active:scale-90 shadow-xl">{num}</button>
                         ))}
                         <div />
                         <button onClick={() => {
                             const newPin = pin + "0"
                             if (newPin.length <= 4) setPin(newPin)
                             if (newPin.length === 4) verifyPin(newPin)
-                        }} className="h-20 rounded-[1.5rem] bg-slate-50 border border-slate-100 text-2xl font-black italic active:bg-primary transition-all active:scale-95">0</button>
-                        <button onClick={() => setPin(pin.slice(0, -1))} className="h-20 rounded-[1.5rem] bg-rose-50 text-rose-500 flex items-center justify-center active:bg-rose-500 active:text-white transition-all"><X className="w-8 h-8" /></button>
+                        }} className="h-24 rounded-[2rem] bg-white/5 border border-white/10 text-3xl font-black italic text-white active:bg-primary active:text-black transition-all active:scale-90 shadow-xl">0</button>
+                        <button onClick={() => setPin(pin.slice(0, -1))} className="h-24 rounded-[2rem] bg-red-500/10 text-red-500 flex items-center justify-center active:bg-red-500 active:text-white transition-all active:scale-90 border border-red-500/20 shadow-xl"><ArrowRight className="w-10 h-10 rotate-180" /></button>
                     </div>
                 </div>
+
+                <div className="mt-12 text-white/20 text-[9px] font-black uppercase tracking-[0.8em] italic">SECURE NODE SHA-256</div>
             </div>
         )
     }
 
-    // B. SALÓN (Mesas)
+    // B. SALÓN (Mesas REFINED)
     if (view === 'tables') {
         return (
-            <div className="min-h-screen bg-slate-50 pb-20">
-                <header className="bg-white px-8 py-6 flex justify-between items-center shadow-sm sticky top-0 z-10 border-b border-slate-200 backdrop-blur-md bg-white/80">
-                    <div>
-                        <h2 className="text-2xl font-black italic uppercase tracking-tighter">MESAS</h2>
-                        <p className="text-[10px] text-primary font-black uppercase tracking-widest italic">{waiterUser?.full_name}</p>
+            <div className="min-h-screen bg-[#0a0a0b] pb-32 font-sans selection:bg-primary selection:text-black">
+                {/* 🌌 AMBIANCE */}
+                <div className="fixed top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
+
+                <header className="px-10 py-10 flex justify-between items-center sticky top-0 z-[50] border-b border-white/5 backdrop-blur-[100px] bg-black/40 relative h-32">
+                    <div className="flex items-center gap-8">
+                        <div className="w-16 h-16 rounded-2xl bg-primary text-black flex items-center justify-center shadow-3xl">
+                            <Utensils className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-none">MATRIZ <span className="text-primary italic">SALÓN</span></h2>
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <p className="text-[10px] text-primary/60 font-black uppercase tracking-[0.5em] italic">{waiterUser?.full_name}</p>
+                            </div>
+                        </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => { setIsAuthenticated(false); setWaiterUser(null); setPin(""); }} className="rounded-full w-12 h-12 bg-rose-50 border border-rose-100">
-                        <LogOut className="w-5 h-5 text-rose-500" />
+                    <Button variant="ghost" size="icon" onClick={() => { setIsAuthenticated(false); setWaiterUser(null); setPin(""); }} className="rounded-[1.5rem] w-16 h-16 bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all group">
+                        <LogOut className="w-7 h-7 text-red-500 group-hover:text-white transition-colors" />
                     </Button>
                 </header>
 
-                <div className="p-8 grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="p-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8 relative z-10 max-w-[1800px] mx-auto">
                     {realTables.map(table => (
                         <button key={table.id} onClick={() => {
                             setSelectedTable(table)
@@ -246,114 +278,199 @@ export default function WaiterApp() {
                                 setView('order')
                             }
                         }} className={cn(
-                            "aspect-square rounded-[3rem] flex flex-col items-center justify-center gap-2 border-4 transition-all shadow-xl active:scale-95 relative overflow-hidden group",
-                            table.status === 'free' ? "bg-white border-slate-100" : "bg-rose-50 border-rose-500/20"
+                            "aspect-square rounded-[3.5rem] flex flex-col items-center justify-center gap-4 border-4 transition-all shadow-3xl active:scale-[0.9] relative overflow-hidden group",
+                            table.status === 'free' ? "bg-card/40 border-white/5 hover:border-primary/40" : "bg-red-500/5 border-red-500/20"
                         )}>
                             <div className={cn(
-                                "w-16 h-16 rounded-[1.5rem] flex items-center justify-center transition-all",
-                                table.status === 'free' ? "bg-slate-50 text-slate-300" : "bg-rose-500 text-white animate-pulse"
+                                "w-20 h-20 rounded-[2rem] flex items-center justify-center transition-all duration-700",
+                                table.status === 'free' ? "bg-white/5 text-white/20 group-hover:bg-primary group-hover:text-black group-hover:rotate-12" : "bg-red-500 text-white animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.4)]"
                             )}>
-                                {table.status === 'free' ? <Utensils className="w-8 h-8" /> : <Users className="w-8 h-8" />}
+                                {table.status === 'free' ? <Utensils className="w-10 h-10" /> : <Users className="w-10 h-10" />}
                             </div>
-                            <span className="text-2xl font-black italic text-slate-900 tracking-tighter">{table.table_name}</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{table.status === 'free' ? 'Libre' : 'Ocupada'}</span>
+                            <div className="text-center space-y-1">
+                                <span className="text-4xl font-black italic text-white tracking-tighter group-hover:scale-110 transition-transform block leading-none">{table.table_name}</span>
+                                <span className={cn(
+                                    "text-[9px] font-black uppercase tracking-[0.4em] italic",
+                                    table.status === 'free' ? "text-white/20" : "text-red-500"
+                                )}>{table.status === 'free' ? 'ESTRUCTURA LIBRE' : 'NODO OCUPADO'}</span>
+                            </div>
                             {table.status === 'occupied' && (
-                                <div className="absolute top-6 right-6 w-3 h-3 bg-rose-500 rounded-full ring-4 ring-rose-500/20" />
+                                <div className="absolute top-10 right-10 w-4 h-4 bg-red-500 rounded-full ring-8 ring-red-500/10 animate-ping" />
                             )}
+                            <div className="absolute inset-x-0 bottom-0 h-1.5 bg-current opacity-5" />
                         </button>
                     ))}
+                </div>
+
+                {/* 🛸 GLOBAL METRIC BAR */}
+                <div className="fixed bottom-10 left-10 right-10 z-[100] p-8 bg-foreground rounded-[3.5rem] text-background flex items-center justify-between shadow-3xl group/metric relative overflow-hidden animate-in slide-in-from-bottom-20 duration-1000 max-w-5xl mx-auto">
+                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover/metric:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-8 relative z-10">
+                        <div className="w-16 h-16 rounded-[1.5rem] bg-background/10 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-2xl group-hover/metric:rotate-12 transition-transform duration-500">
+                            <Activity className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="text-xl font-black italic uppercase tracking-tighter text-primary">Master Waiter Cluster</h4>
+                            <p className="text-[9px] text-background/40 font-black uppercase tracking-[0.4em] italic leading-none">
+                                SECURE NODE v8.42 • SYSTEM OK
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-10 relative z-10">
+                        <div className="text-right">
+                            <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/20 mb-1 italic">Sincronización</p>
+                            <div className="flex items-center justify-end gap-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                                <p className="text-lg font-black italic tracking-tighter text-white">LIVE_STREAM</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
     }
 
-    // C. OPCIONES (Mesa Dashboard)
+    // C. OPCIONES (Mesa Dashboard REFINED)
     if (view === 'options') {
         const currentTotal = selectedTableOrder?.total || 0
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col p-8 animate-in slide-in-from-bottom-10 duration-500">
-                <Button variant="ghost" className="self-start mb-10 rounded-full bg-white border border-slate-200 h-12 px-6 font-black italic uppercase" onClick={() => { setView('tables'); setSelectedTableOrder(null); }}>
-                    <X className="w-5 h-5 mr-2" /> VOLVER AL SALÓN
-                </Button>
+            <div className="min-h-screen bg-[#0a0a0b] flex flex-col p-10 relative overflow-hidden font-sans">
+                {/* 🌌 AMBIANCE */}
+                <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
+                <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-20 z-0 animate-pulse" />
 
-                <div className="flex flex-col items-center mb-16">
-                    <div className="w-24 h-24 bg-rose-500 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-rose-200 mb-6">
-                        <Users className="w-10 h-10 text-white" />
+                <header className="flex justify-between items-center mb-16 relative z-10">
+                    <Button variant="ghost" className="h-20 px-10 rounded-[2.5rem] bg-card/40 border border-white/10 font-black italic uppercase text-white shadow-3xl hover:bg-muted active:scale-95 transition-all gap-5 group" onClick={() => { setView('tables'); setSelectedTableOrder(null); }}>
+                        <ArrowLeft className="w-8 h-8 group-hover:-translate-x-1 transition-transform" /> VOLVER AL SALÓN
+                    </Button>
+                    <div className="px-10 py-4 bg-primary/10 border border-primary/20 rounded-full text-[10px] font-black text-primary tracking-[0.5em] italic uppercase shadow-xl animate-pulse">
+                        SESSION ACTIVE: {waiterUser?.full_name}
                     </div>
-                    <h2 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">{selectedTable?.table_name}</h2>
-                    <p className="text-emerald-500 font-black italic text-3xl mt-2">{formatPrice(currentTotal)}</p>
-                    <p className="text-[11px] font-black text-slate-400 tracking-[0.3em] uppercase mt-4 italic">Servicio Activo</p>
+                </header>
+
+                <div className="flex flex-col items-center mb-16 relative z-10">
+                    <div className="relative group">
+                        <div className="absolute inset-0 bg-red-500 blur-[80px] opacity-20 group-hover:opacity-40 transition-opacity" />
+                        <div className="w-32 h-32 bg-red-500 rounded-[3rem] flex items-center justify-center shadow-3xl shadow-red-500/20 mb-8 relative z-10 animate-bounce-slow">
+                            <Users className="w-14 h-14 text-white" />
+                        </div>
+                    </div>
+                    <h2 className="text-6xl md:text-7xl font-black italic uppercase tracking-tighter text-white group-hover:scale-110 transition-transform duration-700">{selectedTable?.table_name}</h2>
+                    <p className="text-primary font-black italic text-5xl md:text-6xl mt-6 drop-shadow-[0_0_20px_rgba(255,77,0,0.4)]">{formatPrice(currentTotal)}</p>
+                    <p className="text-[12px] font-black text-white/20 tracking-[0.6em] uppercase mt-6 italic flex items-center gap-4">
+                        <Signal className="w-4 h-4 text-primary animate-pulse" /> NODO BAJO CARGA DE SERVICIO
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto w-full">
-                    <button onClick={() => setView('order')} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl flex flex-col items-center gap-6 hover:border-primary active:scale-95 transition-all group">
-                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-primary transition-colors">
-                            <Plus className="w-8 h-8 text-black" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full relative z-10 mb-20">
+                    <button onClick={() => setView('order')} className="bg-card/40 backdrop-blur-xl p-12 rounded-[4.5rem] border border-white/5 shadow-3xl flex flex-col items-center gap-8 hover:border-primary/40 active:scale-95 transition-all duration-500 group relative overflow-hidden">
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-primary transition-all duration-700 shadow-2xl group-hover:rotate-12">
+                            <Plus className="w-10 h-10 text-white group-hover:text-black" />
                         </div>
-                        <span className="font-black italic uppercase tracking-widest text-sm">Adicionar Productos</span>
+                        <div className="text-center space-y-1">
+                            <span className="font-black italic uppercase tracking-tighter text-xl text-white block">ADICIONAR</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20 italic">KERNEL DE PRODUCTOS</span>
+                        </div>
                     </button>
 
-                    <button onClick={() => setIsTransferModalOpen(true)} className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl flex flex-col items-center gap-6 hover:border-emerald-500 active:scale-95 transition-all group">
-                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
-                            <ArrowLeftRight className="w-8 h-8 text-black group-hover:text-white" />
+                    <button onClick={() => setIsTransferModalOpen(true)} className="bg-card/40 backdrop-blur-xl p-12 rounded-[4.5rem] border border-white/5 shadow-3xl flex flex-col items-center gap-8 hover:border-emerald-500/40 active:scale-95 transition-all duration-500 group relative overflow-hidden">
+                        <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-emerald-500 transition-all duration-700 shadow-2xl group-hover:-rotate-12">
+                            <ArrowLeftRight className="w-10 h-10 text-white" />
                         </div>
-                        <span className="font-black italic uppercase tracking-widest text-sm">Unir / Traspasar Mesa</span>
+                        <div className="text-center space-y-1">
+                            <span className="font-black italic uppercase tracking-tighter text-xl text-white block">TRASPASAR</span>
+                            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20 italic">GEOMETRÍA DE SALÓN</span>
+                        </div>
                     </button>
 
                     <button
                         disabled={!selectedTableOrder?.id}
                         onClick={() => router.push(`/admin/orders?order=${selectedTableOrder.id}`)}
                         className={cn(
-                            "bg-black p-10 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6 active:scale-95 transition-all group col-span-1 md:col-span-2 disabled:opacity-50 disabled:grayscale"
+                            "bg-foreground p-12 rounded-[4.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.5)] flex flex-col items-center gap-8 active:scale-95 transition-all duration-700 group col-span-1 md:col-span-2 disabled:opacity-50 disabled:grayscale relative overflow-hidden"
                         )}
                     >
-                        <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-primary transition-colors">
-                            {loadingOrder ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : <Receipt className="w-8 h-8 text-white group-hover:text-black" />}
+                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="w-24 h-24 bg-background/10 rounded-[2rem] flex items-center justify-center group-hover:bg-primary transition-all duration-700 shadow-3xl group-hover:scale-110">
+                            {loadingOrder ? <Loader2 className="w-10 h-10 text-white animate-spin" /> : <Receipt className="w-10 h-10 text-white group-hover:text-black" />}
                         </div>
-                        <span className="font-black italic uppercase tracking-widest text-sm text-white">
-                            {loadingOrder ? "CARGANDO..." : "IR A COBRAR"}
-                        </span>
+                        <div className="text-center space-y-1">
+                            <span className="font-black italic uppercase tracking-[0.2em] text-2xl text-white block">
+                                {loadingOrder ? "SINCRONIZANDO..." : "PROCEDER AL CIERRE"}
+                            </span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary italic">AUTORIZAR COBRO FINAL</span>
+                        </div>
                     </button>
                 </div>
 
-                {/* Resumen Consumo */}
-                <div className="mt-16 max-w-xl mx-auto w-full">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 text-center italic">Items Consumidos</h3>
-                    <div className="space-y-3 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-                        {loadingOrder ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-slate-200" /> : selectedTableOrder?.order_items?.map((item: any, i: number) => (
-                            <div key={i} className="flex justify-between items-center py-3 border-b border-dashed border-slate-100 last:border-0">
-                                <span className="font-black italic uppercase text-xs text-slate-600">{item.products?.name} <span className="text-slate-300 ml-1 font-bold">x{item.quantity}</span></span>
-                                <span className="font-black italic text-slate-400 text-sm">{formatPrice(item.subtotal)}</span>
+                {/* Resumen Consumo REFINED */}
+                <div className="relative z-10 max-w-2xl mx-auto w-full opacity-80 group/items">
+                    <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.8em] mb-10 text-center italic group-hover/items:text-primary transition-colors">Manifesto de Consumo</h3>
+                    <div className="space-y-4 bg-card/40 backdrop-blur-2xl p-12 rounded-[4.5rem] border border-white/5 shadow-3xl">
+                        {loadingOrder ? (
+                            <div className="py-12 flex justify-center">
+                                <Loader2 className="w-10 h-10 animate-spin text-primary" />
                             </div>
-                        ))}
+                        ) : selectedTableOrder?.order_items?.length > 0 ? selectedTableOrder?.order_items?.map((item: any, i: number) => (
+                            <div key={i} className="flex justify-between items-center py-5 border-b border-dashed border-white/5 last:border-0 group/row">
+                                <div className="space-y-1">
+                                    <span className="font-black italic uppercase text-lg text-white group-hover/row:text-primary transition-colors">{item.products?.name}</span>
+                                    <p className="text-[9px] font-black text-white/20 uppercase tracking-widest italic leading-none">CANTIDAD PROCESADA: {item.quantity}</p>
+                                </div>
+                                <span className="font-black italic text-primary text-xl tracking-tighter">{formatPrice(item.subtotal)}</span>
+                            </div>
+                        )) : (
+                            <p className="py-12 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/10 italic">KERNEL DE CONSUMO VACÍO</p>
+                        )}
                     </div>
                 </div>
 
-                {/* Modal Traspaso */}
+                {/* Modal Traspaso REFINED */}
                 {isTransferModalOpen && (
-                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-300">
-                        <div className="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl">
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8">Traspasar Mesa</h2>
-                            <div className="grid grid-cols-2 gap-3 mb-10 max-h-60 overflow-y-auto pr-2">
+                    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-3xl flex items-center justify-center p-6 animate-in fade-in duration-500">
+                        <div className="bg-card border-4 border-primary/20 w-full max-w-lg rounded-[5rem] p-16 shadow-[0_0_100px_rgba(255,77,0,0.1)] relative overflow-hidden group/modal">
+                            <div className="absolute top-0 right-0 p-16 opacity-[0.03] pointer-events-none -mr-16 -mt-16 group-hover/modal:scale-110 transition-transform duration-1000 rotate-12">
+                                <ArrowLeftRight className="w-[400px] h-[400px]" />
+                            </div>
+
+                            <div className="flex justify-between items-start mb-16 relative z-10">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-3xl animate-pulse">
+                                            <ArrowLeftRight className="w-8 h-8" />
+                                        </div>
+                                        <h2 className="text-4xl font-black italic uppercase tracking-tighter text-white leading-none">Traspaso <span className="text-emerald-500 italic">Core</span></h2>
+                                    </div>
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic pl-20">REACCIÓN GEOMÉTRICA DE SALÓN</p>
+                                </div>
+                                <Button variant="ghost" className="h-16 w-16 rounded-[1.5rem] bg-white/5 border border-white/10 hover:bg-emerald-500 hover:text-white transition-all active:scale-90" onClick={() => setIsTransferModalOpen(false)}>
+                                    <X className="w-8 h-8" />
+                                </Button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-16 max-h-[400px] overflow-y-auto pr-4 custom-scrollbar relative z-10">
                                 {realTables.filter(t => t.id !== selectedTable?.id).map(t => (
                                     <button key={t.id} onClick={() => setTargetTableId(t.id)} className={cn(
-                                        "h-16 rounded-2xl border-2 font-black italic text-xs tracking-widest uppercase",
-                                        targetTableId === t.id ? "border-primary bg-primary/5 text-slate-900" : "border-slate-50 text-slate-300"
+                                        "h-24 rounded-[2rem] border-4 font-black italic text-xl tracking-tighter uppercase transition-all duration-500 active:scale-90",
+                                        targetTableId === t.id ? "border-emerald-500 bg-emerald-500 text-white shadow-[0_0_30px_rgba(16,185,129,0.3)]" : "border-white/5 bg-white/5 text-white/20 hover:border-white/20"
                                     )}>{t.table_name}</button>
                                 ))}
                             </div>
-                            <div className="flex flex-col gap-3">
-                                <Button className="h-16 rounded-2xl bg-black text-white hover:bg-emerald-500 font-black italic uppercase tracking-widest" onClick={async () => {
+
+                            <div className="flex flex-col gap-6 relative z-10">
+                                <Button className="h-24 rounded-[2.5rem] bg-emerald-500 text-white hover:bg-emerald-600 font-black italic uppercase tracking-[0.4em] text-lg shadow-3xl shadow-emerald-500/20 active:scale-95 transition-all" onClick={async () => {
                                     if (!targetTableId || !selectedTableOrder) return
                                     try {
                                         const { transferOrderBetweenTables } = await import("@/actions/orders-fixed")
                                         await transferOrderBetweenTables({ order_id: selectedTableOrder.id, target_table_id: targetTableId, user_id: waiterUser.id })
-                                        toast.success("Mesa traspasada")
+                                        toast.success("Mesa traspasada exitosamente")
                                         setView('tables')
                                         fetchTables()
                                     } catch (e: any) { toast.error(e.message) }
-                                }}>CONFIRMAR</Button>
-                                <Button variant="ghost" className="h-14 font-black italic uppercase text-rose-500" onClick={() => setIsTransferModalOpen(false)}>CANCELAR</Button>
+                                }}>EJECUTAR TRASPASO</Button>
+                                <Button variant="ghost" className="h-16 font-black italic uppercase text-white/20 hover:text-red-500 transition-colors tracking-widest text-[11px]" onClick={() => setIsTransferModalOpen(false)}>ABORTAR PROTOCOLO</Button>
                             </div>
                         </div>
                     </div>
@@ -362,42 +479,51 @@ export default function WaiterApp() {
         )
     }
 
-    // D. MENU (Carta)
+    // D. MENU (Carta REFINED)
     const filteredProducts = activeCategory === 'all' ? products : products.filter(p => p.category_id === activeCategory)
     const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0)
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-white">
-            <header className="bg-white border-b border-slate-100 flex items-center justify-between px-6 shrink-0 h-20">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" className="rounded-full w-12 h-12 bg-slate-50" onClick={() => { setView(selectedTable?.status === 'occupied' ? 'options' : 'tables'); setCart([]); }}>
-                        <ArrowRight className="w-5 h-5 rotate-180" />
+        <div className="flex flex-col h-screen overflow-hidden bg-[#0a0a0b] font-sans">
+            {/* 🪐 KERNEL HEADER */}
+            <header className="bg-black/60 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between px-10 shrink-0 h-32 relative z-50">
+                <div className="flex items-center gap-8">
+                    <Button variant="ghost" className="h-20 w-20 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-primary hover:text-black transition-all group active:scale-90 shadow-2xl" onClick={() => { setView(selectedTable?.status === 'occupied' ? 'options' : 'tables'); setCart([]); }}>
+                        <ArrowLeft className="w-10 h-10 group-hover:-translate-x-1 transition-transform" />
                     </Button>
-                    <div>
-                        <h2 className="text-xl font-black italic leading-none">{selectedTable?.table_name}</h2>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1 italic">{selectedTable?.status === 'occupied' ? 'Adicionando a Servicio' : 'Nueva Comanda'}</p>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-4xl font-black italic text-white leading-none tracking-tighter uppercase">{selectedTable?.table_name}</h2>
+                            <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-[9px] font-black text-primary tracking-[0.4em] italic uppercase">
+                                {selectedTable?.status === 'occupied' ? 'ADICIÓN_MODE' : 'NEW_SESSION'}
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.5em] mt-1 italic">CLUSTER_WAITER: {waiterUser?.full_name}</p>
                     </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-2xl font-black italic text-primary">{formatPrice(cartTotal)}</p>
+                <div className="text-right group cursor-pointer active:scale-95 transition-all">
+                    <p className="text-[9px] font-black uppercase text-primary/40 tracking-[0.8em] italic mb-1 group-hover:text-primary transition-colors">ACUMULADO_SESSION</p>
+                    <p className="text-5xl font-black italic text-primary drop-shadow-[0_0_20px_rgba(255,77,0,0.5)] transition-all group-hover:scale-110">{formatPrice(cartTotal)}</p>
                 </div>
             </header>
 
             <div className="flex flex-1 overflow-hidden relative">
-                <main className="flex-1 flex flex-col bg-slate-50 min-w-0">
-                    <div className="h-16 overflow-x-auto flex items-center gap-3 px-6 bg-white shrink-0 scrollbar-hide border-b border-slate-100">
+                <main className="flex-1 flex flex-col min-w-0 bg-[#0a0a0b] relative z-10">
+                    <div className="h-24 overflow-x-auto flex items-center gap-6 px-10 bg-black/40 shrink-0 scrollbar-hide border-b border-white/5 backdrop-blur-md">
                         {['all', ...categories.map(c => c.id)].map(catId => {
-                            const name = catId === 'all' ? 'Todo' : categories.find(c => c.id === catId)?.name
+                            const name = catId === 'all' ? 'Todo el Cluster' : categories.find(c => c.id === catId)?.name
                             return (
                                 <button key={catId} onClick={() => setActiveCategory(catId)} className={cn(
-                                    "px-6 h-10 rounded-full text-[11px] font-black uppercase tracking-widest transition-all border shrink-0",
-                                    activeCategory === catId ? "bg-black text-white border-black" : "bg-white border-slate-100 text-slate-400"
+                                    "px-10 h-14 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all border-2 shrink-0 italic active:scale-90",
+                                    activeCategory === catId ? "bg-primary text-black border-primary shadow-[0_0_30px_rgba(255,77,0,0.3)]" : "bg-white/5 border-white/10 text-white/20 hover:border-white/40"
                                 )}>{name}</button>
                             )
                         })}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 lg:grid-cols-4 gap-4 content-start">
+                    <div className="flex-1 overflow-y-auto p-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 content-start custom-scrollbar h-full bg-slate-50 relative bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+                        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0b] via-transparent to-transparent pointer-events-none" />
+
                         {filteredProducts.map(product => {
                             const qty = cart.find(c => c.product.id === product.id)?.qty || 0
                             return (
@@ -408,56 +534,100 @@ export default function WaiterApp() {
                                         return [...prev, { product, qty: 1 }]
                                     })
                                 }} className={cn(
-                                    "bg-white p-6 rounded-[2.5rem] border-2 flex flex-col text-left transition-all active:scale-95 relative group shadow-sm",
-                                    qty > 0 ? "border-primary ring-4 ring-primary/10" : "border-transparent"
+                                    "bg-card/40 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 flex flex-col text-left transition-all active:scale-[0.85] relative group shadow-3xl h-[280px] justify-between overflow-hidden",
+                                    qty > 0 ? "border-primary ring-8 ring-primary/10" : "border-white/5 hover:border-white/10"
                                 )}>
-                                    <div className="flex justify-between mb-4">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-xs text-slate-300 italic uppercase">{product.name.charAt(0)}</div>
-                                        {qty > 0 && <span className="bg-black text-white text-[10px] font-black px-2 py-1 rounded-lg">x{qty}</span>}
+                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                                    <div className="flex justify-between items-start relative z-10">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-2xl text-white/20 italic uppercase group-hover:bg-primary group-hover:text-black transition-all group-hover:rotate-12">{product.name.charAt(0)}</div>
+                                        {qty > 0 && (
+                                            <div className="relative">
+                                                <div className="absolute inset-0 bg-primary blur-xl animate-pulse" />
+                                                <span className="bg-black text-white text-xl font-black px-4 py-2 rounded-2xl relative z-10 border border-primary/40 shadow-2xl">x{qty}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <h4 className="font-black italic text-sm text-slate-900 uppercase leading-tight line-clamp-2">{product.name}</h4>
-                                    <p className="text-sm font-black italic text-primary mt-2">{formatPrice(product.price)}</p>
+                                    <div className="relative z-10 space-y-3">
+                                        <h4 className="font-black italic text-xl text-white uppercase leading-none tracking-tighter group-hover:text-primary transition-colors">{product.name}</h4>
+                                        <p className="text-2xl font-black italic text-primary/60 drop-shadow-[0_0_15px_rgba(255,77,0,0.3)]">{formatPrice(product.price)}</p>
+                                    </div>
+
+                                    {/* MICRO INTERACTIONS */}
+                                    <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0 translate-x-4">
+                                        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-3xl text-black">
+                                            <Plus className="w-7 h-7" />
+                                        </div>
+                                    </div>
                                 </button>
                             )
                         })}
                     </div>
                 </main>
 
-                {/* Resumen Lateral */}
+                {/* Resumen Lateral REFINED */}
                 {cart.length > 0 && (
-                    <div className="w-96 bg-white border-l border-slate-100 flex flex-col shadow-2xl z-20 absolute inset-y-0 right-0 lg:static animate-in slide-in-from-right duration-300">
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="font-black italic uppercase tracking-tighter text-lg">Resumen</h3>
-                            <span className="bg-black text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{cart.length} SKUs</span>
+                    <div className="w-[500px] bg-card/60 backdrop-blur-3xl border-l border-white/10 flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.5)] z-[100] absolute inset-y-0 right-0 lg:static animate-in slide-in-from-right-12 duration-700 font-sans">
+                        <div className="p-12 border-b border-white/5 flex justify-between items-center bg-black/40">
+                            <div className="space-y-1">
+                                <h3 className="font-black italic uppercase tracking-tighter text-3xl text-white">Consolidado</h3>
+                                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] italic">KERNEL_DISPATCH_QUEUE</p>
+                            </div>
+                            <div className="px-5 py-2 bg-primary/10 border border-primary/20 rounded-full text-[11px] font-black text-primary uppercase tracking-widest">{cart.length} SKUs</div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+
+                        <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar bg-black/20">
                             {cart.map(item => (
-                                <div key={item.product.id} className="flex justify-between gap-4">
-                                    <div className="flex-1">
-                                        <p className="font-black italic text-sm text-slate-900 uppercase leading-tight">{item.product.name}</p>
-                                        <p className="text-xs font-bold text-slate-400 mt-1 italic">{formatPrice(item.product.price)}</p>
+                                <div key={item.product.id} className="flex justify-between gap-8 group/item animate-in slide-in-from-right-4">
+                                    <div className="flex-1 space-y-2">
+                                        <p className="font-black italic text-xl text-white uppercase leading-none tracking-tighter group-hover/item:text-primary transition-colors">{item.product.name}</p>
+                                        <p className="text-xs font-black text-white/20 mt-1 italic tracking-widest uppercase">{formatPrice(item.product.price)} / UNIT</p>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-slate-50 rounded-2xl p-2 h-12">
-                                        <button onClick={() => setCart(c => c.map(p => p.product.id === item.product.id ? { ...p, qty: p.qty - 1 } : p).filter(p => p.qty > 0))} className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-rose-500 font-black">-</button>
-                                        <span className="font-black italic text-sm w-4 text-center">{item.qty}</span>
-                                        <button onClick={() => setCart(c => c.map(p => p.product.id === item.product.id ? { ...p, qty: p.qty + 1 } : p))} className="w-8 h-8 rounded-lg bg-black text-white shadow-sm flex items-center justify-center font-black">+</button>
+                                    <div className="flex items-center gap-6 bg-white/5 border border-white/10 rounded-3xl p-3 h-20 shadow-xl group-hover/item:border-primary/20 transition-all">
+                                        <button onClick={() => setCart(c => c.map(p => p.product.id === item.product.id ? { ...p, qty: p.qty - 1 } : p).filter(p => p.qty > 0))} className="w-12 h-12 rounded-xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white transition-all shadow-3xl flex items-center justify-center font-black text-2xl active:scale-75">-</button>
+                                        <span className="font-black italic text-2xl w-8 text-center text-white">{item.qty}</span>
+                                        <button onClick={() => setCart(c => c.map(p => p.product.id === item.product.id ? { ...p, qty: p.qty + 1 } : p))} className="w-12 h-12 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white transition-all shadow-3xl flex items-center justify-center font-black text-2xl active:scale-75">+</button>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <div className="p-8 border-t border-slate-100 bg-slate-50/50">
-                            <div className="flex justify-between items-end mb-8">
-                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic">Total a Marchar</span>
-                                <span className="text-3xl font-black italic text-slate-900 leading-none">{formatPrice(cartTotal)}</span>
+
+                        <div className="p-12 border-t border-white/5 bg-black/60 shadow-[0_-50px_100px_rgba(0,0,0,0.3)]">
+                            <div className="flex justify-between items-end mb-12">
+                                <div className="space-y-1 text-left">
+                                    <span className="text-[11px] font-black uppercase text-white/30 tracking-[0.6em] italic block">Gran Total a Liquidar</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(255,77,0,0.8)]" />
+                                        <span className="text-primary font-black uppercase italic tracking-widest text-[10px]">VERIFIED_LEDGER</span>
+                                    </div>
+                                </div>
+                                <span className="text-6xl font-black italic text-white tracking-tighter leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">{formatPrice(cartTotal)}</span>
                             </div>
-                            <Button onClick={handleMarchar} disabled={submitting} className="w-full h-16 bg-black text-white hover:bg-primary hover:text-black rounded-[1.5rem] font-black italic uppercase text-sm tracking-widest shadow-2xl active:scale-95 transition-all gap-4">
-                                {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <ChefHat className="w-6 h-6" />}
+                            <Button onClick={handleMarchar} disabled={submitting} className="w-full h-28 bg-foreground text-background hover:bg-primary hover:text-black rounded-[2.5rem] font-black italic uppercase text-xl md:text-2xl tracking-[0.4em] shadow-3xl active:scale-95 transition-all gap-8 border-none group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                {submitting ? <Loader2 className="w-10 h-10 animate-spin" /> : <ChefHat className="w-10 h-10 group-hover:rotate-12 transition-transform" />}
                                 MARCHAR COMANDA
                             </Button>
                         </div>
                     </div>
                 )}
             </div>
+
+            <style jsx global>{`
+                @keyframes bounce-slow {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+                .animate-bounce-slow {
+                    animation: bounce-slow 4s ease-in-out infinite;
+                }
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 20px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,102,0,0.2); }
+            `}</style>
         </div>
     )
 }

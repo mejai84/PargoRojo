@@ -59,9 +59,9 @@ interface Station {
 }
 
 const STATUS_COLUMNS = [
-    { id: 'pending' as const, label: 'RECIBIDAS', color: 'text-blue-600', bg: 'bg-white', accent: 'border-slate-200' },
-    { id: 'preparing' as const, label: 'EN FOGÓN', color: 'text-primary', bg: 'bg-white', accent: 'border-slate-200' },
-    { id: 'ready' as const, label: 'LISTAS', color: 'text-emerald-600', bg: 'bg-white', accent: 'border-slate-200' }
+    { id: 'pending' as const, label: 'RECIBIDAS', color: 'text-blue-600', bg: 'bg-card', accent: 'border-border' },
+    { id: 'preparing' as const, label: 'EN FOGÓN', color: 'text-primary', bg: 'bg-card', accent: 'border-border' },
+    { id: 'ready' as const, label: 'LISTAS', color: 'text-emerald-600', bg: 'bg-card', accent: 'border-border' }
 ];
 
 export default function KitchenPage() {
@@ -162,35 +162,35 @@ export default function KitchenPage() {
     const preparingCount = orders.filter(o => o.status === 'preparing').length
 
     return (
-        <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-8 selection:bg-primary font-sans">
+        <div className="min-h-screen bg-transparent text-foreground p-4 md:p-8 selection:bg-primary selection:text-primary-foreground font-sans">
 
             {/* 🔝 PREMIUM KDS HEADER */}
             <div className="max-w-[1900px] mx-auto mb-10 flex flex-col xl:flex-row justify-between items-center gap-8 animate-in fade-in slide-in-from-top-4 duration-700">
                 <div className="flex items-center gap-6">
                     <Link href="/admin">
-                        <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
-                            <ArrowLeft className="w-6 h-6 text-slate-900" />
+                        <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-card border border-border hover:bg-muted transition-all shadow-sm">
+                            <ArrowLeft className="w-6 h-6 text-foreground" />
                         </Button>
                     </Link>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none text-slate-900">CORE <span className="text-primary">KDS</span></h1>
+                            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none text-foreground">CORE <span className="text-primary">KDS</span></h1>
                             <div className="px-4 py-1.5 bg-rose-500/10 border border-rose-500/20 rounded-full text-[9px] font-black text-rose-500 animate-pulse tracking-widest italic">
                                 SENSOR ACTIVADO
                             </div>
                         </div>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
-                            <Zap className="w-3 h-3" /> Estación: {stations.find(s => s.id === activeStationId)?.name || "TODAS"}
+                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
+                            <Zap className="w-3 h-3 text-primary" /> Estación: {stations.find(s => s.id === activeStationId)?.name || "TODAS"}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-card rounded-[2.5rem] border border-border shadow-sm">
                     <button
                         onClick={() => setActiveStationId("TODAS")}
                         className={cn(
                             "px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all italic",
-                            activeStationId === "TODAS" ? "bg-primary text-black" : "text-slate-400 hover:text-slate-900"
+                            activeStationId === "TODAS" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         )}
                     >
                         TODAS
@@ -201,7 +201,7 @@ export default function KitchenPage() {
                             onClick={() => setActiveStationId(station.id)}
                             className={cn(
                                 "px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all italic",
-                                activeStationId === station.id ? "bg-primary text-black" : "text-slate-400 hover:text-slate-900"
+                                activeStationId === station.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                             )}
                         >
                             {station.name}
@@ -211,17 +211,17 @@ export default function KitchenPage() {
 
                 <div className="flex items-center gap-4">
                     <div className="hidden md:flex gap-2">
-                        <div className="px-6 py-3 bg-white rounded-2xl border border-primary/20 flex flex-col items-center shadow-sm">
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">En Fuego</span>
+                        <div className="px-6 py-3 bg-card rounded-2xl border border-primary/20 flex flex-col items-center shadow-sm">
+                            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">En Fuego</span>
                             <span className="text-xl font-black text-primary italic leading-none">{preparingCount}</span>
                         </div>
-                        <div className="px-6 py-3 bg-white rounded-2xl border border-slate-200 flex flex-col items-center border-dashed shadow-sm">
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tiempo Prom</span>
-                            <span className="text-xl font-black text-slate-900 italic leading-none">12M</span>
+                        <div className="px-6 py-3 bg-card rounded-2xl border border-border flex flex-col items-center border-dashed shadow-sm">
+                            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Tiempo Prom</span>
+                            <span className="text-xl font-black text-foreground italic leading-none">12M</span>
                         </div>
                     </div>
-                    <Button onClick={fetchData} className="h-16 w-16 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all shadow-sm">
-                        <RefreshCw className={cn("w-6 h-6 text-slate-900", loading && "animate-spin")} />
+                    <Button onClick={fetchData} className="h-16 w-16 rounded-2xl bg-card border border-border hover:bg-muted transition-all shadow-sm text-foreground">
+                        <RefreshCw className={cn("w-6 h-6", loading && "animate-spin")} />
                     </Button>
                 </div>
             </div>
@@ -234,7 +234,7 @@ export default function KitchenPage() {
                             <h2 className={cn("text-[10px] font-black uppercase tracking-[0.4em] italic", column.color)}>
                                 {column.label}
                             </h2>
-                            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
+                            <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-[10px] font-black text-muted-foreground">
                                 {filteredOrders.filter(o => o.status === column.id).length}
                             </div>
                         </div>
@@ -252,7 +252,7 @@ export default function KitchenPage() {
                                     if (itemsToDisplay.length === 0) return null
 
                                     return (
-                                        <div key={order.id} className="group bg-white rounded-[2.5rem] border border-slate-200 p-8 space-y-6 hover:border-primary/30 transition-all relative overflow-hidden shadow-sm">
+                                        <div key={order.id} className="group bg-card rounded-[2.5rem] border border-border p-8 space-y-6 hover:border-primary/30 transition-all relative overflow-hidden shadow-sm">
 
                                             {/* Priority Marker */}
                                             {minutes > 15 && (
@@ -263,31 +263,31 @@ export default function KitchenPage() {
 
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-slate-900 leading-none underline decoration-primary/30">
+                                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none underline decoration-primary/30">
                                                         {order.tables?.table_name || 'DELIVERY / PICKUP'}
                                                     </h3>
-                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2 font-mono">
+                                                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-2 font-mono">
                                                         TOKEN: #{order.id.split('-')[0].toUpperCase()}
                                                     </p>
                                                     {/* Información del Cliente (si no es mesa) */}
                                                     {!order.tables && order.guest_info && (
-                                                        <div className="mt-2 text-xs font-bold text-slate-600">
+                                                        <div className="mt-2 text-xs font-bold text-muted-foreground">
                                                             👤 {(order.guest_info as any).name} <br />
                                                             📞 {(order.guest_info as any).phone}
                                                         </div>
                                                     )}
                                                     {/* NOTAS GENERALES DEL PEDIDO */}
                                                     {order.notes && (
-                                                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-                                                            <p className="text-[10px] font-black text-red-600 uppercase italic leading-tight flex items-start gap-1">
+                                                        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                                                            <p className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase italic leading-tight flex items-start gap-1">
                                                                 📝 {order.notes}
                                                             </p>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className={cn(
-                                                    "flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black italic border uppercase shrink-0",
-                                                    minutes > 15 ? "bg-rose-500/10 text-rose-500 border-rose-500/20" : "bg-slate-50 text-slate-400 border-slate-200"
+                                                    "flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black italic border uppercase shrink-0 transition-colors",
+                                                    minutes > 15 ? "bg-rose-500/10 text-rose-500 border-rose-500/20" : "bg-muted text-muted-foreground border-border"
                                                 )}>
                                                     <Timer className="w-3 h-3" /> {minutes} MIN
                                                 </div>
@@ -297,21 +297,21 @@ export default function KitchenPage() {
                                                 {itemsToDisplay.map((item, idx) => {
                                                     return (
                                                         <div key={idx} className="flex gap-4">
-                                                            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-lg font-black text-primary italic shrink-0">
+                                                            <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-lg font-black text-primary italic shrink-0">
                                                                 {item.quantity}
                                                             </div>
                                                             <div className="space-y-2 flex-1 pt-1">
-                                                                <p className="text-sm font-black uppercase italic tracking-tight text-slate-900 group-hover:text-primary transition-colors">{item.products?.name}</p>
+                                                                <p className="text-sm font-black uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors">{item.products?.name}</p>
 
                                                                 {/* NOTAS DEL PRODUCTO ESPECÍFICO */}
                                                                 {(item.customizations?.notes || (item.customizations as any)?.name) && (
                                                                     <div className="space-y-1">
                                                                         {(item.customizations as any)?.name && (item.customizations as any).name !== item.products?.name && (
-                                                                            <p className="text-[10px] text-slate-500 italic">{(item.customizations as any).name}</p>
+                                                                            <p className="text-[10px] text-muted-foreground/60 italic">{(item.customizations as any).name}</p>
                                                                         )}
                                                                         {item.customizations?.notes && (
-                                                                            <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg inline-block">
-                                                                                <p className="text-[9px] font-black text-amber-600 uppercase italic leading-tight">
+                                                                            <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg inline-block">
+                                                                                <p className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase italic leading-tight text-balance">
                                                                                     ⚠️ {item.customizations.notes}
                                                                                 </p>
                                                                             </div>
@@ -326,15 +326,15 @@ export default function KitchenPage() {
 
                                             <div className="pt-4 flex gap-2">
                                                 {order.status === 'pending' ? (
-                                                    <Button onClick={() => updateStatus(order.id, 'preparing')} className="flex-1 h-14 bg-white text-black rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-primary transition-all shadow-xl">
+                                                    <Button onClick={() => updateStatus(order.id, 'preparing')} className="flex-1 h-14 bg-background text-foreground border border-border rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-xl">
                                                         MARCHAR <ChevronRight className="w-3 h-3 ml-1" />
                                                     </Button>
                                                 ) : order.status === 'preparing' ? (
-                                                    <Button onClick={() => updateStatus(order.id, 'ready')} className="flex-1 h-14 bg-primary text-black rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/20">
+                                                    <Button onClick={() => updateStatus(order.id, 'ready')} className="flex-1 h-14 bg-primary text-primary-foreground rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-background hover:text-foreground hover:border-border transition-all shadow-xl shadow-primary/20">
                                                         TERMINAR <Check className="w-3.5 h-3.5 ml-1" />
                                                     </Button>
                                                 ) : (
-                                                    <Button onClick={() => updateStatus(order.id, 'delivered')} className="flex-1 h-14 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-white hover:text-black transition-all">
+                                                    <Button onClick={() => updateStatus(order.id, 'delivered')} className="flex-1 h-14 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[9px] tracking-widest italic hover:bg-background hover:text-emerald-500 hover:border-emerald-500 transition-all border-none">
                                                         ENTREGADO <Check className="w-3.5 h-3.5 ml-1" />
                                                     </Button>
                                                 )}
@@ -350,7 +350,7 @@ export default function KitchenPage() {
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
             `}</style>
         </div>
     )

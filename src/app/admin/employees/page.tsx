@@ -259,20 +259,20 @@ export default function EmployeesPage() {
             case 'waiter': return { label: 'MESERO', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: Utensils };
             case 'cook': return { label: 'COCINA', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: ChefHat };
             case 'cashier': return { label: 'CAJERO', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: Shield };
-            default: return { label: 'STAFF', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20', icon: Users };
+            default: return { label: 'STAFF', color: 'bg-muted text-muted-foreground border-border', icon: Users };
         }
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 bg-transparent text-foreground p-4 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight uppercase">Equipo <span className="text-primary italic">{businessInfo.name}</span></h1>
-                    <p className="text-muted-foreground font-medium mt-1">Gestión integral de personal y jerarquías operativos.</p>
+                    <h1 className="text-4xl font-black tracking-tight uppercase text-foreground">Equipo <span className="text-primary italic">{businessInfo.name}</span></h1>
+                    <p className="text-muted-foreground font-medium mt-1 italic">Gestión integral de personal y jerarquías operativos.</p>
                 </div>
                 <Button
                     onClick={handleAddOpen}
-                    className="h-12 px-6 rounded-2xl bg-primary text-black font-black hover:scale-105 transition-all gap-2 shadow-lg shadow-primary/20"
+                    className="h-14 px-8 bg-primary text-primary-foreground border-none rounded-2xl font-black uppercase tracking-widest italic hover:scale-105 transition-all gap-2 shadow-xl shadow-primary/20"
                 >
                     <UserPlus className="w-5 h-5" />
                     AÑADIR PERSONAL
@@ -287,7 +287,7 @@ export default function EmployeesPage() {
                         <input
                             type="text"
                             placeholder="Buscar por nombre, email o cargo..."
-                            className="w-full h-14 pl-12 pr-6 rounded-3xl bg-card border border-white/5 focus:border-primary/50 outline-none transition-all shadow-2xl font-medium"
+                            className="w-full h-14 pl-12 pr-6 rounded-3xl bg-card border border-border focus:border-primary/50 outline-none transition-all shadow-xl font-medium text-foreground placeholder:text-muted-foreground/30"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -296,44 +296,44 @@ export default function EmployeesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {loading ? (
                             Array(4).fill(0).map((_, i) => (
-                                <div key={i} className="h-32 bg-card/50 animate-pulse rounded-[2rem] border border-white/5" />
+                                <div key={i} className="h-32 bg-card animate-pulse rounded-[2rem] border border-border" />
                             ))
                         ) : filteredEmployees.length === 0 ? (
-                            <div className="col-span-full py-20 text-center bg-card/30 rounded-[3rem] border border-dashed border-white/10">
-                                <Users className="w-16 h-16 mx-auto mb-4 opacity-10" />
-                                <p className="text-xl font-bold opacity-30 uppercase tracking-widest">No hay personal que coincida</p>
+                            <div className="col-span-full py-20 text-center bg-muted/20 rounded-[3rem] border border-dashed border-border animate-in fade-in">
+                                <Users className="w-16 h-16 mx-auto mb-4 opacity-10 text-muted-foreground" />
+                                <p className="text-xl font-bold opacity-30 uppercase tracking-widest text-muted-foreground italic">No hay personal que coincida</p>
                             </div>
                         ) : filteredEmployees.map((emp) => {
                             const badge = getRoleBadge(emp.role);
                             const Icon = badge.icon;
                             return (
-                                <div key={emp.id} className="group bg-card hover:bg-white/5 border border-white/5 rounded-[2.5rem] p-6 transition-all hover:border-primary/20 shadow-xl flex flex-col justify-between">
+                                <div key={emp.id} className="group bg-card hover:bg-muted/30 border border-border rounded-[2.5rem] p-6 transition-all hover:border-primary/30 shadow-xl flex flex-col justify-between">
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="flex gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-2xl text-primary border border-primary/20">
+                                        <div className="flex gap-4 min-w-0">
+                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-2xl text-primary border border-primary/20 shrink-0">
                                                 {emp.full_name?.charAt(0) || emp.email.charAt(0).toUpperCase()}
                                             </div>
-                                            <div>
-                                                <h3 className="font-black text-lg leading-tight mb-1 group-hover:text-primary transition-colors">
+                                            <div className="min-w-0">
+                                                <h3 className="font-black text-lg leading-tight mb-1 group-hover:text-primary transition-colors text-foreground truncate">
                                                     {emp.full_name || 'Sin nombre'}
                                                 </h3>
                                                 <div className={cn(
-                                                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest border",
+                                                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest border italic",
                                                     badge.color
                                                 )}>
                                                     <Icon className="w-3 h-3" />
                                                     {badge.label}
                                                 </div>
                                                 {emp.document_id && (
-                                                    <span className="text-[9px] font-bold text-muted-foreground ml-2 opacity-60">ID: {emp.document_id}</span>
+                                                    <span className="text-[9px] font-bold text-muted-foreground/60 ml-2 uppercase italic tracking-widest whitespace-nowrap">ID: {emp.document_id}</span>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex gap-1 opactiy-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="rounded-xl h-10 w-10 hover:bg-white/5"
+                                                className="rounded-xl h-10 w-10 hover:bg-muted text-muted-foreground hover:text-foreground"
                                                 onClick={() => handleEditOpen(emp)}
                                             >
                                                 <Edit className="w-4 h-4" />
@@ -342,7 +342,7 @@ export default function EmployeesPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="rounded-xl h-10 w-10 hover:bg-red-500/10 hover:text-red-500"
+                                                    className="rounded-xl h-10 w-10 hover:bg-rose-500/10 hover:text-rose-500 text-muted-foreground"
                                                     onClick={() => handleDeleteEmployee(emp.id)}
                                                 >
                                                     <Trash2 className="w-4 h-4 pointer-events-none" />
@@ -351,22 +351,22 @@ export default function EmployeesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                                <Mail className="w-3.5 h-3.5 opacity-50" />
-                                                {emp.email}
+                                    <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+                                        <div className="space-y-2 min-w-0">
+                                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground truncate">
+                                                <Mail className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                                                <span className="truncate">{emp.email}</span>
                                             </div>
                                             {emp.phone && (
-                                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                                    <Phone className="w-3.5 h-3.5 opacity-50" />
-                                                    {emp.phone}
+                                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground truncate">
+                                                    <Phone className="w-3.5 h-3.5 opacity-50 shrink-0" />
+                                                    <span className="truncate">{emp.phone}</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="space-y-1 text-right">
-                                            <div className="text-[10px] font-black text-emerald-500 uppercase italic">Disc: {emp.food_discount_pct}%</div>
-                                            <div className="text-[10px] font-black text-primary uppercase italic">Créd: {formatPrice(emp.max_credit)}</div>
+                                        <div className="space-y-1 text-right shrink-0">
+                                            <div className="text-[10px] font-black text-emerald-500 uppercase italic whitespace-nowrap">Disc: {emp.food_discount_pct}%</div>
+                                            <div className="text-[10px] font-black text-primary uppercase italic whitespace-nowrap">Créd: {formatPrice(emp.max_credit)}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -377,42 +377,42 @@ export default function EmployeesPage() {
 
                 {/* Info Sidebar */}
                 <div className="space-y-6">
-                    <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 space-y-6">
+                    <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
                         <div className="flex items-center gap-3 text-primary">
                             <ShieldCheck className="w-8 h-8" />
-                            <h3 className="font-black text-xl uppercase tracking-tighter">Niveles de Acceso</h3>
+                            <h3 className="font-black text-xl uppercase tracking-tighter italic">Niveles de Acceso</h3>
                         </div>
                         <div className="space-y-6 text-sm">
                             {[
-                                { r: 'ADMIN', d: 'Control total de finanzas, productos y personal.', c: 'text-primary' },
-                                { r: 'CAJERO', d: 'Manejo de pedidos, caja menor y reportes de hoy.', c: 'text-emerald-400' },
-                                { r: 'MESERO', d: 'Acceso exclusivo al Portal Mesero para toma de pedidos.', c: 'text-blue-400' },
-                                { r: 'COCINA', d: 'Gestión exclusiva del sistema KDS (Pantalla de pedidos).', c: 'text-orange-400' },
+                                { r: 'ADMIN', d: 'Control total de finanzas, productos y personal operativo.', c: 'text-primary' },
+                                { r: 'CAJERO', d: 'Manejo de pedidos, caja menor y reportes de turno.', c: 'text-emerald-500' },
+                                { r: 'MESERO', d: 'Acceso exclusivo al Portal Mesero para toma de pedidos.', c: 'text-blue-500' },
+                                { r: 'COCINA', d: 'Gestión exclusiva del sistema KDS (Control de cocina).', c: 'text-orange-500' },
                             ].map((role, i) => (
-                                <div key={i} className="space-y-1">
-                                    <div className={cn("font-black uppercase text-[10px] tracking-widest", role.c)}>{role.r}</div>
-                                    <p className="text-muted-foreground font-medium italic">{role.d}</p>
+                                <div key={i} className="space-y-1 group/role">
+                                    <div className={cn("font-black uppercase text-[10px] tracking-[0.3em] transition-colors", role.c)}>{role.r}</div>
+                                    <p className="text-muted-foreground font-medium italic leading-relaxed group-hover/role:text-foreground transition-colors">{role.d}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="bg-card border border-white/5 rounded-[2.5rem] p-8 space-y-4 shadow-xl">
-                        <h3 className="font-black uppercase tracking-widest text-xs opacity-50 text-center">Resumen de Plantilla</h3>
+                    <div className="bg-card border border-border rounded-[2.5rem] p-8 space-y-4 shadow-xl">
+                        <h3 className="font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 text-center italic">Resumen de Plantilla</h3>
                         <div className="flex justify-around items-center">
-                            <div className="text-center">
-                                <div className="text-3xl font-black text-primary">{employees.length}</div>
-                                <div className="text-[10px] font-black opacity-50 uppercase tracking-widest">Total</div>
+                            <div className="text-center group/kpi">
+                                <div className="text-3xl font-black text-primary transition-transform group-hover/kpi:scale-110">{employees.length}</div>
+                                <div className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest italic">Total</div>
                             </div>
-                            <div className="w-[1px] h-10 bg-white/5" />
-                            <div className="text-center">
-                                <div className="text-3xl font-black text-emerald-400">{employees.filter(e => e.role === 'admin' || e.role === 'cashier').length}</div>
-                                <div className="text-[10px] font-black opacity-50 uppercase tracking-widest">Gestión</div>
+                            <div className="w-[1px] h-10 bg-border" />
+                            <div className="text-center group/kpi">
+                                <div className="text-3xl font-black text-emerald-500 transition-transform group-hover/kpi:scale-110">{employees.filter(e => e.role === 'admin' || e.role === 'cashier').length}</div>
+                                <div className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest italic">Gestión</div>
                             </div>
-                            <div className="w-[1px] h-10 bg-white/5" />
-                            <div className="text-center">
-                                <div className="text-3xl font-black text-orange-400">{employees.filter(e => e.role === 'waiter' || e.role === 'cook').length}</div>
-                                <div className="text-[10px] font-black opacity-50 uppercase tracking-widest">Operativos</div>
+                            <div className="w-[1px] h-10 bg-border" />
+                            <div className="text-center group/kpi">
+                                <div className="text-3xl font-black text-orange-500 transition-transform group-hover/kpi:scale-110">{employees.filter(e => e.role === 'waiter' || e.role === 'cook').length}</div>
+                                <div className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest italic">Staff</div>
                             </div>
                         </div>
                     </div>
@@ -421,38 +421,40 @@ export default function EmployeesPage() {
 
             {/* Modals */}
             {(isAddModalOpen || isEditModalOpen) && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
-                    <div className="bg-card w-full max-w-xl rounded-[3rem] border border-white/10 shadow-3xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
-                        <div className="p-8 pb-4 flex justify-between items-center">
-                            <h2 className="text-3xl font-black tracking-tight uppercase">
-                                {isAddModalOpen ? 'Nuevo Empleado' : 'Editar Información'}
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-card w-full max-w-xl rounded-[3rem] border border-border shadow-3xl overflow-hidden flex flex-col animate-in zoom-in-95 shadow-black/40">
+                        <div className="p-10 pb-4 flex justify-between items-center bg-muted/30 border-b border-border/50">
+                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-foreground leading-none">
+                                {isAddModalOpen ? 'Nuevo Colaborador' : 'Editar Expediente'}
                             </h2>
-                            <Button variant="ghost" size="icon" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="rounded-full">
-                                <X className="w-6 h-6" />
+                            <Button variant="ghost" size="icon" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="rounded-xl hover:bg-background transition-colors">
+                                <X className="w-6 h-6 text-muted-foreground" />
                             </Button>
                         </div>
 
-                        <form onSubmit={isAddModalOpen ? handleCreateEmployee : handleUpdateEmployee} className="p-8 pt-4 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                        <form onSubmit={isAddModalOpen ? handleCreateEmployee : handleUpdateEmployee} className="p-10 pt-8 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Nombre Completo</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Nombre Completo</label>
                                         <div className="relative">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                placeholder="EJ: JUAN PÉREZ"
                                                 value={formData.full_name}
                                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Teléfono</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Teléfono Móvil</label>
                                         <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                placeholder="+57 300..."
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                             />
@@ -460,27 +462,28 @@ export default function EmployeesPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Cédula / ID</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Documento de Identidad</label>
                                         <div className="relative">
-                                            <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Shield className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                placeholder="C.C. / C.E."
                                                 value={formData.document_id}
                                                 onChange={(e) => setFormData({ ...formData, document_id: e.target.value })}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Fecha de Ingreso</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Fecha de Vinculación</label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 pointer-events-none" />
                                             <input
                                                 required
                                                 type="date"
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner cursor-pointer"
                                                 value={formData.hire_date}
                                                 onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
                                             />
@@ -488,26 +491,26 @@ export default function EmployeesPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">% Descuento Comida</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">% Descuento Staff</label>
                                         <div className="relative">
-                                            <Utensils className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Utensils className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 type="number"
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner"
                                                 value={formData.food_discount_pct}
                                                 onChange={(e) => setFormData({ ...formData, food_discount_pct: Number(e.target.value) })}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Límite Crédito ($)</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Límite de Consumo Cr.</label>
                                         <div className="relative">
-                                            <Receipt className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Receipt className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 type="number"
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner"
                                                 value={formData.max_credit}
                                                 onChange={(e) => setFormData({ ...formData, max_credit: Number(e.target.value) })}
                                             />
@@ -515,30 +518,31 @@ export default function EmployeesPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Correo Electrónico</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Correo Corporativo</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
                                                 type="email"
                                                 disabled={isEditModalOpen}
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold disabled:opacity-50"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground disabled:opacity-30 shadow-inner"
+                                                placeholder="email@pargorojo.com"
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">PIN de Acceso (4 dígitos)</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">PIN de Seguridad (4 dígitos)</label>
                                         <div className="relative">
-                                            <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required={formData.role === 'waiter'}
                                                 maxLength={4}
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold placeholder:opacity-20"
-                                                placeholder="Ej: 1234"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                placeholder="EJ: 1234"
                                                 value={formData.waiter_pin}
                                                 onChange={(e) => setFormData({ ...formData, waiter_pin: e.target.value.replace(/\D/g, '') })}
                                             />
@@ -548,76 +552,84 @@ export default function EmployeesPage() {
 
                                 {isAddModalOpen && (
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Contraseña Temporal</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Contraseña Inicial</label>
                                         <div className="relative">
-                                            <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <Shield className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
                                                 type={showPassword ? "text" : "password"}
-                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-12 outline-none focus:border-primary/50 transition-all font-bold"
+                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-14 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                placeholder="Min. 8 caracteres"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-100"
+                                                className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors"
                                             >
-                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                             </button>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Cargo / Rol en el Sistema</label>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Designación de Rango / Sistema</label>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                         {[
-                                            { id: 'admin', label: 'Admin', icon: ShieldCheck },
-                                            { id: 'cashier', label: 'Cajero', icon: Shield },
-                                            { id: 'waiter', label: 'Mesero', icon: Utensils },
-                                            { id: 'cook', label: 'Cocina', icon: ChefHat },
+                                            { id: 'admin', label: 'Admin', icon: ShieldCheck, color: 'hover:border-primary active:bg-primary/20' },
+                                            { id: 'cashier', label: 'Cajero', icon: Shield, color: 'hover:border-emerald-500 active:bg-emerald-500/20' },
+                                            { id: 'waiter', label: 'Mesero', icon: Utensils, color: 'hover:border-blue-500 active:bg-blue-500/20' },
+                                            { id: 'cook', label: 'Cocina', icon: ChefHat, color: 'hover:border-orange-500 active:bg-orange-500/20' },
                                         ].map((role) => (
                                             <button
                                                 key={role.id}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, role: role.id })}
                                                 className={cn(
-                                                    "flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all gap-2",
+                                                    "flex flex-col items-center justify-center p-5 rounded-[2rem] border-2 transition-all gap-2 shadow-sm",
                                                     formData.role === role.id
-                                                        ? "bg-primary/20 border-primary text-primary"
-                                                        : "bg-white/5 border-white/5 hover:bg-white/10"
+                                                        ? "bg-primary/10 border-primary text-primary"
+                                                        : "bg-muted/50 border-border/50 text-muted-foreground",
+                                                    role.color
                                                 )}
                                             >
-                                                <role.icon className="w-6 h-6" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">{role.label}</span>
+                                                <role.icon className="w-7 h-7" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest italic">{role.label}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-4">
+                            <div className="flex flex-col sm:flex-row gap-4 pt-6">
                                 <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="ghost"
                                     onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }}
-                                    className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                    className="flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
                                 >
                                     CANCELAR
                                 </Button>
                                 <Button
                                     disabled={submitting}
                                     type="submit"
-                                    className="flex-[2] h-14 rounded-2xl bg-primary text-black font-black uppercase tracking-widest shadow-xl shadow-primary/20"
+                                    className="flex-[2] h-16 rounded-2xl bg-foreground text-background font-black uppercase tracking-widest italic hover:bg-primary hover:text-background transition-all border-none text-lg shadow-xl"
                                 >
-                                    {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : isAddModalOpen ? 'CREAR PERFIL' : 'GUARDAR CAMBIOS'}
+                                    {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : isAddModalOpen ? 'OPERATIVIZAR PERFIL' : 'ACTUALIZAR DATOS'}
                                 </Button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+            `}</style>
         </div>
     )
 }

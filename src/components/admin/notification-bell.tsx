@@ -5,8 +5,13 @@ import { useState, useRef, useEffect } from "react"
 import { useAdminNotifications } from "@/lib/supabase/notifications"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
-export function NotificationBell() {
+interface NotificationBellProps {
+    variant?: 'sidebar' | 'header'
+}
+
+export function NotificationBell({ variant = 'sidebar' }: NotificationBellProps) {
     const [isOpen, setIsOpen] = useState(false)
     const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useAdminNotifications()
     const dropdownRef = useRef<HTMLDivElement>(null)
@@ -55,23 +60,38 @@ export function NotificationBell() {
 
     return (
         <div className="relative" ref={dropdownRef}>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all relative group shadow-sm"
-            >
-                <div className="flex items-center gap-3">
-                    <Bell className="w-4 h-4 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] font-black uppercase italic tracking-widest group-hover:text-slate-900">Notificaciones</span>
-                </div>
-                {unreadCount > 0 && (
-                    <span className="flex items-center justify-center bg-rose-500 text-white text-[9px] font-bold rounded-full w-5 h-5 shadow-lg shadow-rose-500/30 animate-pulse">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                )}
-            </button>
+            {variant === 'sidebar' ? (
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300 transition-all relative group shadow-sm"
+                >
+                    <div className="flex items-center gap-3">
+                        <Bell className="w-4 h-4 group-hover:text-primary transition-colors" />
+                        <span className="text-[10px] font-black uppercase italic tracking-widest group-hover:text-slate-900">Notificaciones</span>
+                    </div>
+                    {unreadCount > 0 && (
+                        <span className="flex items-center justify-center bg-rose-500 text-white text-[9px] font-bold rounded-full w-5 h-5 shadow-lg shadow-rose-500/30 animate-pulse">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </button>
+            ) : (
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="p-3 bg-slate-50 border border-slate-200 rounded-2xl relative hover:bg-slate-100 transition-colors"
+                >
+                    <Bell className="w-5 h-5 text-slate-400" />
+                    {unreadCount > 0 && (
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+                    )}
+                </button>
+            )}
 
             {isOpen && (
-                <div className="absolute left-0 bottom-full mb-4 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[200] overflow-hidden max-w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-2 duration-200">
+                <div className={cn(
+                    "absolute w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-[200] overflow-hidden max-w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-2 duration-200",
+                    variant === 'sidebar' ? "left-0 bottom-full mb-4" : "top-full right-0 mt-4 origin-top-right"
+                )}>
                     <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
                         <h3 className="font-bold flex items-center gap-2 truncate text-slate-900">
                             <Bell className="w-5 h-5 text-primary" />
@@ -95,7 +115,7 @@ export function NotificationBell() {
                         )}
                     </div>
 
-                    <div className="max-h-[min(400px,60vh)] overflow-y-auto bg-white">
+                    <div className="max-h-[min(400px,60vh)] overflow-y-auto bg-white custom-scrollbar">
                         {notifications.length === 0 ? (
                             <div className="p-10 text-center text-slate-400">
                                 <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
@@ -155,6 +175,11 @@ export function NotificationBell() {
                     </div>
                 </div>
             )}
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+            `}</style>
         </div>
     )
 }

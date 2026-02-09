@@ -28,6 +28,13 @@ export default function StartShiftPage() {
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
                 const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+
+                // Si es admin o owner, no necesita estar aquí
+                if (['admin', 'owner'].includes(profile?.role || '')) {
+                    router.push('/admin')
+                    return
+                }
+
                 setUser({ ...user, profile })
             }
 
@@ -131,15 +138,15 @@ export default function StartShiftPage() {
         if (n.includes('mañana') || n.includes('día')) return <Sun className="w-12 h-12 text-amber-500" />
         if (n.includes('tarde')) return <Sunset className="w-12 h-12 text-orange-500" />
         if (n.includes('noche')) return <Moon className="w-12 h-12 text-indigo-500" />
-        return <Clock className="w-12 h-12 text-slate-400" />
+        return <Clock className="w-12 h-12 text-muted-foreground" />
     }
 
     const getShiftColor = (name: string) => {
         const n = name.toLowerCase()
-        if (n.includes('mañana')) return "border-amber-200 bg-amber-50/50 hover:border-amber-400 hover:bg-amber-50"
-        if (n.includes('tarde')) return "border-orange-200 bg-orange-50/50 hover:border-orange-400 hover:bg-orange-50"
-        if (n.includes('noche')) return "border-indigo-200 bg-indigo-50/50 hover:border-indigo-400 hover:bg-indigo-50"
-        return "border-slate-200 bg-slate-50/50 hover:border-slate-400 hover:bg-slate-50"
+        if (n.includes('mañana')) return "border-amber-200 bg-amber-500/10 hover:border-amber-400 hover:bg-amber-500/20"
+        if (n.includes('tarde')) return "border-orange-200 bg-orange-500/10 hover:border-orange-400 hover:bg-orange-500/20"
+        if (n.includes('noche')) return "border-indigo-200 bg-indigo-500/10 hover:border-indigo-400 hover:bg-indigo-500/20"
+        return "border-border bg-muted/50 hover:border-muted-foreground hover:bg-muted"
     }
 
     const getMotivationalMessage = () => {
@@ -158,7 +165,7 @@ export default function StartShiftPage() {
 
     if (fetchingShifts) {
         return (
-            <div className="h-screen flex items-center justify-center bg-slate-50">
+            <div className="h-screen flex items-center justify-center bg-muted">
                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
             </div>
         )
@@ -168,11 +175,11 @@ export default function StartShiftPage() {
         const elapsedMs = new Date().getTime() - new Date(activeShift.started_at).getTime()
 
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 pb-20">
+            <div className="min-h-screen bg-muted flex flex-col items-center justify-center p-6 pb-20">
                 <div className="max-w-4xl w-full space-y-8 animate-in zoom-in duration-500">
 
                     {/* Tarjeta Principal de Bienvenida */}
-                    <div className="bg-white rounded-[4rem] p-10 md:p-16 shadow-2xl border border-slate-100 relative overflow-hidden group">
+                    <div className="bg-card rounded-[4rem] p-10 md:p-16 shadow-2xl border border-border relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
@@ -181,10 +188,10 @@ export default function StartShiftPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
+                                <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                                     ¡VAMOS CON <span className="text-primary italic">TODA!</span>
                                 </h1>
-                                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] italic">
+                                <p className="text-muted-foreground font-bold uppercase tracking-[0.2em] text-[10px] italic">
                                     {getMotivationalMessage()}
                                 </p>
                             </div>
@@ -192,18 +199,18 @@ export default function StartShiftPage() {
 
                         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Stats Cards */}
-                            <div className="bg-slate-50 rounded-[2.5rem] p-8 space-y-4 border border-slate-100 hover:scale-105 transition-transform">
-                                <div className="p-3 bg-white w-fit rounded-2xl shadow-sm">
-                                    <Clock className="w-6 h-6 text-slate-900" />
+                            <div className="bg-muted/50 rounded-[2.5rem] p-8 space-y-4 border border-border hover:scale-105 transition-transform">
+                                <div className="p-3 bg-card w-fit rounded-2xl shadow-sm">
+                                    <Clock className="w-6 h-6 text-foreground" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">TIEMPO EN SERVICIO</p>
-                                    <p className="text-2xl font-black text-slate-900 font-mono italic">{elapsedTime || '---'}</p>
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">TIEMPO EN SERVICIO</p>
+                                    <p className="text-2xl font-black text-foreground font-mono italic">{elapsedTime || '---'}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-emerald-50 rounded-[2.5rem] p-8 space-y-4 border border-emerald-100 hover:scale-105 transition-transform">
-                                <div className="p-3 bg-white w-fit rounded-2xl shadow-sm">
+                            <div className="bg-emerald-500/10 rounded-[2.5rem] p-8 space-y-4 border border-emerald-500/20 hover:scale-105 transition-transform">
+                                <div className="p-3 bg-card w-fit rounded-2xl shadow-sm">
                                     <Wallet className="w-6 h-6 text-emerald-600" />
                                 </div>
                                 <div>
@@ -212,56 +219,56 @@ export default function StartShiftPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-900 rounded-[2.5rem] p-8 space-y-4 border border-slate-800 hover:scale-105 transition-transform">
-                                <div className="p-3 bg-white/10 w-fit rounded-2xl shadow-sm">
-                                    <Users className="w-6 h-6 text-white" />
+                            <div className="bg-primary rounded-[2.5rem] p-8 space-y-4 border border-primary/20 hover:scale-105 transition-transform">
+                                <div className="p-3 bg-primary-foreground/10 w-fit rounded-2xl shadow-sm">
+                                    <Users className="w-6 h-6 text-primary-foreground" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic text-left">STATUS DE SALUD</p>
-                                    <p className="text-xs font-bold text-white italic text-left leading-tight mt-1">{getBreakReminder(elapsedMs)}</p>
+                                    <p className="text-[10px] font-black text-primary-foreground/60 uppercase tracking-widest italic text-left">STATUS DE SALUD</p>
+                                    <p className="text-xs font-bold text-primary-foreground italic text-left leading-tight mt-1">{getBreakReminder(elapsedMs)}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-slate-50 rounded-[3rem] border border-slate-100">
+                        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-muted/50 rounded-[3rem] border border-border">
                             <div className="flex items-center gap-6">
                                 <div className="text-left">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">HORA DE ENTRADA</p>
-                                    <p className="text-xl font-black text-slate-900">{new Date(activeShift.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">HORA DE ENTRADA</p>
+                                    <p className="text-xl font-black text-foreground">{new Date(activeShift.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
-                                <div className="w-[1px] h-10 bg-slate-200" />
+                                <div className="w-[1px] h-10 bg-border" />
                                 <div className="text-left">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">TURNO</p>
-                                    <p className="text-xl font-black text-slate-900 uppercase italic">{activeShift.shift_definitions?.name || '---'}</p>
+                                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">TURNO</p>
+                                    <p className="text-xl font-black text-foreground uppercase italic">{activeShift.shift_definitions?.name || '---'}</p>
                                 </div>
                             </div>
 
                             <Button
                                 onClick={() => router.push('/admin/orders')}
-                                className="w-full md:w-auto h-20 px-12 bg-primary text-black rounded-[2rem] font-black uppercase italic tracking-tighter text-lg hover:scale-105 transition-all shadow-2xl shadow-primary/20 flex items-center gap-4"
+                                className="w-full md:w-auto h-20 px-12 bg-primary text-primary-foreground rounded-[2rem] font-black uppercase italic tracking-tighter text-lg hover:scale-105 transition-all shadow-2xl shadow-primary/20 flex items-center gap-4"
                             >
                                 IR A COMANDAS <ArrowRight className="w-6 h-6" />
                             </Button>
                         </div>
                     </div>
 
-                    <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] italic">POWERED BY JAMALI OS • CLOUD EDITION</p>
+                    <p className="text-center text-[10px] font-black text-muted-foreground/30 uppercase tracking-[0.4em] italic">POWERED BY JAMALI OS • CLOUD EDITION</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+        <div className="min-h-screen bg-muted flex flex-col items-center justify-center p-6">
             <div className="max-w-5xl w-full space-y-12 animate-in fade-in zoom-in-95 duration-500">
 
                 {/* Header */}
                 <div className="text-center space-y-4">
-                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-slate-900">
+                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-foreground">
                         ¡Hola, <span className="text-primary">{user?.profile?.full_name?.split(' ')[0] || 'Compañero'}</span>! 👋
                     </h1>
-                    <p className="text-slate-500 text-xl max-w-2xl mx-auto">
-                        Selecciona tu jornada para hoy <span className="font-bold text-slate-900">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                    <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
+                        Selecciona tu jornada para hoy <span className="font-bold text-foreground">{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                     </p>
                 </div>
 
@@ -277,25 +284,25 @@ export default function StartShiftPage() {
                                 className={cn(
                                     "relative group cursor-pointer rounded-[2.5rem] p-8 border-2 transition-all duration-300 transform flex flex-col items-center text-center gap-6",
                                     getShiftColor(shift.name),
-                                    isRecommended ? "ring-4 ring-primary/20 scale-105 shadow-2xl z-10 bg-white" : "opacity-80 hover:opacity-100 bg-white hover:-translate-y-2 shadow-sm hover:shadow-xl"
+                                    isRecommended ? "ring-4 ring-primary/20 scale-105 shadow-2xl z-10 bg-card" : "opacity-80 hover:opacity-100 bg-card hover:-translate-y-2 shadow-sm hover:shadow-xl"
                                 )}
                             >
                                 {isRecommended && (
-                                    <div className="absolute -top-4 bg-primary text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-2 animate-bounce">
+                                    <div className="absolute -top-4 bg-primary text-primary-foreground px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-2 animate-bounce">
                                         <CheckCircle2 className="w-4 h-4" />
                                         Turno Actual
                                     </div>
                                 )}
 
-                                <div className="p-6 bg-white rounded-3xl shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                <div className="p-6 bg-card rounded-3xl shadow-sm group-hover:scale-110 transition-transform duration-300">
                                     {getShiftIcon(shift.name)}
                                 </div>
 
                                 <div className="space-y-1">
-                                    <h3 className="text-2xl font-black uppercase tracking-tight text-slate-900">
+                                    <h3 className="text-2xl font-black uppercase tracking-tight text-foreground">
                                         {shift.name}
                                     </h3>
-                                    <p className="text-lg font-bold text-slate-400 font-mono">
+                                    <p className="text-lg font-bold text-muted-foreground font-mono">
                                         {shift.start_time.slice(0, 5)} - {shift.end_time.slice(0, 5)}
                                     </p>
                                 </div>
@@ -326,8 +333,8 @@ export default function StartShiftPage() {
 
                 {/* Footer Info */}
                 <div className="text-center">
-                    <p className="text-xs text-slate-300 font-black uppercase tracking-[0.3em] max-w-md mx-auto italic">
-                        Al marcar entrada, se registrará tu hora de inicio exacta: <span className="text-slate-500">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <p className="text-xs text-muted-foreground/50 font-black uppercase tracking-[0.3em] max-w-md mx-auto italic">
+                        Al marcar entrada, se registrará tu hora de inicio exacta: <span className="text-muted-foreground">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </p>
                 </div>
 

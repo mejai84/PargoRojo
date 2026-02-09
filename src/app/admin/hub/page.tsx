@@ -12,13 +12,23 @@ import {
     RefreshCcw,
     Activity,
     Clock,
-    Wallet,
     Bell,
-    ChefHat
+    ChefHat,
+    Wallet,
+    Target,
+    BarChart3,
+    ArrowRight,
+    PieChart,
+    ChevronRight,
+    LayoutGrid,
+    Search,
+    User,
+    Shield
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { cn, formatPrice } from "@/lib/utils"
+import { NotificationBell } from "@/components/admin/notification-bell"
 
 export default function PargoHubPage() {
     const [stats, setStats] = useState({
@@ -37,7 +47,6 @@ export default function PargoHubPage() {
     useEffect(() => {
         loadHubData()
 
-        // Realtime updates for live feeling
         const channel = supabase.channel('hub-live')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => loadHubData(true))
             .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, () => loadHubData(true))
@@ -54,7 +63,6 @@ export default function PargoHubPage() {
             const today = new Date()
             today.setHours(0, 0, 0, 0)
 
-            // 1. Fetch Today's Orders
             const { data: orders } = await supabase
                 .from('orders')
                 .select('total, created_at, status')
@@ -64,20 +72,17 @@ export default function PargoHubPage() {
             const totalOrders = orders?.length || 0
             const avg = totalOrders > 0 ? totalRev / totalOrders : 0
 
-            // 2. Fetch Active Tables
             const { count: activeCount } = await supabase
                 .from('tables')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'occupied')
 
-            // 3. Fetch Recent Sales
             const { data: recent } = await supabase
                 .from('orders')
                 .select('id, total, created_at, guest_info')
                 .order('created_at', { ascending: false })
                 .limit(5)
 
-            // 4. Check Cashbox
             const { data: cashbox } = await supabase
                 .from('cashboxes')
                 .select('status')
@@ -93,7 +98,6 @@ export default function PargoHubPage() {
             })
             setRecentSales(recent || [])
 
-            // 5. Calculate Peak Hours (Last 30 days for better average)
             const thirtyDaysAgo = new Date()
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
             const { data: peakData } = await supabase
@@ -116,7 +120,6 @@ export default function PargoHubPage() {
 
             setPeakHours(peakArray)
 
-            // 6. Load Brand Personalization
             const { data: brand } = await supabase
                 .from('settings')
                 .select('value')
@@ -139,213 +142,312 @@ export default function PargoHubPage() {
     }
 
     if (loading) return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 gap-4">
-            <Zap className="w-12 h-12 text-primary animate-pulse" />
-            <p className="font-black italic uppercase text-[10px] tracking-[0.4em] text-slate-500">Sincronizando Pargo Hub...</p>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 gap-6">
+            <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                <Zap className="w-16 h-16 text-primary animate-pulse relative z-10" />
+            </div>
+            <p className="font-black italic uppercase text-[10px] tracking-[0.4em] text-primary animate-pulse">Sincronizando Live Node...</p>
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-primary pb-20 overflow-x-hidden">
-            {/* 🌌 ATMOSPHERIC BACKGROUND */}
-            <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-            <div className="fixed -top-24 -right-24 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary pb-28 overflow-x-hidden relative">
 
-            {/* 📱 MOBILE HEADER */}
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            {/* 🌌 ATMOSPHERIC AMBIANCE */}
+            <div className="fixed top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
+            <div className="fixed -top-40 -right-40 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-50 z-0 animate-pulse" />
+            <div className="fixed -bottom-40 -left-40 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none opacity-30 z-0" />
+
+            {/* 🔝 MOBILE-CENTRIC COMMAND HEADER */}
+            <header className="sticky top-0 z-[100] bg-background/80 backdrop-blur-2xl border-b border-border p-6 flex items-center justify-between">
+                <div className="flex items-center gap-5">
                     <Link href="/admin">
-                        <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-200">
-                            <ArrowLeft className="w-5 h-5 text-slate-900" />
+                        <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-card border border-border hover:bg-muted transition-all active:scale-90 shadow-lg group">
+                            <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                         </Button>
                     </Link>
-                    <div className="flex items-center gap-3">
-                        {businessInfo.logo ? (
-                            <img src={businessInfo.logo} alt="Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-200" />
-                        ) : (
-                            <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
-                                <Zap className="w-5 h-5 text-primary" />
-                            </div>
-                        )}
-                        <div>
-                            <h1 className="text-xl font-black tracking-tighter uppercase italic leading-none text-slate-900">{businessInfo.name}</h1>
-                            <div className="flex items-center gap-1.5 mt-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">Live Dashboard</span>
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            {businessInfo.logo ? (
+                                <img src={businessInfo.logo} alt="Logo" className="w-12 h-12 rounded-2xl object-cover border-2 border-primary/20 shadow-2xl" />
+                            ) : (
+                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border-2 border-primary/20 shadow-2xl">
+                                    <Zap className="w-6 h-6 text-primary drop-shadow-[0_0_8px_rgba(255,77,0,0.5)]" />
+                                </div>
+                            )}
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                        </div>
+                        <div className="space-y-0.5">
+                            <h1 className="text-xl font-black tracking-tighter uppercase italic leading-none border-b border-primary/20 pb-0.5">{businessInfo.name}</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500 italic">Core Live Engine</span>
+                                <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">• Hub v5.0</span>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={() => loadHubData(true)}
-                        className={cn("p-3 bg-slate-50 border border-slate-200 rounded-2xl transition-all active:scale-90 text-slate-600", refreshing && "animate-spin text-primary")}
+                        className={cn("h-14 w-14 bg-card border border-border rounded-2xl flex items-center justify-center transition-all active:scale-90 text-muted-foreground hover:text-primary hover:border-primary/20 shadow-xl overflow-hidden relative group", refreshing && "animate-spin text-primary")}
                     >
-                        <RefreshCcw className="w-5 h-5" />
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <RefreshCcw className="w-6 h-6 relative z-10" />
                     </button>
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl relative">
-                        <Bell className="w-5 h-5 text-slate-400" />
-                        <div className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
-                    </div>
+                    <NotificationBell variant="header" />
                 </div>
             </header>
 
-            <main className="relative z-10 p-6 space-y-8 max-w-lg mx-auto">
+            <main className="relative z-10 px-6 pt-10 space-y-12 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
 
-                {/* 💰 MAIN KPI: REVENUE */}
-                <div className="bg-white border border-slate-200 rounded-[3rem] p-10 shadow-sm relative overflow-hidden group">
-                    <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-110 transition-transform duration-1000">
-                        <DollarSign className="w-48 h-48 text-primary" />
+                {/* 💰 PRIMARY REVENUE CORE */}
+                <div className="bg-card border-4 border-primary/10 rounded-[4rem] p-12 shadow-[0_30px_100px_rgba(0,0,0,0.1)] relative overflow-hidden group/rev">
+                    <div className="absolute -top-12 -right-12 opacity-5 group-hover/rev:scale-110 group-hover/rev:rotate-12 transition-all duration-1000">
+                        <DollarSign className="w-64 h-64 text-primary" />
                     </div>
-                    <div className="relative z-10 text-center">
-                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4 italic">Ventas de Hoy</p>
-                        <h2 className="text-6xl font-black tracking-tighter italic leading-none text-slate-900">{formatPrice(stats.revenue)}</h2>
-                        <div className="mt-8 pt-8 border-t border-slate-100 flex justify-center gap-8">
-                            <div className="text-center">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Ticket Prom.</p>
-                                <p className="text-xl font-black italic tracking-tighter text-slate-900">{formatPrice(stats.avgTicket)}</p>
+
+                    <div className="relative z-10 text-center space-y-8">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-primary uppercase tracking-[0.5em] italic leading-none">Ventas en Tiempo Real</p>
+                            <p className="text-[8px] font-bold text-muted-foreground/30 uppercase tracking-widest">Sincronizado con Master Ledger</p>
+                        </div>
+
+                        <div className="relative inline-block">
+                            <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-full scale-150 animate-pulse opacity-0 group-hover/rev:opacity-100 transition-opacity" />
+                            <h2 className="text-7xl font-black tracking-tighter italic leading-none text-foreground drop-shadow-sm whitespace-nowrap">{formatPrice(stats.revenue)}</h2>
+                        </div>
+
+                        <div className="pt-10 border-t border-border/50 flex justify-center gap-12 items-center">
+                            <div className="text-center space-y-1 text-card-foreground">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] italic opacity-60">Avg. Ticket</p>
+                                <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{formatPrice(stats.avgTicket)}</p>
                             </div>
-                            <div className="w-px h-10 bg-slate-100 self-center" />
-                            <div className="text-center">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Ventas Totales</p>
-                                <p className="text-xl font-black italic tracking-tighter text-slate-900">{stats.orders}</p>
+                            <div className="w-px h-14 bg-gradient-to-b from-transparent via-border to-transparent" />
+                            <div className="text-center space-y-1">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] italic opacity-60">Payload Orders</p>
+                                <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats.orders}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 🔥 PEAK DEMAND ANALYTICS */}
-                <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                {/* 🔥 ANALYTIC PEAK RADAR */}
+                <div className="bg-card border border-border rounded-[3.5rem] p-10 space-y-10 shadow-2xl relative overflow-hidden group/peak">
                     <div className="flex justify-between items-center">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic flex items-center gap-2">
-                            <TrendingUp className="w-3 h-3 text-orange-500" /> Picos de Demanda
-                        </h3>
-                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg">Tendencia 30d</span>
+                        <div className="space-y-1">
+                            <h3 className="text-xs font-black text-foreground uppercase tracking-[0.4em] italic flex items-center gap-3">
+                                <TrendingUp className="w-4 h-4 text-primary animate-bounce-slow" /> Radar de Afluencia
+                            </h3>
+                            <p className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest pl-7">PROYECCIÓN ÚLTIMOS 30 DÍAS</p>
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full">
+                            <Activity className="w-3 h-3 text-emerald-500" />
+                            <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.1em] italic">Optimizando Staff</span>
+                        </div>
                     </div>
 
-                    <div className="h-24 flex items-end gap-1.5 px-2">
+                    <div className="h-32 flex items-end gap-2 px-2 relative min-h-[140px]">
                         {peakHours.map((p, i) => (
-                            <div key={i} className="flex-1 group relative flex flex-col items-center">
-                                <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 bg-slate-900 border border-slate-800 p-2 rounded-lg text-[8px] font-black text-white whitespace-nowrap z-50 transition-opacity">
-                                    {p.hour}:00 - {p.count} Pedidos
+                            <div key={i} className="flex-1 group/bar relative flex flex-col items-center h-full justify-end">
+                                <div className="opacity-0 group-hover/bar:opacity-100 absolute bottom-[110%] mb-2 bg-foreground text-background p-3 rounded-2xl text-[9px] font-black whitespace-nowrap z-50 transition-all scale-75 group-hover/bar:scale-100 shadow-2xl border border-white/10 italic">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-primary">{p.hour}:00 HRS</span>
+                                        <span>{p.count} TRANSACCIONES</span>
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-foreground rotate-45 -mt-1" />
                                 </div>
                                 <div
                                     className={cn(
-                                        "w-full rounded-t-md transition-all duration-700",
-                                        p.intensity > 80 ? "bg-orange-600 shadow-[0_0_10px_rgba(234,88,12,0.3)]" :
-                                            p.intensity > 40 ? "bg-primary/80" : "bg-slate-200"
+                                        "w-full rounded-2xl transition-all duration-1000 relative overflow-hidden",
+                                        p.intensity > 80 ? "bg-primary shadow-[0_0_20px_rgba(255,77,0,0.4)]" :
+                                            p.intensity > 40 ? "bg-primary/40 border border-primary/20" : "bg-muted/50 border border-border/30"
                                     )}
-                                    style={{ height: `${Math.max(15, p.intensity)}%` }}
-                                />
-                                <span className="text-[6px] font-black text-slate-400 mt-2">{p.hour}h</span>
+                                    style={{ height: `${Math.max(12, p.intensity)}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                </div>
+                                <span className="text-[7px] font-black text-muted-foreground/30 mt-3 group-hover/bar:text-primary transition-colors">{p.hour}h</span>
                             </div>
                         ))}
-                        {peakHours.length === 0 && <p className="w-full text-center text-[8px] font-black text-slate-400 uppercase italic py-8">Calculando datos de afluencia...</p>}
+                        {peakHours.length === 0 && (
+                            <div className="w-full flex flex-col items-center justify-center py-12 space-y-4 opacity-10">
+                                <BarChart3 className="w-12 h-12" />
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] italic">Calculando Red Neuronal de Demanda...</p>
+                            </div>
+                        )}
                     </div>
-                    <p className="text-[9px] text-slate-500 font-medium italic text-center">
-                        {peakHours.length > 0 ? `Tus horas de mayor tráfico son entre las ${peakArrayMax(peakHours)}h. Planifica refuerzos en staff.` : "Necesitamos más datos de ventas para proyectar picos."}
-                    </p>
+
+                    <div className="bg-muted/30 p-6 rounded-3xl border border-border/50 text-center relative overflow-hidden">
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1/2 bg-primary rounded-r-full" />
+                        <p className="text-[10px] text-foreground font-black italic uppercase tracking-tight leading-relaxed">
+                            {peakHours.length > 0 ? (
+                                <>PUNTO MÁXIMO DE CARGA DETECTADO ENTRE <span className="text-primary underline decoration-primary/30 underline-offset-4">{peakArrayMax(peakHours)}H</span>. RECOMIENDA REFUERZO DE OPERATIVOS.</>
+                            ) : "INTEGRANDO DATOS DE AFLUENCIA PARA DETERMINAR CICLOS DE ALTO IMPACTO."}
+                        </p>
+                    </div>
                 </div>
 
-                {/* ⚡ GRID FEED: RAPID STATS */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 space-y-4 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                            <Activity className="w-5 h-5" />
+                {/* ⚡ GRID FEED: RAPID ANALYTICS */}
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-card border border-border rounded-[3rem] p-8 space-y-6 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -bottom-6 -right-6 opacity-5 group-hover:scale-110 transition-transform">
+                            <Activity className="w-24 h-24 text-emerald-500" />
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shadow-inner group-hover:bg-emerald-500 group-hover:text-background transition-all duration-500">
+                            <Activity className="w-7 h-7" />
                         </div>
                         <div>
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Ocupación</p>
-                            <p className="text-2xl font-black italic tracking-tighter text-slate-900">{stats.activeTables} <span className="text-[10px] text-slate-500">Mesas</span></p>
+                            <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-[0.3em] italic mb-1">Ocupación Live</p>
+                            <p className="text-4xl font-black italic tracking-tighter text-foreground leading-none group-hover:text-emerald-500 transition-colors">{stats.activeTables} <span className="text-[11px] text-muted-foreground/30 uppercase tracking-widest ml-1">Nodes</span></p>
                         </div>
                     </div>
-                    <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 space-y-4 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                            <Wallet className="w-5 h-5" />
+
+                    <div className="bg-card border border-border rounded-[3rem] p-8 space-y-6 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -bottom-6 -right-6 opacity-5 group-hover:scale-110 transition-transform">
+                            <Wallet className="w-24 h-24 text-primary" />
+                        </div>
+                        <div className={cn(
+                            "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500",
+                            stats.cashboxStatus === 'OPEN' ? "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white" : "bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white"
+                        )}>
+                            <Wallet className="w-7 h-7" />
                         </div>
                         <div>
-                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Estado Caja</p>
+                            <p className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-[0.3em] italic mb-1">Status Cashbox</p>
                             <p className={cn(
-                                "text-sm font-black italic tracking-tighter uppercase",
+                                "text-lg font-black italic tracking-[0.1em] uppercase leading-none flex items-center gap-2",
                                 stats.cashboxStatus === 'OPEN' ? "text-emerald-500" : "text-rose-500"
                             )}>
-                                {stats.cashboxStatus === 'OPEN' ? '🟢 ABIERTA' : '🔴 CERRADA'}
+                                <span className="w-2 h-2 rounded-full bg-current animate-pulse shadow-sm" />
+                                {stats.cashboxStatus === 'OPEN' ? 'ABIERTA' : 'OFFLINE'}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* 🕒 REALTIME ACTIVITY LOG */}
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic flex items-center gap-2">
-                            <Clock className="w-3 h-3 text-primary" /> Actividad Reciente
-                        </h3>
-                        <span className="text-[8px] font-black text-primary uppercase italic">Ver todo</span>
+                {/* 🕒 REALTIME TRANSACIONAL LOG */}
+                <div className="space-y-8">
+                    <div className="flex items-center justify-between px-6">
+                        <div className="space-y-0.5">
+                            <h3 className="text-[11px] font-black text-foreground uppercase tracking-[0.5em] italic flex items-center gap-3">
+                                <Clock className="w-4 h-4 text-primary" /> Stream de Ventas
+                            </h3>
+                            <p className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest pl-7">HISTORIAL DE IMPACTO INMEDIATO</p>
+                        </div>
+                        <Link href="/admin/orders">
+                            <Button variant="ghost" className="h-10 px-4 text-[9px] font-black text-primary uppercase italic hover:bg-primary/10 transition-all gap-2 group">
+                                ANALIZAR STREAM <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </Button>
+                        </Link>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {recentSales.map((sale) => (
-                            <div key={sale.id} className="bg-white border border-slate-200 rounded-[2rem] p-5 flex items-center justify-between group active:scale-[0.98] transition-all shadow-sm">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-primary text-[10px] italic">
-                                        #{sale.id.split('-')[0].toUpperCase()}
+                            <div key={sale.id} className="bg-card border border-border rounded-[2.5rem] p-8 flex items-center justify-between group active:scale-[0.97] transition-all shadow-xl hover:border-primary/20 relative overflow-hidden">
+                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/20 group-hover:bg-primary transition-colors" />
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-muted border border-border flex flex-col items-center justify-center shadow-inner group-hover:border-primary/20 transition-all">
+                                        <span className="text-[7px] font-black text-muted-foreground/30 uppercase italic">ID-HEX</span>
+                                        <span className="text-[11px] font-black text-primary italic leading-none">#{sale.id.split('-')[0].toUpperCase().slice(0, 5)}</span>
                                     </div>
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase italic tracking-tighter text-slate-900">{sale.guest_info?.name || 'Venta Rápida'}</p>
-                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                            {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                    <div className="space-y-2">
+                                        <p className="text-xl font-black italic uppercase tracking-tighter text-foreground group-hover:text-primary transition-colors leading-none">{sale.guest_info?.name || 'VENTA RÁPIDA'}</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                                            <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] italic">
+                                                Detección: {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xl font-black italic tracking-tighter text-emerald-600">{formatPrice(sale.total)}</p>
-                                    <div className="flex items-center justify-end gap-1 mt-0.5">
-                                        <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                        <span className="text-[7px] font-black uppercase text-emerald-600 opacity-60">Success</span>
-                                    </div>
+                                <div className="text-right space-y-1">
+                                    <p className="text-3xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-all leading-none">{formatPrice(sale.total)}</p>
+                                    <span className="text-[8px] font-black uppercase text-emerald-500 italic px-2 py-0.5 bg-emerald-500/10 rounded-lg">VERIFIED</span>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* 🚀 QUICK ACTIONS FOR OWNER */}
-                <div className="bg-primary text-black rounded-[2.5rem] p-8 shadow-sm flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center text-primary">
-                            <ChefHat className="w-6 h-6" />
+                {/* 🚀 QUICK OPS HUB */}
+                <div className="bg-foreground text-background rounded-[4rem] p-10 shadow-3xl flex items-center justify-between relative overflow-hidden group/ops animate-pulse-slow">
+                    <div className="absolute inset-x-0 bottom-0 h-1.5 bg-primary" />
+                    <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none -mr-10 -mt-10 group-hover/ops:scale-110 transition-transform duration-1000">
+                        <ChefHat className="w-48 h-48" />
+                    </div>
+
+                    <div className="flex items-center gap-8 relative z-10">
+                        <div className="w-18 h-18 rounded-[1.5rem] bg-background border border-white/10 flex items-center justify-center text-primary shadow-2xl group-hover/ops:rotate-12 transition-all">
+                            <ChefHat className="w-9 h-9" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1 italic">Sincronización</p>
-                            <h4 className="text-xl font-black italic tracking-tighter uppercase leading-none">Kitchen Ready</h4>
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic leading-none animate-pulse">Ops Core Ready</p>
+                            <h4 className="text-2xl font-black italic tracking-tighter uppercase leading-none">Control Cocina</h4>
                         </div>
                     </div>
-                    <Button variant="ghost" className="h-12 w-12 rounded-2xl bg-black text-white p-0 flex items-center justify-center hover:bg-black/80">
-                        <Users className="w-5 h-5" />
-                    </Button>
+                    <Link href="/admin/kitchen">
+                        <Button className="h-16 w-16 rounded-[1.5rem] bg-primary text-primary-foreground hover:bg-white hover:text-black transition-all shadow-3xl active:scale-90 border-none group/action">
+                            <ChevronRight className="w-8 h-8 group-hover/action:translate-x-1 transition-transform" />
+                        </Button>
+                    </Link>
                 </div>
 
             </main>
 
-            {/* 📍 BOTTOM NAV (OPTIONAL FOR APP FEEL) */}
-            <nav className="fixed bottom-0 left-0 w-full h-20 bg-white/90 backdrop-blur-xl border-t border-slate-200 flex items-center justify-around px-6 z-50">
-                <div className="flex flex-col items-center gap-1 text-primary">
-                    <Zap className="w-6 h-6" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.2em] italic">Overview</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-900 transition-colors">
-                    <ShoppingBag className="w-6 h-6" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.2em] italic">Ventas</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-900 transition-colors">
-                    <Activity className="w-6 h-6" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.2em] italic">Staff</span>
-                </div>
-                <div className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-900 transition-colors">
-                    <TrendingUp className="w-6 h-6" />
-                    <span className="text-[7px] font-black uppercase tracking-[0.2em] italic">Analytics</span>
-                </div>
+            {/* 📍 GLOBAL COMMAND BAR */}
+            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-lg h-24 bg-card/80 backdrop-blur-3xl border-2 border-border/50 rounded-[3rem] flex items-center justify-around px-8 z-[100] shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                <Link href="/admin/hub">
+                    <div className="flex flex-col items-center gap-1.5 text-primary group cursor-pointer active:scale-90 transition-all border-t-4 border-primary pt-3 -mt-3">
+                        <Zap className="w-7 h-7 drop-shadow-[0_0_8px_rgba(255,77,0,0.3)]" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] italic">HUB</span>
+                    </div>
+                </Link>
+                <Link href="/admin/orders">
+                    <div className="flex flex-col items-center gap-1.5 text-muted-foreground/40 hover:text-primary group cursor-pointer active:scale-90 transition-all pt-3 -mt-3">
+                        <ShoppingBag className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] italic">Ventas</span>
+                    </div>
+                </Link>
+                <Link href="/admin/employees">
+                    <div className="flex flex-col items-center gap-1.5 text-muted-foreground/40 hover:text-primary group cursor-pointer active:scale-90 transition-all pt-3 -mt-3">
+                        <Activity className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] italic">Staff</span>
+                    </div>
+                </Link>
+                <Link href="/admin/reports">
+                    <div className="flex flex-col items-center gap-1.5 text-muted-foreground/40 hover:text-primary group cursor-pointer active:scale-90 transition-all pt-3 -mt-3">
+                        <TrendingUp className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] italic">Stats</span>
+                    </div>
+                </Link>
+                <Link href="/admin/settings">
+                    <div className="flex flex-col items-center gap-1.5 text-muted-foreground/40 hover:text-primary group cursor-pointer active:scale-90 transition-all pt-3 -mt-3">
+                        <Shield className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] italic">Core</span>
+                    </div>
+                </Link>
             </nav>
+
+            <style jsx global>{`
+                @keyframes bounce-slow {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                }
+                .animate-bounce-slow {
+                    animation: bounce-slow 2s ease-in-out infinite;
+                }
+                @keyframes pulse-slow {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.95; }
+                }
+                .animate-pulse-slow {
+                    animation: pulse-slow 4s ease-in-out infinite;
+                }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 20px; }
+            `}</style>
         </div>
     )
 }
@@ -353,5 +455,5 @@ export default function PargoHubPage() {
 function peakArrayMax(peaks: any[]) {
     if (peaks.length === 0) return ""
     const max = [...peaks].sort((a, b) => b.count - a.count)[0]
-    return `${max.hour}:00 y ${max.hour + 1}:00`
+    return `${max.hour}:00 Y ${max.hour + 1}:00`
 }

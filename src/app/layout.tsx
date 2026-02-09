@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="es" className="light" suppressHydrationWarning>
-            <body className={`${outfit.className} bg-white text-gray-900 antialiased`}>
+            <body className={`${outfit.className} bg-background text-foreground antialiased`}>
                 <RestaurantProvider>
                     <CartProvider>
                         <div className="flex flex-col min-h-screen">

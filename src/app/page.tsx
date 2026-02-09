@@ -141,7 +141,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white selection:bg-primary selection:text-black">
+    <div className="min-h-screen bg-background selection:bg-primary selection:text-black">
       <Navbar />
 
       {/* 🎥 CINEMATIC HERO SECTION */}
@@ -193,7 +193,7 @@ export default function Home() {
       </section>
 
       {/* ✨ THE ESSENCE SECTION (Features) */}
-      <section className="py-32 bg-white relative overflow-hidden">
+      <section className="py-32 bg-background relative overflow-hidden">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-16">
             {config.essence.map((item: any, i: number) => {
@@ -260,7 +260,7 @@ export default function Home() {
       </section>
 
       {/* 🍽️ SIGNATURE DISHES (Featured) */}
-      <section className="py-32 bg-slate-50">
+      <section className="py-32 bg-muted">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8 text-center md:text-left">
             <div className="space-y-4">
@@ -292,7 +292,7 @@ export default function Home() {
       </section>
 
       {/* 📍 PREMIUM LOCATION SECTION */}
-      <section className="py-32 bg-white relative overflow-hidden">
+      <section className="py-32 bg-background relative overflow-hidden">
         <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
           <div className="order-2 lg:order-1 h-[600px] w-full rounded-[3.5rem] overflow-hidden border border-slate-200 shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative group">
             <iframe

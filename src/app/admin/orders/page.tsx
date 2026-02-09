@@ -102,7 +102,6 @@ function OrdersContent() {
     const fetchOrders = async () => {
         setLoading(true)
         try {
-            // Simplified query without problematic foreign key reference
             const { data, error } = await supabase
                 .from('orders')
                 .select(`
@@ -118,7 +117,6 @@ function OrdersContent() {
 
             if (error) {
                 console.error('Error fetching orders:', error)
-                // Try even simpler query as fallback
                 const { data: simpleData } = await supabase
                     .from('orders')
                     .select('*')
@@ -164,7 +162,6 @@ function OrdersContent() {
         return () => clearInterval(interval)
     }, [restaurant])
 
-    // Effect for auto-selecting order from URL
     useEffect(() => {
         if (orderIdFromUrl && orders.length > 0) {
             const ord = orders.find(o => o.id === orderIdFromUrl)
@@ -178,7 +175,7 @@ function OrdersContent() {
         try {
             const total = newOrderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
             const orderData = {
-                restaurant_id: restaurant?.id, // ✅ Multi-tenancy
+                restaurant_id: restaurant?.id,
                 status: 'pending',
                 order_type: 'pickup',
                 total: total,
@@ -231,27 +228,27 @@ function OrdersContent() {
     const completedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status))
 
     return (
-        <div className="min-h-screen bg-transparent text-slate-900 p-4 md:p-8 font-sans selection:bg-primary">
+        <div className="min-h-screen bg-transparent text-foreground p-4 md:p-8 font-sans selection:bg-primary selection:text-primary-foreground">
 
             {/* 👑 ENTERPRISE ORDERS HEADER */}
             <div className="max-w-[1600px] mx-auto mb-12 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 animate-in fade-in duration-700">
                 <div>
                     <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none">Control de <span className="text-primary">Pedidos</span></h1>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
+                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mt-3 italic flex items-center gap-2">
                         <ShoppingBag className="w-3 h-3 text-primary" /> Auditoría de comanda y despacho
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <Button onClick={() => setIsCreateOpen(true)} className="h-14 px-8 bg-primary text-black rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-white transition-all shadow-xl shadow-primary/20 gap-3">
+                    <Button onClick={() => setIsCreateOpen(true)} className="h-14 px-8 bg-primary text-primary-foreground rounded-2xl font-black uppercase text-[10px] tracking-widest italic hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 gap-3">
                         <Plus className="w-5 h-5" /> NUEVO PEDIDO
                     </Button>
                     <Link href="/admin/kitchen">
-                        <Button variant="ghost" className="h-14 px-6 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[10px] tracking-widest italic hover:bg-white hover:text-black transition-all gap-3">
+                        <Button variant="ghost" className="h-14 px-6 rounded-2xl bg-card border border-border font-black uppercase text-[10px] tracking-widest italic hover:bg-muted transition-all gap-3 text-foreground">
                             <ChefHat className="w-5 h-5" /> COCINA
                         </Button>
                     </Link>
-                    <Button onClick={fetchOrders} variant="ghost" className={cn("h-14 w-14 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-all", loading && "animate-spin")}>
+                    <Button onClick={fetchOrders} variant="ghost" className={cn("h-14 w-14 rounded-2xl bg-card border border-border hover:bg-muted transition-all text-foreground", loading && "animate-spin")}>
                         <RefreshCcw className="w-5 h-5" />
                     </Button>
                 </div>
@@ -264,14 +261,14 @@ function OrdersContent() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-3 px-2">
                         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                        <h2 className="text-[10px] font-black text-gray-500 tracking-[0.3em] uppercase italic">Producción Activa ({activeProcessing.length})</h2>
+                        <h2 className="text-[10px] font-black text-muted-foreground tracking-[0.3em] uppercase italic">Producción Activa ({activeProcessing.length})</h2>
                     </div>
                     <div className="space-y-4">
                         {activeProcessing.map(order => (
                             <OrderCard key={order.id} order={order} onView={() => setSelectedOrder(order)} />
                         ))}
                         {activeProcessing.length === 0 && (
-                            <div className="h-40 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex items-center justify-center text-slate-300 font-black italic uppercase text-[10px] tracking-widest">
+                            <div className="h-40 border-2 border-dashed border-border rounded-[2.5rem] flex items-center justify-center text-muted-foreground/50 font-black italic uppercase text-[10px] tracking-widest">
                                 COMANDAS AL DÍA
                             </div>
                         )}
@@ -297,7 +294,7 @@ function OrdersContent() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-3 px-2 opacity-40">
                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <h2 className="text-[10px] font-black text-gray-500 tracking-[0.3em] uppercase italic">DESPACHADOS RECIENTES ({completedOrders.length})</h2>
+                        <h2 className="text-[10px] font-black text-muted-foreground tracking-[0.3em] uppercase italic">DESPACHADOS RECIENTES ({completedOrders.length})</h2>
                     </div>
                     <div className="space-y-4 opacity-40 hover:opacity-100 transition-opacity">
                         {completedOrders.slice(0, 10).map(order => (
@@ -309,23 +306,24 @@ function OrdersContent() {
 
             {/* 🛠️ MODAL NUEVO PEDIDO + LOYALTY LINKING */}
             {isCreateOpen && (
-                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-7xl h-full md:h-[90vh] md:rounded-[4rem] border border-slate-200 shadow-2xl flex flex-col overflow-hidden relative">
-                        <div className="p-8 md:p-12 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsCreateOpen(false)} />
+                    <div className="bg-card w-full max-w-7xl h-full md:h-[90vh] md:rounded-[4rem] border border-border shadow-2xl flex flex-col overflow-hidden relative z-10">
+                        <div className="p-8 md:p-12 border-b border-border flex justify-between items-center bg-muted/50">
                             <div>
-                                <h2 className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Ingreso de <span className="text-primary">Comanda Industrial</span></h2>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">{currentUser?.full_name} @ Terminal POS-01</p>
+                                <h2 className="text-4xl font-black italic uppercase tracking-tighter text-foreground">Ingreso de <span className="text-primary">Comanda Industrial</span></h2>
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mt-2">{currentUser?.full_name} @ Terminal POS-01</p>
                             </div>
-                            <Button onClick={() => setIsCreateOpen(false)} variant="ghost" className="h-16 w-16 rounded-[2rem] bg-white border border-slate-200 hover:bg-slate-100 text-slate-400 hover:text-slate-900"><X className="w-8 h-8" /></Button>
+                            <Button onClick={() => setIsCreateOpen(false)} variant="ghost" className="h-16 w-16 rounded-[2rem] bg-card border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"><X className="w-8 h-8" /></Button>
                         </div>
 
                         <div className="flex-1 grid lg:grid-cols-12 overflow-hidden">
                             {/* Prods Selector */}
-                            <div className="lg:col-span-8 p-10 bg-white overflow-y-auto custom-scrollbar">
+                            <div className="lg:col-span-8 p-10 bg-card overflow-y-auto custom-scrollbar">
                                 <div className="relative mb-10 group">
-                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-primary transition-all" />
+                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-all" />
                                     <input
-                                        className="w-full h-18 bg-slate-50 border border-slate-200 rounded-[2rem] pl-16 pr-6 outline-none focus:border-primary/50 text-xl font-black italic text-slate-900 placeholder:text-slate-300 transition-all font-mono"
+                                        className="w-full h-18 bg-muted/50 border border-border rounded-[2rem] pl-16 pr-6 outline-none focus:border-primary/50 text-xl font-black italic text-foreground placeholder:text-muted-foreground/50 transition-all font-mono"
                                         placeholder="BUSCAR SKU..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
@@ -337,8 +335,8 @@ function OrdersContent() {
                                             const exist = newOrderItems.find(i => i.id === p.id)
                                             if (exist) setNewOrderItems(prev => prev.map(i => i.id === p.id ? { ...i, quantity: i.quantity + 1 } : i))
                                             else setNewOrderItems(prev => [...prev, { ...p, quantity: 1 }])
-                                        }} className="p-5 rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-primary transition-all text-left flex flex-col group active:scale-95 shadow-sm">
-                                            <span className="font-black italic uppercase text-sm text-slate-400 group-hover:text-slate-900 transition-colors">{p.name}</span>
+                                        }} className="p-5 rounded-[2rem] bg-muted/30 border border-border hover:border-primary transition-all text-left flex flex-col group active:scale-95 shadow-sm">
+                                            <span className="font-black italic uppercase text-sm text-muted-foreground group-hover:text-foreground transition-colors">{p.name}</span>
                                             <span className="text-primary font-black text-xl italic mt-1">${p.price.toLocaleString()}</span>
                                         </button>
                                     ))}
@@ -346,48 +344,48 @@ function OrdersContent() {
                             </div>
 
                             {/* Resumen & Logic */}
-                            <div className="lg:col-span-4 bg-white border-l border-slate-100 flex flex-col overflow-hidden">
+                            <div className="lg:col-span-4 bg-card border-l border-border flex flex-col overflow-hidden">
                                 <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
 
                                     {/* 🧪 LOYALTY ENGINE LINKING */}
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic flex items-center gap-2"> <Star className="w-3 h-3 text-primary" /> Fidelización Elite</h3>
-                                            {selectedCustomerId && <button onClick={() => setSelectedCustomerId(null)} className="text-[8px] font-bold text-rose-500 uppercase">Eliminar</button>}
+                                            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic flex items-center gap-2"> <Star className="w-3 h-3 text-primary" /> Fidelización Elite</h3>
+                                            {selectedCustomerId && <button onClick={() => setSelectedCustomerId(null)} className="text-[8px] font-bold text-rose-500 uppercase hover:underline">Eliminar</button>}
                                         </div>
 
                                         {!selectedCustomerId ? (
                                             <div className="relative">
                                                 <input
-                                                    className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-6 outline-none text-xs font-bold text-slate-900 mb-2"
+                                                    className="w-full h-14 bg-muted border border-border rounded-2xl px-6 outline-none text-xs font-bold text-foreground mb-2 placeholder:text-muted-foreground/50"
                                                     placeholder="BUSCAR CLIENTE POR CELULAR O NOMBRE..."
                                                     value={customerSearch}
                                                     onChange={e => setCustomerSearch(e.target.value)}
                                                 />
                                                 {customerSearch && (
-                                                    <div className="absolute top-16 left-0 right-0 bg-white border border-slate-200 rounded-2xl p-2 z-50 shadow-3xl max-h-40 overflow-y-auto">
+                                                    <div className="absolute top-16 left-0 right-0 bg-card border border-border rounded-2xl p-2 z-50 shadow-3xl max-h-40 overflow-y-auto">
                                                         {allCustomers.filter(c => c.full_name?.toLowerCase().includes(customerSearch.toLowerCase()) || c.phone?.includes(customerSearch)).map(c => (
-                                                            <button key={c.id} onClick={() => selectCustomer(c)} className="w-full p-3 text-left hover:bg-slate-50 rounded-xl flex justify-between items-center transition-all group">
+                                                            <button key={c.id} onClick={() => selectCustomer(c)} className="w-full p-3 text-left hover:bg-muted rounded-xl flex justify-between items-center transition-all group">
                                                                 <div>
-                                                                    <p className="text-xs font-black uppercase italic text-slate-400 group-hover:text-slate-900">{c.full_name}</p>
-                                                                    <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
+                                                                    <p className="text-xs font-black uppercase italic text-muted-foreground group-hover:text-foreground transition-colors">{c.full_name}</p>
+                                                                    <p className="text-[8px] font-bold text-muted-foreground/60">{c.phone}</p>
                                                                 </div>
                                                                 <span className="text-primary font-black italic text-[10px]">{c.loyalty_points} PTS</span>
                                                             </button>
                                                         ))}
-                                                        {allCustomers.length === 0 && <p className="p-4 text-center text-[8px] text-slate-400">No hay clientes registrados</p>}
+                                                        {allCustomers.length === 0 && <p className="p-4 text-center text-[8px] text-muted-foreground">No hay clientes registrados</p>}
                                                     </div>
                                                 )}
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    <input value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold" placeholder="NOMBRE GUEST" />
-                                                    <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold" placeholder="TELÉFONO" />
+                                                    <input value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full h-12 bg-muted border border-border rounded-xl px-4 text-xs font-bold text-foreground placeholder:text-muted-foreground/50" placeholder="NOMBRE GUEST" />
+                                                    <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} className="w-full h-12 bg-muted border border-border rounded-xl px-4 text-xs font-bold text-foreground placeholder:text-muted-foreground/50" placeholder="TELÉFONO" />
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="p-5 bg-primary/10 border border-primary/20 rounded-[1.5rem] flex items-center justify-between animate-in zoom-in-95">
                                                 <div>
                                                     <p className="text-[10px] font-black text-primary uppercase tracking-widest italic">Cliente Vinculado</p>
-                                                    <p className="text-xl font-black italic text-slate-900 uppercase">{customerName}</p>
+                                                    <p className="text-xl font-black italic text-foreground uppercase tracking-tighter">{customerName}</p>
                                                 </div>
                                                 <ShieldCheck className="w-8 h-8 text-primary opacity-40" />
                                             </div>
@@ -395,29 +393,29 @@ function OrdersContent() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic flex items-center gap-2"> <MapPin className="w-3 h-3" /> UBICACIÓN DE SERVICIO</h3>
-                                        <select value={selectedTableId} onChange={e => setSelectedTableId(e.target.value)} className="w-full h-14 bg-slate-50 border border-slate-200 rounded-[1.5rem] px-6 text-xs font-black italic uppercase text-slate-900 outline-none">
+                                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic flex items-center gap-2"> <MapPin className="w-3 h-3" /> UBICACIÓN DE SERVICIO</h3>
+                                        <select value={selectedTableId} onChange={e => setSelectedTableId(e.target.value)} className="w-full h-14 bg-muted border border-border rounded-[1.5rem] px-6 text-xs font-black italic uppercase text-foreground outline-none cursor-pointer hover:border-border/80 transition-colors">
                                             <option value="">SERVICIO RÁPIDO / MOSTRADOR</option>
                                             {tables.map(t => <option key={t.id} value={t.id}>{t.table_name} ({t.location})</option>)}
                                         </select>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">DETALLE DE CESTA ({newOrderItems.length})</h3>
+                                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">DETALLE DE CESTA ({newOrderItems.length})</h3>
                                         <div className="space-y-2">
                                             {newOrderItems.map(item => (
-                                                <div key={item.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center group">
+                                                <div key={item.id} className="p-4 bg-muted/30 rounded-2xl border border-border flex justify-between items-center group">
                                                     <div className="flex-1">
-                                                        <p className="font-black italic uppercase text-xs text-slate-900 leading-none mb-1">{item.name}</p>
-                                                        <p className="text-[9px] font-bold text-slate-400 italic">${item.price.toLocaleString()}</p>
+                                                        <p className="font-black italic uppercase text-xs text-foreground leading-none mb-1">{item.name}</p>
+                                                        <p className="text-[9px] font-bold text-muted-foreground italic">${item.price.toLocaleString()}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <button onClick={() => {
                                                             if (item.quantity > 1) setNewOrderItems(p => p.map(i => i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i))
                                                             else setNewOrderItems(p => p.filter(i => i.id !== item.id))
-                                                        }} className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Minus className="w-3.5 h-3.5" /></button>
-                                                        <span className="w-6 text-center font-black text-slate-900 italic">{item.quantity}</span>
-                                                        <button onClick={() => setNewOrderItems(p => p.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i))} className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center hover:bg-primary hover:text-black transition-all"><Plus className="w-3.5 h-3.5" /></button>
+                                                        }} className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all text-foreground"><Minus className="w-3.5 h-3.5" /></button>
+                                                        <span className="w-6 text-center font-black text-foreground italic">{item.quantity}</span>
+                                                        <button onClick={() => setNewOrderItems(p => p.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i))} className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all text-foreground"><Plus className="w-3.5 h-3.5" /></button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -425,12 +423,12 @@ function OrdersContent() {
                                     </div>
                                 </div>
 
-                                <div className="p-10 border-t border-slate-100 bg-slate-50">
+                                <div className="p-10 border-t border-border bg-muted/50">
                                     <div className="flex justify-between items-end mb-8">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">TOTAL CONSOLIDADO</span>
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">TOTAL CONSOLIDADO</span>
                                         <span className="text-5xl font-black italic tracking-tighter text-primary">${newOrderItems.reduce((a, b) => a + (b.price * b.quantity), 0).toLocaleString()}</span>
                                     </div>
-                                    <Button onClick={handleCreateOrder} disabled={newOrderItems.length === 0} className="w-full h-20 bg-primary text-black rounded-[1.5rem] font-black text-2xl italic tracking-tighter uppercase shadow-3xl shadow-primary/20 hover:bg-slate-900 hover:text-white transition-all gap-4">
+                                    <Button onClick={handleCreateOrder} disabled={newOrderItems.length === 0} className="w-full h-20 bg-primary text-primary-foreground rounded-[1.5rem] font-black text-2xl italic tracking-tighter uppercase shadow-3xl shadow-primary/20 hover:bg-primary/90 transition-all gap-4">
                                         DESPACHAR COMANDA <ArrowUpRight className="w-8 h-8" />
                                     </Button>
                                 </div>
@@ -442,21 +440,22 @@ function OrdersContent() {
 
             {/* 📋 DETAIL MODAL (Updated with Loyalty and WhatsApp Center) */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-6">
-                    <div className="bg-white border border-slate-200 rounded-[3rem] md:rounded-[4rem] w-full max-w-3xl max-h-[96vh] overflow-y-auto animate-in zoom-in-95 duration-300 shadow-3xl custom-scrollbar-hidden">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-6">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
+                    <div className="bg-card border border-border rounded-[3rem] md:rounded-[4rem] w-full max-w-3xl max-h-[96vh] overflow-y-auto animate-in zoom-in-95 duration-300 shadow-3xl custom-scrollbar relative z-10">
                         <div className={cn(
-                            "p-12 border-b border-slate-100 flex justify-between items-start text-slate-900 relative",
-                            selectedOrder.status === 'payment_pending' ? 'bg-primary/10 border-primary/20' : 'bg-slate-50/50'
+                            "p-12 border-b border-border flex justify-between items-start text-foreground relative",
+                            selectedOrder.status === 'payment_pending' ? 'bg-primary/10 border-primary/20' : 'bg-muted/30'
                         )}>
                             <div className="relative z-10">
-                                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest italic mb-2">ORDEN ACTIVA #{selectedOrder.id.split('-')[0].toUpperCase()}</p>
+                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest italic mb-2">ORDEN ACTIVA #{selectedOrder.id.split('-')[0].toUpperCase()}</p>
                                 <h2 className="text-6xl font-black italic uppercase tracking-tighter leading-none">{selectedOrder.tables?.table_name || 'MOSTRADOR'}</h2>
                                 <div className="flex gap-2 mt-4">
-                                    <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-[8px] font-black uppercase tracking-widest italic text-slate-400">{selectedOrder.status}</span>
-                                    <span className="px-3 py-1 bg-white border border-slate-200 rounded-full text-[8px] font-black uppercase tracking-widest italic text-slate-400">{selectedOrder.order_type}</span>
+                                    <span className="px-3 py-1 bg-background border border-border rounded-full text-[8px] font-black uppercase tracking-widest italic text-muted-foreground">{selectedOrder.status}</span>
+                                    <span className="px-3 py-1 bg-background border border-border rounded-full text-[8px] font-black uppercase tracking-widest italic text-muted-foreground">{selectedOrder.order_type}</span>
                                 </div>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-white border border-slate-200" onClick={() => setSelectedOrder(null)}>
+                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[2rem] bg-card border border-border hover:bg-muted text-foreground transition-colors" onClick={() => setSelectedOrder(null)}>
                                 <X className="w-8 h-8" />
                             </Button>
                             {selectedOrder.status === 'payment_pending' && <Receipt className="absolute -bottom-10 -right-10 w-64 h-64 text-primary opacity-5" />}
@@ -466,7 +465,7 @@ function OrdersContent() {
                             <div className="grid grid-cols-2 gap-10">
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">CONSOLidado de SKU</h3>
+                                        <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">CONSOLidado de SKU</h3>
                                         {!['delivered', 'cancelled'].includes(selectedOrder.status) && (
                                             <Button
                                                 variant="ghost"
@@ -475,7 +474,7 @@ function OrdersContent() {
                                                     setIsSplitting(!isSplitting)
                                                     setSelectedItemsForSplit([])
                                                 }}
-                                                className={cn("text-[8px] font-black uppercase h-7 px-3 rounded-full border", isSplitting ? "bg-rose-500 text-white border-rose-500" : "bg-slate-100 text-slate-500 border-slate-200")}
+                                                className={cn("text-[8px] font-black uppercase h-7 px-3 rounded-full border transition-all", isSplitting ? "bg-rose-500 text-white border-rose-500 hover:bg-rose-600" : "bg-muted text-muted-foreground border-border hover:bg-border")}
                                             >
                                                 {isSplitting ? "CANCELAR DIVISIÓN" : "DIVIDIR CUENTA"}
                                             </Button>
@@ -504,13 +503,13 @@ function OrdersContent() {
                                                     <div className="flex items-center gap-4">
                                                         <span className={cn(
                                                             "w-10 h-10 rounded-xl flex items-center justify-center font-black italic text-xs border transition-all",
-                                                            isSelected ? "bg-primary text-black border-primary ring-2 ring-primary/20" : "bg-slate-50 border-slate-100 text-primary"
+                                                            isSelected ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-muted border-border text-primary"
                                                         )}>
                                                             {item.quantity}
                                                         </span>
-                                                        <span className="font-black italic uppercase text-xs text-slate-900 group-hover:text-primary transition-colors">{item.products?.name}</span>
+                                                        <span className="font-black italic uppercase text-xs text-foreground group-hover:text-primary transition-colors">{item.products?.name}</span>
                                                     </div>
-                                                    <span className="font-black italic text-slate-400">${(item.unit_price * item.quantity).toLocaleString()}</span>
+                                                    <span className="font-black italic text-muted-foreground/60">${(item.unit_price * item.quantity).toLocaleString()}</span>
                                                 </div>
                                             )
                                         })}
@@ -530,34 +529,34 @@ function OrdersContent() {
                                                     toast.error(e.message)
                                                 }
                                             }}
-                                            className="w-full h-12 bg-black text-white rounded-2xl font-black italic uppercase text-[10px] tracking-widest mt-4 animate-bounce"
+                                            className="w-full h-12 bg-foreground text-background rounded-2xl font-black italic uppercase text-[10px] tracking-widest mt-4 animate-bounce"
                                         >
                                             MOVER A NUEVA CUENTA
                                         </Button>
                                     )}
                                 </div>
-                                <div className="space-y-6 bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">INTELIGENCIA CLIENTE</h3>
+                                <div className="space-y-6 bg-muted/30 p-8 rounded-[2.5rem] border border-border shadow-sm">
+                                    <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">INTELIGENCIA CLIENTE</h3>
                                     <div>
-                                        <p className="text-xl font-black italic text-slate-900 uppercase tracking-tighter">{selectedOrder.guest_info?.name}</p>
-                                        <p className="text-[9px] font-bold text-slate-400 italic mt-1">{selectedOrder.guest_info?.phone || 'Sin número registrado'}</p>
+                                        <p className="text-xl font-black italic text-foreground uppercase tracking-tighter">{selectedOrder.guest_info?.name}</p>
+                                        <p className="text-[9px] font-bold text-muted-foreground/60 italic mt-1">{selectedOrder.guest_info?.phone || 'Sin número registrado'}</p>
                                     </div>
-                                    <div className="pt-6 border-t border-slate-100">
+                                    <div className="pt-6 border-t border-border">
                                         <p className="text-[8px] font-bold text-primary uppercase tracking-widest italic mb-2">POTENCIAL DE LEALTAD</p>
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"><Star className="w-5 h-5 fill-primary" /></div>
-                                            <p className="text-sm font-black italic uppercase text-slate-900">GANA {Math.floor(selectedOrder.total / 1000)} PUNTOS</p>
+                                            <p className="text-sm font-black italic uppercase text-foreground">GANA {Math.floor(selectedOrder.total / 1000)} PUNTOS</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-10 border-t border-slate-100 space-y-6">
+                            <div className="pt-10 border-t border-border space-y-6">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-4">
                                         <div>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-2">SUBTOTAL NETO</p>
-                                            <p className="text-3xl font-black italic tracking-tighter text-slate-400 leading-none">${selectedOrder.total.toLocaleString()}</p>
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic mb-2">SUBTOTAL NETO</p>
+                                            <p className="text-3xl font-black italic tracking-tighter text-muted-foreground/60 leading-none">${selectedOrder.total.toLocaleString()}</p>
                                         </div>
 
                                         {restaurant?.apply_service_charge && (
@@ -568,8 +567,8 @@ function OrdersContent() {
                                                             <Heart className="w-5 h-5 fill-current" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Paso Obligatorio: Propina Sugerida</p>
-                                                            <p className="text-sm font-black italic text-slate-900 uppercase tracking-tighter">Consultar con el Cliente ({restaurant.service_charge_percentage}%)</p>
+                                                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Paso Obligatorio: Propina Sugerida</p>
+                                                            <p className="text-sm font-black italic text-foreground uppercase tracking-tighter">Consultar con el Cliente ({restaurant.service_charge_percentage}%)</p>
                                                         </div>
                                                     </div>
 
@@ -577,10 +576,10 @@ function OrdersContent() {
                                                         <button
                                                             onClick={() => setIncludeTip(true)}
                                                             className={cn(
-                                                                "h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all transition-all border-2",
+                                                                "h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border-2",
                                                                 includeTip
-                                                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]"
-                                                                    : "bg-white text-slate-400 border-slate-100 hover:border-primary/30"
+                                                                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.02]"
+                                                                    : "bg-card text-muted-foreground border-border hover:border-primary/30"
                                                             )}
                                                         >
                                                             SÍ Acepta Propina
@@ -591,8 +590,8 @@ function OrdersContent() {
                                                             className={cn(
                                                                 "h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border-2",
                                                                 !includeTip
-                                                                    ? "bg-slate-900 text-white border-slate-900 shadow-lg scale-[1.02]"
-                                                                    : "bg-white text-slate-400 border-slate-100 hover:border-slate-400/30"
+                                                                    ? "bg-foreground text-background border-foreground shadow-lg scale-[1.02]"
+                                                                    : "bg-card text-muted-foreground border-border hover:border-foreground/30"
                                                             )}
                                                         >
                                                             NO Incluir Propina
@@ -605,8 +604,8 @@ function OrdersContent() {
                                     </div>
 
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mb-2">TOTAL A COBRAR</p>
-                                        <p className="text-6xl font-black italic tracking-tighter text-slate-900 leading-none">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic mb-2">TOTAL A COBRAR</p>
+                                        <p className="text-6xl font-black italic tracking-tighter text-foreground leading-none">
                                             ${(selectedOrder.total + (includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0)).toLocaleString()}
                                         </p>
                                     </div>
@@ -638,7 +637,7 @@ function OrdersContent() {
                                                         alert("Error crítico: " + e.message)
                                                     }
                                                 }}
-                                                className="h-16 px-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-0.5"
+                                                className="h-16 px-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-0.5 border-none"
                                             >
                                                 <span>EFECTIVO</span>
                                                 <span className="text-sm">💵</span>
@@ -665,7 +664,7 @@ function OrdersContent() {
                                                         alert("Error crítico: " + e.message)
                                                     }
                                                 }}
-                                                className="h-16 px-4 bg-indigo-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-0.5"
+                                                className="h-16 px-4 bg-indigo-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-0.5 border-none"
                                             >
                                                 <span>TARJETA</span>
                                                 <span className="text-sm">💳</span>
@@ -692,7 +691,7 @@ function OrdersContent() {
                                                         alert("Error crítico: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-4 bg-cyan-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-cyan-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                                className="h-20 px-4 bg-cyan-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-cyan-500/20 hover:scale-105 transition-all flex-col gap-1 border-none"
                                             >
                                                 <span>TRANSF.</span>
                                                 <span className="text-lg">🏦</span>
@@ -715,15 +714,15 @@ function OrdersContent() {
                                                         alert("Error: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-4 bg-amber-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-amber-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                                className="h-20 px-4 bg-amber-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-amber-500/20 hover:scale-105 transition-all flex-col gap-1 border-none"
                                             >
                                                 <span>CRÉDITO</span>
                                                 <span className="text-lg">📋</span>
                                             </Button>
                                         </div>
                                     )}
-                                    {selectedOrder.status === 'pending' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'preparing' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-slate-900 text-white rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-slate-900/20">MARCAR PREPARANDO <ChefHat className="w-6 h-6" /></Button>}
-                                    {selectedOrder.status === 'preparing' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'ready' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-purple-600 text-white rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-purple-600/20">MARCAR LISTO <CheckCircle2 className="w-6 h-6" /></Button>}
+                                    {selectedOrder.status === 'pending' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'preparing' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-foreground text-background rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-foreground/20 border-none transition-all hover:scale-105 hover:bg-foreground/90">MARCAR PREPARANDO <ChefHat className="w-6 h-6" /></Button>}
+                                    {selectedOrder.status === 'preparing' && <Button onClick={async () => { await supabase.from('orders').update({ status: 'ready' }).eq('id', selectedOrder.id); fetchOrders(); setSelectedOrder(null) }} className="h-20 px-10 bg-purple-600 text-white rounded-[1.5rem] font-black text-xl italic tracking-tighter uppercase gap-4 shadow-xl shadow-purple-600/20 border-none transition-all hover:scale-105 hover:bg-purple-700">MARCAR LISTO <CheckCircle2 className="w-6 h-6" /></Button>}
                                 </div>
                             </div>
                         </div>
@@ -734,7 +733,8 @@ function OrdersContent() {
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+                .custom-scrollbar-hidden::-webkit-scrollbar { display: none; }
             `}</style>
         </div>
     )
@@ -746,11 +746,11 @@ function OrderCard({ order, onView }: { order: Order; onView: () => void }) {
     return (
         <div
             onClick={onView}
-            className="bg-white p-8 rounded-[3rem] border border-slate-200 hover:border-primary/50 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group relative overflow-hidden"
+            className="bg-card p-8 rounded-[3rem] border border-border hover:border-primary/50 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer group relative overflow-hidden"
         >
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic mb-2 flex items-center gap-2">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest italic mb-2 flex items-center gap-2">
                         {order.tables?.table_name || 'MOSTRADOR'}
                         <span className={cn(
                             "w-1.5 h-1.5 rounded-full",
@@ -759,31 +759,31 @@ function OrderCard({ order, onView }: { order: Order; onView: () => void }) {
                                     order.status === 'payment_pending' ? 'bg-primary animate-bounce' : 'bg-emerald-500'
                         )} />
                     </p>
-                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-slate-900 group-hover:text-primary transition-colors leading-none">
+                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover:text-primary transition-colors leading-none">
                         #{order.id.split('-')[0].toUpperCase()}
                     </h3>
                 </div>
-                <div className="bg-slate-50 border border-slate-200 px-3 py-1 rounded-xl text-[9px] font-black font-mono text-slate-400 italic uppercase">
+                <div className="bg-muted border border-border px-3 py-1 rounded-xl text-[9px] font-black font-mono text-muted-foreground/60 italic uppercase transition-colors">
                     {elapsed}
                 </div>
             </div>
 
             <div className="space-y-3 mb-8">
-                <p className="text-sm font-black italic uppercase text-slate-500 truncate">
+                <p className="text-sm font-black italic uppercase text-muted-foreground group-hover:text-foreground transition-colors truncate">
                     {order.guest_info?.name || "CLIENTE ANÓNIMO"}
                 </p>
                 <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[8px] font-black text-slate-400 uppercase italic">
+                    <span className="px-2 py-0.5 bg-muted border border-border rounded text-[8px] font-black text-muted-foreground/60 uppercase italic">
                         {order.order_items?.length || 0} ITEMS
                     </span>
-                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[8px] font-black text-slate-400 uppercase italic">
+                    <span className="px-2 py-0.5 bg-muted border border-border rounded text-[8px] font-black text-muted-foreground/60 uppercase italic">
                         {order.order_type === 'pickup' ? 'CASA' : 'DELIVERY'}
                     </span>
                 </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-100 flex justify-between items-center relative z-10">
-                <span className="text-2xl font-black italic tracking-tighter text-slate-900">${order.total.toLocaleString()}</span>
+            <div className="pt-6 border-t border-border flex justify-between items-center relative z-10 transition-colors">
+                <span className="text-2xl font-black italic tracking-tighter text-foreground">${order.total.toLocaleString()}</span>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                     <ArrowUpRight className="w-8 h-8 text-primary" />
                 </div>
@@ -796,7 +796,7 @@ function OrderCard({ order, onView }: { order: Order; onView: () => void }) {
 
 export default function AdminOrdersPage() {
     return (
-        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><RefreshCcw className="w-10 h-10 animate-spin text-slate-200" /></div>}>
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><RefreshCcw className="w-10 h-10 animate-spin text-muted-foreground/20" /></div>}>
             <OrdersContent />
         </Suspense>
     )

@@ -20,7 +20,9 @@ import {
     MessageCircle,
     CheckCircle2,
     Settings2,
-    X
+    X,
+    TrendingDown,
+    Activity
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -145,33 +147,42 @@ export default function CustomersPage() {
         c.email?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    if (loading && customers.length === 0) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <p className="text-muted-foreground font-black uppercase tracking-widest text-xs italic animate-pulse">Sincronizando Base de Datos CRM...</p>
+            </div>
+        )
+    }
+
     return (
-        <div className="space-y-12 animate-in fade-in duration-700 font-sans text-slate-900">
+        <div className="space-y-12 animate-in fade-in duration-700 bg-transparent text-foreground p-4 md:p-8">
 
             {/* 👑 PREMIUM CRM HEADER */}
-            <div className="relative group rounded-[3rem] overflow-hidden bg-slate-50 border border-slate-200 p-8 md:p-12 shadow-sm">
-                <div className="absolute top-0 right-0 w-1/4 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
+            <div className="relative group rounded-[3rem] overflow-hidden bg-card border border-border p-8 md:p-12 shadow-xl">
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
                 <div className="relative z-10 flex flex-col lg:flex-row justify-between lg:items-center gap-8">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2 italic">
+                            <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-2 italic">
                                 <Users className="w-3 h-3" /> CRM INTELLIGENCE
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">{customers.length} Registros Activos</span>
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest italic">{customers.length} REGISTROS ACTIVOS</span>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">
+                        <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-foreground leading-none">
                             CUSTOMER <span className="text-primary italic">ELITE</span>
                         </h1>
-                        <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.3em] flex items-center gap-4">
+                        <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-[0.3em] flex items-center gap-4 italic opacity-70">
                             Gestión avanzada de fidelización y experiencia multicanal
                         </p>
                     </div>
 
-                    <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 font-black italic">
-                        <button onClick={() => setView('database')} className={cn("px-6 py-3 rounded-xl text-[9px] uppercase tracking-widest transition-all", view === 'database' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-900")}>BASE DE DATOS</button>
-                        <button onClick={() => setView('notifications')} className={cn("px-6 py-3 rounded-xl text-[9px] uppercase tracking-widest transition-all relative", view === 'notifications' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-900")}>
+                    <div className="flex bg-muted/50 p-1.5 rounded-2xl border border-border font-black italic shadow-inner">
+                        <button onClick={() => setView('database')} className={cn("px-8 py-3 rounded-xl text-[9px] uppercase tracking-[0.2em] transition-all duration-300", view === 'database' ? "bg-card text-foreground shadow-lg border border-border/50" : "text-muted-foreground/50 hover:text-foreground")}>BASE DE DATOS</button>
+                        <button onClick={() => setView('notifications')} className={cn("px-8 py-3 rounded-xl text-[9px] uppercase tracking-[0.2em] transition-all duration-300 relative", view === 'notifications' ? "bg-card text-foreground shadow-lg border border-border/50" : "text-muted-foreground/50 hover:text-foreground")}>
                             NOTIFICACIONES
-                            {notifications.length > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[8px] flex items-center justify-center border-2 border-white animate-bounce">{notifications.length}</span>}
+                            {notifications.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-[9px] flex items-center justify-center border-2 border-card animate-bounce shadow-lg">{notifications.length}</span>}
                         </button>
                     </div>
                 </div>
@@ -180,115 +191,123 @@ export default function CustomersPage() {
             {view === 'database' ? (
                 <>
                     {/* 🔍 SEARCH & KPI BAR */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-top-4 duration-500">
                         <div className="lg:col-span-2 relative group">
-                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="FILTRAR POR NOMBRE, EMAIL O TELÉFONO..."
-                                className="w-full h-18 bg-white border border-slate-200 rounded-[2.5rem] pl-16 pr-6 outline-none focus:border-primary/50 text-xs font-black italic uppercase tracking-widest placeholder:text-slate-300 transition-all font-mono shadow-sm"
+                                className="w-full h-20 bg-card border border-border rounded-[2.5rem] pl-18 pr-8 outline-none focus:border-primary/50 text-xs font-black italic uppercase tracking-[0.2em] text-foreground placeholder:text-muted-foreground/30 transition-all shadow-xl font-mono"
                             />
                         </div>
-                        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-4 flex items-center justify-around translate-y-0 hover:-translate-y-1 transition-transform shadow-sm">
-                            <div className="text-center">
-                                <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Puntos Totales</p>
-                                <p className="text-xl font-black text-slate-900 italic">{customers.reduce((a, b) => a + b.points, 0).toLocaleString()}</p>
+                        <div className="bg-card border border-border rounded-[2.5rem] p-6 flex items-center justify-around group hover:border-primary/30 transition-all shadow-xl">
+                            <div className="text-center group/kpi">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase mb-2 tracking-widest italic">Puntos Totales</p>
+                                <p className="text-2xl font-black text-foreground italic tracking-tighter transition-transform group-hover/kpi:scale-110">{customers.reduce((a, b) => a + b.points, 0).toLocaleString()}</p>
                             </div>
-                            <div className="w-px h-10 bg-slate-100" />
-                            <div className="text-center">
-                                <p className="text-[8px] font-bold text-slate-400 uppercase mb-1">Ticket Promedio</p>
-                                <p className="text-xl font-black text-primary italic">{formatPrice(customers.reduce((a, b) => a + b.totalSpent, 0) / (customers.length || 1))}</p>
+                            <div className="w-px h-12 bg-border" />
+                            <div className="text-center group/kpi">
+                                <p className="text-[9px] font-black text-muted-foreground uppercase mb-2 tracking-widest italic">Ticket Promedio</p>
+                                <p className="text-2xl font-black text-primary italic tracking-tighter transition-transform group-hover/kpi:scale-110">{formatPrice(customers.reduce((a, b) => a + b.totalSpent, 0) / (customers.length || 1))}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* 👥 CUSTOMERS INDUSTRIAL LIST */}
-                    <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm relative overflow-hidden">
+                    <div className="bg-card border border-border rounded-[3rem] shadow-2xl relative overflow-hidden animate-in fade-in duration-1000">
                         <div className="overflow-x-auto custom-scrollbar">
-                            <table className="w-full text-left border-collapse min-w-[800px]">
+                            <table className="w-full text-left border-collapse min-w-[900px]">
                                 <thead>
-                                    <tr className="bg-slate-50 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 italic">
-                                        <th className="p-4 md:p-8">Identidad del Usuario</th>
-                                        <th className="p-4 md:p-8 hidden md:table-cell">Jerarquía</th>
-                                        <th className="p-4 md:p-8 text-center hidden sm:table-cell">Nivel Loyalty</th>
-                                        <th className="p-4 md:p-8 text-center hidden lg:table-cell">Frecuencia</th>
-                                        <th className="p-4 md:p-8 text-right">Lifetime Value</th>
-                                        <th className="p-4 md:p-8 text-right hidden lg:table-cell">Acciones Tácticas</th>
+                                    <tr className="bg-muted/30 text-[9px] font-black uppercase tracking-[0.4em] text-muted-foreground border-b border-border/50 italic">
+                                        <th className="p-8">Identidad del Perfil</th>
+                                        <th className="p-8 hidden md:table-cell text-center">Jerarquía CRM</th>
+                                        <th className="p-8 text-center hidden sm:table-cell">Loyalty Scoring</th>
+                                        <th className="p-8 text-center hidden lg:table-cell">Frecuencia Habitual</th>
+                                        <th className="p-8 text-right">Lifetime Value (LTV)</th>
+                                        <th className="p-8 text-right hidden lg:table-cell">Acciones de Fidelización</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-border/30">
                                     {filteredCustomers.map((customer, i) => (
-                                        <tr key={i} className="hover:bg-slate-50 transition-colors group border-b border-slate-100 last:border-0">
-                                            <td className="p-4 md:p-8">
-                                                <div className="flex items-center gap-3 md:gap-6">
-                                                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-sm md:text-xl font-black text-primary italic group-hover:bg-primary group-hover:text-black transition-all shrink-0">
+                                        <tr key={i} className="hover:bg-muted/20 transition-all group border-b border-border/10 last:border-0">
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="w-16 h-16 rounded-[1.5rem] bg-muted border border-border flex items-center justify-center text-2xl font-black text-primary italic group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0 shadow-sm">
                                                         {customer.name.charAt(0)}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="font-black text-sm md:text-xl italic uppercase tracking-tighter text-slate-900 truncate">{customer.name}</p>
-                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 md:mt-2">
-                                                            <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 overflow-hidden text-ellipsis"><Mail className="w-2.5 h-2.5 md:w-3 md:h-3" /> <span className="truncate">{customer.email || '—'}</span></span>
-                                                            <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Phone className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary" /> {customer.phone}</span>
+                                                        <p className="font-black text-2xl italic uppercase tracking-tighter text-foreground truncate transition-colors group-hover:text-primary">{customer.name}</p>
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-2">
+                                                            <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1.5 truncate group-hover:text-muted-foreground transition-colors"><Mail className="w-3.5 h-3.5 opacity-50" /> {customer.email || 'SIN CORREO REGISTRADO'}</span>
+                                                            <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1.5 whitespace-nowrap group-hover:text-muted-foreground transition-colors"><Phone className="w-3.5 h-3.5 text-primary" /> {customer.phone}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-8 hidden md:table-cell">
+                                            <td className="p-8 hidden md:table-cell text-center">
                                                 <div className={cn(
-                                                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic border",
-                                                    customer.type === 'user' ? "bg-primary/10 border-primary/20 text-primary" : "bg-slate-50 border-slate-100 text-slate-400"
+                                                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest italic border transition-colors",
+                                                    customer.type === 'user' ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted text-muted-foreground/50 border-border"
                                                 )}>
                                                     {customer.type === 'user' && <ShieldCheck className="w-3 h-3" />}
-                                                    {customer.type === 'user' ? 'MEMBRESÍA' : 'INVITADO'}
+                                                    {customer.type === 'user' ? 'MEMBRESÍA ACTIVA' : 'INVITADO'}
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-8 text-center hidden sm:table-cell">
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <div className="flex items-center gap-1.5 text-amber-500 font-black italic">
-                                                        <Star className="w-3 h-3 md:w-4 md:h-4 fill-amber-500" />
-                                                        <span className="text-base md:text-xl">{customer.points}</span>
+                                            <td className="p-8 text-center hidden sm:table-cell">
+                                                <div className="flex flex-col items-center gap-1 group/points">
+                                                    <div className="flex items-center gap-2 text-amber-500 font-black italic transition-transform group-hover/points:scale-110">
+                                                        <Star className="w-4 h-4 fill-amber-500" />
+                                                        <span className="text-2xl tracking-tighter">{customer.points}</span>
                                                     </div>
-                                                    <span className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest">PUNTOS</span>
+                                                    <span className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] italic">PTS ACUMULADOS</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-8 text-center hidden lg:table-cell">
-                                                <div className="inline-block px-5 py-2 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary/20 transition-all">
-                                                    <span className="text-xl font-black italic text-slate-900">{customer.totalOrders}</span>
-                                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-2 italic">Visitas</span>
+                                            <td className="p-8 text-center hidden lg:table-cell">
+                                                <div className="inline-block px-6 py-3 bg-muted/40 rounded-2xl border border-border group-hover:border-primary/20 transition-all">
+                                                    <span className="text-2xl font-black italic text-foreground tracking-tighter">{customer.totalOrders}</span>
+                                                    <span className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest ml-3 italic">Visitas Totales</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-8 text-right">
-                                                <p className="text-base md:text-2xl font-black italic tracking-tighter text-primary leading-none group-hover:scale-110 transition-transform origin-right">{formatPrice(customer.totalSpent)}</p>
-                                                <p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1 md:mt-2 flex items-center justify-end gap-1.5"><Calendar className="w-2.5 h-2.5 md:w-3 md:h-3" /> {customer.lastOrder !== 'Sin pedidos' ? new Date(customer.lastOrder).toLocaleDateString() : '—'}</p>
+                                            <td className="p-8 text-right">
+                                                <p className="text-3xl font-black italic tracking-tighter text-primary leading-none transition-all group-hover:scale-110 origin-right drop-shadow-sm">{formatPrice(customer.totalSpent)}</p>
+                                                <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-3 flex items-center justify-end gap-2 italic"><Calendar className="w-3.5 h-3.5 opacity-50" /> {customer.lastOrder !== 'Sin pedidos' ? `Última: ${new Date(customer.lastOrder).toLocaleDateString()}` : 'SIN ACTIVIDAD RECIENTE'}</p>
                                             </td>
-                                            <td className="p-4 md:p-8 text-right hidden lg:table-cell">
-                                                <div className="flex justify-end gap-2">
+                                            <td className="p-8 text-right hidden lg:table-cell">
+                                                <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                                                     <button
                                                         onClick={() => {
                                                             const phone = customer.phone.replace(/\D/g, '');
                                                             if (phone) window.open(`https://wa.me/${phone}`, '_blank');
                                                         }}
                                                         title="WhatsApp Directo"
-                                                        className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all shadow-sm text-slate-400"
+                                                        className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm text-muted-foreground active:scale-95"
                                                     >
-                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                        <MessageSquare className="w-5 h-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => {
                                                             setSearchTerm(customer.name);
                                                             setView('notifications');
                                                         }}
-                                                        title="Ver Notificaciones"
-                                                        className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-all"
+                                                        title="Historial de Mensajería"
+                                                        className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all shadow-sm active:scale-95"
                                                     >
-                                                        <Send className="w-3.5 h-3.5" />
+                                                        <Send className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))}
+                                    {filteredCustomers.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="p-20 text-center">
+                                                <Users className="w-20 h-20 text-muted-foreground/10 mx-auto mb-6" />
+                                                <p className="text-muted-foreground/30 font-black uppercase tracking-[0.5em] italic text-sm">Sin coincidencias en el CRM</p>
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -296,42 +315,49 @@ export default function CustomersPage() {
                 </>
             ) : (
                 /* 📱 WHATSAPP EXPERIENCE LOOP - NOTIFICATION CENTER */
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 animate-in slide-in-from-bottom-5 duration-500">
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-slate-900">COLA DE <span className="text-primary text-3xl">MENSAJERÍA</span></h2>
-                            <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-600 uppercase tracking-widest italic">
-                                <Zap className="w-3 h-3" /> Motor de fidelización activo
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 animate-in slide-in-from-bottom-8 duration-700">
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="flex flex-col sm:flex-row items-baseline justify-between gap-4">
+                            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-foreground">COLA DE <span className="text-primary text-5xl">COMUNICACIÓN</span></h2>
+                            <div className="flex items-center gap-3 px-6 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] italic shadow-inner">
+                                <Zap className="w-4 h-4 animate-pulse" /> Motor de fidelización activo y sincronizado
                             </div>
                         </div>
 
                         {notifications.length === 0 ? (
-                            <div className="p-20 bg-white border border-slate-200 rounded-[3rem] text-center space-y-4">
-                                <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto opacity-20" />
-                                <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Todas las notificaciones han sido procesadas</p>
+                            <div className="p-24 bg-card border border-border rounded-[4rem] text-center space-y-6 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500/50" />
+                                <CheckCircle2 className="w-24 h-24 text-emerald-500 mx-auto opacity-10" />
+                                <div className="space-y-2">
+                                    <p className="text-foreground/80 font-black uppercase text-xl italic tracking-tight">Bandeja Despejada</p>
+                                    <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-[0.3em] italic">Todas las notificaciones tácticas han sido procesadas.</p>
+                                </div>
                             </div>
                         ) : (
-                            <div className="grid gap-4">
+                            <div className="grid gap-6">
                                 {notifications.map(notif => (
-                                    <div key={notif.id} className="bg-white border border-slate-200 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center gap-8 hover:border-primary/20 transition-all group shadow-sm">
-                                        <div className="w-20 h-20 rounded-[1.5rem] bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 group-hover:bg-primary/10 transition-all">
-                                            <MessageCircle className="w-10 h-10 text-primary" />
+                                    <div key={notif.id} className="bg-card border border-border rounded-[3rem] p-8 flex flex-col md:flex-row items-center gap-10 hover:border-primary/40 transition-all group shadow-2xl relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-8 opacity-5 text-primary rotate-12 pointer-events-none transition-transform group-hover:scale-125">
+                                            <MessageCircle className="w-40 h-40 -mr-16 -mt-16" />
                                         </div>
-                                        <div className="flex-1 space-y-2">
+                                        <div className="w-24 h-24 rounded-[2rem] bg-muted border border-border flex items-center justify-center shrink-0 group-hover:bg-primary/10 group-hover:border-primary/30 transition-all shadow-inner relative z-10">
+                                            <MessageCircle className="w-12 h-12 text-primary" />
+                                        </div>
+                                        <div className="flex-1 space-y-4 relative z-10 w-full">
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <p className="text-xl font-black italic uppercase text-slate-900 tracking-tighter">{notif.customer_name || 'Nuevo Cliente'}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{notif.phone}</p>
+                                                    <p className="text-3xl font-black italic uppercase text-foreground tracking-tighter group-hover:text-primary transition-colors leading-none">{notif.customer_name || 'Prospecto Nuevo'}</p>
+                                                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.3em] mt-2 italic flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-primary" /> {notif.phone}</p>
                                                 </div>
-                                                <span className="px-3 py-1 bg-slate-50 rounded-full text-[8px] font-black text-slate-400 uppercase tracking-widest italic">{notif.template_slug}</span>
+                                                <span className="px-4 py-1.5 bg-muted rounded-full text-[9px] font-black text-muted-foreground uppercase tracking-widest italic border border-border/50 shadow-sm">{notif.template_slug}</span>
                                             </div>
-                                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-[11px] font-bold italic text-slate-500 mt-2">
+                                            <div className="p-6 bg-muted/40 rounded-[2rem] border border-border/50 text-xs font-bold italic text-muted-foreground group-hover:text-foreground transition-colors leading-relaxed shadow-inner font-sans border-l-4 border-l-primary">
                                                 "{notif.content}"
                                             </div>
                                         </div>
-                                        <Button onClick={() => sendWhatsApp(notif)} className="h-20 w-full md:w-32 bg-primary text-black rounded-2xl font-black flex flex-col items-center justify-center gap-2 hover:bg-slate-900 hover:text-white transition-all">
+                                        <Button onClick={() => sendWhatsApp(notif)} className="h-24 w-full md:w-40 bg-foreground text-background rounded-3xl font-black flex flex-col items-center justify-center gap-2 hover:bg-primary hover:text-primary-foreground transition-all shadow-xl active:scale-95 border-none relative z-10">
                                             <Send className="w-6 h-6" />
-                                            <span className="text-[8px] uppercase tracking-widest">DESPACHAR</span>
+                                            <span className="text-[9px] uppercase tracking-[0.3em] italic">ENVIAR</span>
                                         </Button>
                                     </div>
                                 ))}
@@ -341,20 +367,23 @@ export default function CustomersPage() {
 
                     {/* Sidebar: Templates & Status */}
                     <div className="space-y-8">
-                        <div className="p-8 bg-white border border-slate-200 rounded-[3rem] space-y-6 shadow-sm">
-                            <h3 className="text-sm font-black uppercase italic tracking-widest text-slate-900 border-b border-slate-100 pb-4">PLANTILLAS AUTOMÁTICAS</h3>
-                            <div className="space-y-4">
+                        <div className="p-10 bg-card border border-border rounded-[3rem] space-y-8 shadow-xl">
+                            <div className="flex items-center gap-4 border-b border-border pb-6">
+                                <Settings2 className="w-6 h-6 text-primary" />
+                                <h3 className="text-sm font-black uppercase italic tracking-[0.3em] text-foreground leading-none">MOTOR DE MENSAJERÍA</h3>
+                            </div>
+                            <div className="space-y-5">
                                 {templates.map(t => (
                                     <div
                                         key={t.id}
                                         onClick={() => { setEditingTemplate(t); setIsTemplateModalOpen(true); }}
-                                        className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-primary/20 transition-all cursor-pointer"
+                                        className="flex items-center justify-between p-5 bg-muted/30 rounded-[2rem] border border-border/50 group hover:border-primary/40 hover:bg-muted/50 transition-all cursor-pointer shadow-sm"
                                     >
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-slate-400 group-hover:text-slate-900 uppercase italic leading-none">{t.name}</span>
-                                            <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">Motor: {t.slug}</span>
+                                            <span className="text-[11px] font-black text-muted-foreground group-hover:text-foreground uppercase italic tracking-widest leading-none transition-colors">{t.name}</span>
+                                            <span className="text-[8px] font-bold text-muted-foreground/50 mt-2 uppercase tracking-tighter italic">SLUG ID: {t.slug}</span>
                                         </div>
-                                        <div className={cn("w-2 h-2 rounded-full", t.is_active ? "bg-emerald-500 animate-pulse" : "bg-slate-300")} />
+                                        <div className={cn("w-2.5 h-2.5 rounded-full shadow-sm", t.is_active ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/30")} />
                                     </div>
                                 ))}
                             </div>
@@ -364,21 +393,31 @@ export default function CustomersPage() {
                                         setEditingTemplate(templates[0]);
                                         setIsTemplateModalOpen(true);
                                     } else {
-                                        alert("No hay plantillas configuradas todavía.");
+                                        alert("Configuración de plantillas no inicializada.");
                                     }
                                 }}
                                 variant="ghost"
-                                className="w-full h-14 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest italic gap-2 hover:bg-slate-900 hover:text-white transition-all text-slate-500"
+                                className="w-full h-16 border-2 border-dashed border-border rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] italic gap-3 hover:bg-muted hover:border-primary/50 transition-all text-muted-foreground hover:text-foreground"
                             >
-                                <Settings2 className="w-4 h-4" /> CONFIGURAR MOTOR
+                                <Settings2 className="w-5 h-5 opacity-40" /> PANEL DE CONFIGURACIÓN
                             </Button>
                         </div>
 
-                        <div className="p-8 bg-primary/5 rounded-[3rem] border border-primary/10 relative overflow-hidden group">
-                            <div className="absolute -bottom-6 -right-6 opacity-5 group-hover:scale-110 transition-transform"><TrendingUp className="w-40 h-40 text-primary" /></div>
-                            <h3 className="text-[10px] font-black uppercase text-primary tracking-widest mb-4 italic">INSIGHT DEL DÍA</h3>
-                            <p className="text-lg font-black italic uppercase tracking-tighter text-slate-900 mb-2">TASA DE APERTURA: 98%</p>
-                            <p className="text-xs font-bold text-slate-500 leading-tight">La mensajería multicanal ha incrementado la recompra en un 12.5% esta semana.</p>
+                        <div className="p-10 bg-primary/5 rounded-[3.5rem] border border-primary/10 relative overflow-hidden group shadow-xl transition-all hover:bg-primary/10">
+                            <div className="absolute -bottom-10 -right-10 opacity-5 group-hover:scale-125 transition-transform duration-700 pointer-events-none rotate-12"><Activity className="w-60 h-60 text-primary" /></div>
+                            <div className="relative z-10 space-y-5">
+                                <div className="flex items-center gap-3">
+                                    <TrendingUp className="w-5 h-5 text-primary" />
+                                    <h3 className="text-[11px] font-black uppercase text-primary tracking-[0.3em] italic">ANALYTICS INSIGHT</h3>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-3xl font-black italic uppercase tracking-tighter text-foreground leading-none">98.4% APERTURA</p>
+                                    <p className="text-[9px] font-black text-primary/60 uppercase tracking-widest italic tracking-[0.2em]">RENDIMIENTO DE CAMPAÑAS</p>
+                                </div>
+                                <p className="text-xs font-bold text-muted-foreground leading-relaxed italic border-t border-primary/10 pt-4">
+                                    La estrategia de mensajería proactiva ha optimizado la tasa de retorno del cliente en un <span className="text-emerald-500 font-black">+14.2%</span> este cuatrimestre.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -386,67 +425,72 @@ export default function CustomersPage() {
 
             {/* 🛠️ MODAL CONFIGURACIÓN DE PLANTILLA */}
             {isTemplateModalOpen && editingTemplate && (
-                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col">
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <div>
-                                <h3 className="text-xl font-black italic uppercase tracking-tighter">Editar Plantilla <span className="text-primary">{editingTemplate.name}</span></h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Identificador: {editingTemplate.slug}</p>
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in duration-300">
+                    <div className="bg-card w-full max-w-3xl rounded-[4rem] shadow-3xl overflow-hidden flex flex-col border border-border animate-in zoom-in-95 duration-300 shadow-black/50">
+                        <div className="p-11 border-b border-border flex justify-between items-center bg-muted/30">
+                            <div className="space-y-2">
+                                <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground leading-none">Sincronizar Plantilla <span className="text-primary">{editingTemplate.name}</span></h3>
+                                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.3em] italic">IDENTIFICADOR DE SISTEMA: {editingTemplate.slug.toUpperCase()}</p>
                             </div>
-                            <Button variant="ghost" size="icon" onClick={() => setIsTemplateModalOpen(false)} className="rounded-2xl">
-                                <X className="w-6 h-6" />
+                            <Button variant="ghost" size="icon" onClick={() => setIsTemplateModalOpen(false)} className="rounded-[1.5rem] w-14 h-14 hover:bg-card transition-colors">
+                                <X className="w-8 h-8 text-muted-foreground/40" />
                             </Button>
                         </div>
-                        <div className="p-10 space-y-8">
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Contenido del Mensaje</h4>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[8px] font-black uppercase text-slate-400">Estado:</span>
+                        <div className="p-12 space-y-10 custom-scrollbar max-h-[60vh] overflow-y-auto">
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-center px-2">
+                                    <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground italic">CORPUS DEL MENSAJE</h4>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-[9px] font-black uppercase text-muted-foreground/40 italic">ESTADO OPERATIVO:</span>
                                         <button
                                             onClick={() => setEditingTemplate({ ...editingTemplate, is_active: !editingTemplate.is_active })}
                                             className={cn(
-                                                "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest italic transition-all",
-                                                editingTemplate.is_active ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" : "bg-slate-100 text-slate-400 border border-slate-200"
+                                                "px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest italic transition-all shadow-sm border",
+                                                editingTemplate.is_active ? "bg-emerald-500 text-white border-emerald-600" : "bg-muted text-muted-foreground border-border"
                                             )}
                                         >
-                                            {editingTemplate.is_active ? 'Activo' : 'Inactivo'}
+                                            {editingTemplate.is_active ? 'ENABLED' : 'DISABLED'}
                                         </button>
                                     </div>
                                 </div>
-                                <textarea
-                                    value={editingTemplate.content}
-                                    onChange={(e) => setEditingTemplate({ ...editingTemplate, content: e.target.value })}
-                                    className="w-full h-40 bg-slate-50 border border-slate-200 rounded-[2rem] p-6 text-sm font-bold italic text-slate-700 outline-none focus:border-primary/50 transition-all font-sans"
-                                    placeholder="Escribe el mensaje aquí..."
-                                />
-                                <div className="flex flex-wrap gap-2">
-                                    {editingTemplate.variables?.map(v => (
-                                        <span key={v} className="px-2 py-1 bg-slate-100 rounded-md text-[8px] font-mono text-slate-500">{"{{" + v + "}}"}</span>
-                                    ))}
+                                <div className="group relative">
+                                    <textarea
+                                        value={editingTemplate.content}
+                                        onChange={(e) => setEditingTemplate({ ...editingTemplate, content: e.target.value })}
+                                        className="w-full h-48 bg-muted/50 border border-border rounded-[2.5rem] p-8 text-sm font-bold italic text-foreground outline-none focus:border-primary/50 focus:bg-muted transition-all font-sans leading-relaxed shadow-inner placeholder:text-muted-foreground/20"
+                                        placeholder="ESTRUCTURA EL MENSAJE DE IMPACTO..."
+                                    />
+                                    <div className="absolute bottom-6 right-8 flex gap-3">
+                                        {editingTemplate.variables?.map(v => (
+                                            <span key={v} className="px-3 py-1.5 bg-card/80 backdrop-blur-md rounded-xl text-[9px] font-mono text-primary border border-primary/20 shadow-sm">{"{{" + v + "}}"}</span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="p-6 bg-amber-50 rounded-2xl border border-amber-200/50 flex gap-4">
-                                <Zap className="w-6 h-6 text-amber-500 shrink-0" />
-                                <p className="text-[10px] font-bold text-amber-900 leading-relaxed italic">
-                                    Estas plantillas son despachadas automáticamente a la cola de notificaciones cuando ocurren ciertos triggers en el sistema. Puedes pre-estructurar el mensaje usando variables.
-                                </p>
+                            <div className="p-10 bg-amber-500/5 rounded-[2.5rem] border border-amber-500/10 flex gap-6 items-start shadow-inner">
+                                <div className="p-3 bg-amber-500/10 rounded-2xl"><Zap className="w-8 h-8 text-amber-500 animate-pulse" /></div>
+                                <div className="space-y-2">
+                                    <p className="text-[11px] font-black uppercase text-amber-600 tracking-widest italic">PROTOCOLOS DE DISPARO (TRIGGERS)</p>
+                                    <p className="text-[10px] font-bold text-amber-700/60 leading-relaxed italic font-sans">
+                                        Estas estructuras se inyectan en la cola CRM mediante eventos críticos del sistema (Cierre de Mesa, Registro de Meseros, Login). El uso de variables {"{{ }}"} permite inyectar datos dinámicos del perfil.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
+                        <div className="p-12 bg-muted/20 border-t border-border flex flex-col sm:flex-row gap-6">
                             <Button
                                 onClick={handleUpdateTemplate}
-                                className="flex-1 h-14 bg-primary text-black hover:bg-slate-900 hover:text-white font-black rounded-2xl gap-2 uppercase text-xs tracking-widest italic"
+                                className="flex-[3] h-20 bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-black rounded-3xl gap-4 uppercase text-sm tracking-[0.2em] italic transition-all shadow-2xl border-none"
                             >
-                                <CheckCircle2 className="w-5 h-5" /> GUARDAR CONFIGURACIÓN
+                                <CheckCircle2 className="w-7 h-7" /> GUARDAR ESTRUCTURA TÁCTICA
                             </Button>
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 onClick={() => setIsTemplateModalOpen(false)}
-                                className="px-8 h-14 border-slate-200 text-slate-500 font-black rounded-2xl uppercase text-xs tracking-widest italic"
+                                className="flex-1 h-20 text-muted-foreground font-black rounded-3xl uppercase text-xs tracking-widest italic hover:bg-muted transition-all"
                             >
-                                CANCELAR
+                                ABORTAR
                             </Button>
                         </div>
                     </div>
@@ -454,9 +498,10 @@ export default function CustomersPage() {
             )}
 
             <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 20px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--primary); }
             `}</style>
         </div>
     )

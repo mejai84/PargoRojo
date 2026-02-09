@@ -138,18 +138,18 @@ function MenuContent() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex flex-col">
+            <div className="min-h-screen bg-background flex flex-col">
                 <Navbar />
                 <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4">
                     <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                    <p className="text-gray-500 animate-pulse font-medium text-lg">Cargando nuestra carta...</p>
+                    <p className="text-muted-foreground animate-pulse font-medium text-lg">Cargando nuestra carta...</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen bg-muted pb-20">
             <Navbar />
 
             <div className="pt-28 container mx-auto px-6">
@@ -160,21 +160,21 @@ function MenuContent() {
                             <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-bold mb-4">
                                 Menú Completo
                             </span>
-                            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+                            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
                                 ¿Qué deseas <span className="text-gradient">comer hoy</span>?
                             </h1>
-                            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                                 Explora nuestras categorías y descubre los mejores sabores de la cocina de mar.
                             </p>
                         </div>
 
                         <div className="max-w-xl mx-auto mb-12">
                             <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                 <input
                                     type="text"
                                     placeholder="Buscar en todo el menú..."
-                                    className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-lg shadow-sm text-gray-900 placeholder-gray-400"
+                                    className="w-full bg-background border border-border rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-lg shadow-sm text-foreground placeholder-muted-foreground"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -184,14 +184,14 @@ function MenuContent() {
                         {searchTerm ? (
                             <div className="animate-in fade-in duration-300">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-900">Resultados para "{searchTerm}"</h2>
+                                    <h2 className="text-2xl font-bold text-foreground">Resultados para "{searchTerm}"</h2>
                                     <button onClick={() => setSearchTerm("")} className="text-primary font-bold hover:underline">Limpiar búsqueda</button>
                                 </div>
                                 {filteredProducts.length === 0 ? (
-                                    <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+                                    <div className="text-center py-16 bg-background rounded-3xl border border-border">
                                         <span className="text-6xl mb-4 block">🔍</span>
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">No encontramos resultados</h3>
-                                        <p className="text-gray-500">Intenta con otro término de búsqueda</p>
+                                        <h3 className="text-xl font-bold text-foreground mb-2">No encontramos resultados</h3>
+                                        <p className="text-muted-foreground">Intenta con otro término de búsqueda</p>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -213,10 +213,10 @@ function MenuContent() {
                                         <button
                                             key={category.id}
                                             onClick={() => handleCategorySelect(category)}
-                                            className="group relative h-48 md:h-64 rounded-[2.5rem] overflow-hidden border border-white shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.03] bg-white"
+                                            className="group relative h-48 md:h-64 rounded-[2.5rem] overflow-hidden border border-border shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.03] bg-background"
                                             style={{ animationDelay: `${index * 50}ms` }}
                                         >
-                                            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 group-hover:bg-gray-100 transition-colors">
+                                            <div className="absolute inset-0 flex items-center justify-center bg-muted group-hover:bg-accent/10 transition-colors">
                                                 {!hasError ? (
                                                     <Image
                                                         src={`/categories/${category.slug}.png`}
@@ -255,28 +255,28 @@ function MenuContent() {
                                 <Button
                                     variant="ghost"
                                     onClick={handleBackToCategories}
-                                    className="h-14 w-14 rounded-2xl bg-white border border-gray-100 shadow-sm hover:bg-primary hover:text-black transition-all"
+                                    className="h-14 w-14 rounded-2xl bg-background border border-border shadow-sm hover:bg-primary hover:text-black transition-all"
                                 >
                                     <ChevronLeft className="w-6 h-6" />
                                 </Button>
                                 <div>
                                     <div className="flex items-center gap-4">
-                                        <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase">
+                                        <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tighter italic uppercase">
                                             {selectedCategory.name}
                                         </h1>
                                     </div>
-                                    <p className="text-gray-500 font-bold uppercase text-xs tracking-widest mt-2 px-1">
+                                    <p className="text-muted-foreground font-bold uppercase text-xs tracking-widest mt-2 px-1">
                                         {productCounts[selectedCategory.id] || 0} OPCIONES DISPONIBLES
                                     </p>
                                 </div>
                             </div>
 
                             <div className="relative w-full md:w-96">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                                 <input
                                     type="text"
                                     placeholder={`Buscar en esta categoría...`}
-                                    className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-gray-900 shadow-sm font-medium"
+                                    className="w-full bg-background border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-foreground shadow-sm font-medium"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -291,10 +291,10 @@ function MenuContent() {
                                     onClick={() => handleCategorySelect(cat)}
                                     className={`flex items-center gap-3 pr-6 pl-2 py-2 rounded-full whitespace-nowrap font-black uppercase text-[10px] tracking-[0.2em] transition-all border italic group ${selectedCategory.id === cat.id
                                         ? "bg-primary text-black border-primary shadow-xl shadow-primary/20 scale-105"
-                                        : "bg-white text-gray-500 border-gray-100 hover:border-primary hover:text-primary"
+                                        : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
                                         }`}
                                 >
-                                    <div className={`w-8 h-8 rounded-full overflow-hidden relative shrink-0 ${selectedCategory.id === cat.id ? 'bg-black/10' : 'bg-gray-100 group-hover:bg-primary/10'}`}>
+                                    <div className={`w-8 h-8 rounded-full overflow-hidden relative shrink-0 ${selectedCategory.id === cat.id ? 'bg-black/10' : 'bg-muted group-hover:bg-primary/10'}`}>
                                         <Image
                                             src={`/categories/${cat.slug}.png`}
                                             alt={cat.name}
@@ -314,12 +314,12 @@ function MenuContent() {
                         </div>
 
                         {filteredProducts.length === 0 ? (
-                            <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
-                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <Utensils className="w-10 h-10 text-gray-300" />
+                            <div className="text-center py-24 bg-background rounded-[3rem] border border-border shadow-sm">
+                                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <Utensils className="w-10 h-10 text-muted-foreground" />
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 mb-2 uppercase italic">Sin resultados</h3>
-                                <p className="text-gray-500 font-medium">No encontramos platos que coincidan con tu búsqueda.</p>
+                                <h3 className="text-2xl font-black text-foreground mb-2 uppercase italic">Sin resultados</h3>
+                                <p className="text-muted-foreground font-medium">No encontramos platos que coincidan con tu búsqueda.</p>
                                 <Button onClick={() => setSearchTerm("")} variant="link" className="text-primary font-black uppercase tracking-widest text-xs mt-4">Ver todo</Button>
                             </div>
                         ) : (
@@ -356,7 +356,7 @@ function MenuContent() {
 export default function MenuPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
             </div>
         }>

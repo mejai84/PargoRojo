@@ -43,6 +43,14 @@ export function PargoBot() {
 
     const [logoUrl, setLogoUrl] = useState("")
 
+    // Dragging state
+    const [position, setPosition] = useState({ x: 0, y: 0 })
+    const [isDragging, setIsDragging] = useState(false)
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const panelRef = useRef<HTMLDivElement>(null)
+    const startPosRef = useRef({ x: 0, y: 0 })
+
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight
@@ -56,6 +64,66 @@ export function PargoBot() {
         }
         fetchSettings()
     }, [])
+
+    // Close on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isOpen &&
+                panelRef.current && !panelRef.current.contains(event.target as Node) &&
+                buttonRef.current && !buttonRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [isOpen])
+
+    // Drag event handlers
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isDragging) {
+                const dx = e.clientX - dragStart.x
+                const dy = e.clientY - dragStart.y
+                setPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }))
+                setDragStart({ x: e.clientX, y: e.clientY })
+            }
+        }
+
+        const handleMouseUp = () => {
+            setIsDragging(false)
+        }
+
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove)
+            window.addEventListener('mouseup', handleMouseUp)
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove)
+            window.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [isDragging, dragStart])
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (isOpen) return // Disable drag when open
+        e.preventDefault() // Prevent text selection
+        setIsDragging(true)
+        setDragStart({ x: e.clientX, y: e.clientY })
+        startPosRef.current = { x: e.clientX, y: e.clientY }
+    }
+
+    const handleClick = (e: React.MouseEvent) => {
+        // Calculate distance moved
+        const dist = Math.sqrt(
+            Math.pow(e.clientX - startPosRef.current.x, 2) +
+            Math.pow(e.clientY - startPosRef.current.y, 2)
+        )
+        // Only open if moved less than 5 pixels (click, not drag)
+        if (dist < 5) {
+            setIsOpen(!isOpen)
+        }
+    }
 
     const processQuery = async (query: string) => {
         setLoading(true)
@@ -219,10 +287,14 @@ export function PargoBot() {
         <>
             {/* Floating Trigger */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                ref={buttonRef}
+                onMouseDown={handleMouseDown}
+                onClick={handleClick}
+                style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
                 className={cn(
-                    "fixed bottom-10 right-10 w-20 h-20 rounded-[2.5rem] bg-primary text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-all z-[100] group border-4 border-white shadow-primary/20",
-                    isOpen && "rotate-90 bg-slate-900 text-white border-slate-900"
+                    "fixed bottom-10 right-10 w-20 h-20 rounded-[2.5rem] bg-primary text-black flex items-center justify-center shadow-2xl transition-all z-[100] group border-4 border-white shadow-primary/20",
+                    isOpen ? "rotate-90 bg-slate-900 text-white border-slate-900" : "hover:scale-110",
+                    isDragging && "cursor-grabbing scale-105"
                 )}
             >
                 {isOpen ? <X className="w-8 h-8" /> : <Zap className="w-8 h-8 group-hover:animate-pulse" />}
@@ -233,17 +305,12 @@ export function PargoBot() {
                 )}
             </button>
 
-            {/* Click Outside Overlay */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-[90] bg-slate-900/20 backdrop-blur-[2px]"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
-
             {/* AI Assistant Panel */}
             {isOpen && (
-                <div className="fixed bottom-0 right-0 sm:bottom-32 sm:right-10 w-full sm:w-[450px] h-full sm:h-[650px] bg-white border-t sm:border border-slate-200 rounded-t-[3.5rem] sm:rounded-[3.5rem] shadow-2xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500">
+                <div
+                    ref={panelRef}
+                    className="fixed bottom-0 right-0 sm:bottom-32 sm:right-10 w-full sm:w-[450px] h-full sm:h-[650px] sm:max-h-[calc(100vh-160px)] bg-white border-t sm:border border-slate-200 rounded-t-[3.5rem] sm:rounded-[3.5rem] shadow-2xl z-[100] flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-500"
+                >
 
                     {/* Bot Header */}
                     <div className="p-8 bg-slate-50 border-b border-slate-100">

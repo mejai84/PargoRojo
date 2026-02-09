@@ -141,6 +141,13 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
         } else {
             document.documentElement.classList.remove('dark')
         }
+
+        // 3. Aplicar Fondo Personalizado (si existe en config)
+        if (res.landing_page_config?.styles?.background_color) {
+            document.documentElement.style.setProperty('--background', res.landing_page_config.styles.background_color)
+        } else {
+            document.documentElement.style.removeProperty('--background')
+        }
     }
 
     return (
