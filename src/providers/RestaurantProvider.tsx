@@ -47,8 +47,11 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
                 // 1. Resolver por Subdominio (Prioridad Máxima)
                 let currentRes: Restaurant | null = null
-                if (hostname.includes('.jamalios.com') || (hostname !== 'localhost' && !hostname.includes('127.0.0.1'))) {
-                    const subdomain = hostname.includes('.jamalios.com') ? hostname.split('.')[0] : hostname
+                const isSystemDomain = hostname.includes('.vercel.app') || hostname === 'localhost' || hostname.includes('127.0.0.1')
+                const isCustomDomain = hostname.includes('.jamalios.com')
+
+                if (isCustomDomain || (!isSystemDomain && hostname.includes('.'))) {
+                    const subdomain = isCustomDomain ? hostname.split('.')[0] : hostname
                     const { data: resBySub } = await supabase
                         .from('restaurants')
                         .select('*')
@@ -56,6 +59,17 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
                         .maybeSingle()
 
                     if (resBySub) currentRes = resBySub
+                }
+
+                // Fallback para dominios de sistema (Vercel, localhost)
+                if (!currentRes && isSystemDomain) {
+                    const { data: firstRes } = await supabase
+                        .from('restaurants')
+                        .select('*')
+                        .limit(1)
+                        .maybeSingle()
+
+                    if (firstRes) currentRes = firstRes
                 }
 
                 // 2. Obtener Sesión y Perfil

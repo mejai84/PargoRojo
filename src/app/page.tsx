@@ -39,12 +39,16 @@ export default function Home() {
         query = query.eq('subdomain', subdomain)
       }
 
-      const { data: resData } = await query.limit(1).single()
+      const { data: resData, error: resError } = await query.limit(1).maybeSingle()
+
+      if (resError) {
+        console.error('Error fetching restaurant:', resError)
+      }
 
       if (resData) {
         setBusinessInfo({
           ...resData,
-          name: resData.name || "NEGOCIO",
+          name: resData.name || "JAMALI OS",
           tagline: resData.landing_page_config?.hero?.tagline || "Experiencia Gastronómica"
         })
         if (resData.landing_page_config) {
@@ -84,9 +88,10 @@ export default function Home() {
         })))
       }
     } catch (e) {
-      console.error(e)
+      console.error('fetchInitialData error:', e)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (loading) return (

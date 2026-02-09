@@ -55,8 +55,9 @@ Este documento detalla el estado actual de implementación del sistema POS para 
 - **Fase 1 (Sólida):** ✅ BBDD SaaS, RLS, Auditoría.
 - **Fase 2 (Operativa):** ✅ Caja, Ventas, Stock.
 - **Fase 3 (Control):** ✅ Recetas, Proveedores, Compras.
-- **Fase 4 (Experiencia):** 🏗️ KDS Multi-estación, Pagos Dinámicos.
-- **Fase 5 (Escalado):** 🏗️ Planes Monetización, Onboarding Público.
+- **Fase 4 (Experiencia):** 🏗️ KDS Multi-estación, Pagos Dinámicos, PWA (Offline-first).
+- **Fase 5 (Escalado):** 🏗️ Onboarding Público, Planes de Pago.
+- **Fase 6 (Enterprise):** 🏗️ JWT Claims para RLS, Smart Stock (IA), Facturación Electrónica.
 
 ---
 *Checklist actualizado según nueva arquitectura SaaS - 8 de febrero de 2026*

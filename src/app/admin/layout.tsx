@@ -137,26 +137,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     useEffect(() => {
         const checkAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
 
-            if (!session) {
-                router.push("/login")
-                return
-            }
+                if (!session) {
+                    router.push("/login")
+                    return
+                }
 
-            const { data } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single()
+                const { data, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role, full_name')
+                    .eq('id', session.user.id)
+                    .maybeSingle()
 
-            const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host', 'driver']
+                if (profileError) throw profileError
 
-            if (!data || !allowedRoles.includes(data.role)) {
+                const allowedRoles = ['admin', 'staff', 'manager', 'cashier', 'waiter', 'cook', 'chef', 'cleaner', 'host', 'driver']
+
+                if (!data || !allowedRoles.includes(data.role)) {
+                    router.push("/")
+                    return
+                }
+
+                setUserRole(data.role)
+                setUserName(data.full_name || "Admin")
+                setAuthorized(true)
+            } catch (err) {
+                console.error("Auth check failed:", err)
                 router.push("/")
-                return
+            } finally {
+                setLoading(false)
             }
-
-            setUserRole(data.role)
-            setUserName(data.full_name || "Admin")
-            setAuthorized(true)
-            setLoading(false)
         }
 
         if (!restaurantLoading) {
