@@ -47,6 +47,7 @@ import { PargoBot } from "@/components/admin/pargo-bot"
 import { IncomingOrderAlert } from "@/components/admin/incoming-order-alert"
 import { ShiftGuard } from "@/components/admin/shift-guard"
 import { useRestaurant } from "@/providers/RestaurantProvider"
+import { BusinessSelector } from "@/components/admin/business-selector"
 
 const sidebarSections = [
     {
@@ -208,6 +209,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                     {/* Profile Card Mini */}
                     <div className="px-6 py-4 mb-4">
+                        <BusinessSelector />
+
                         <div className="p-4 rounded-3xl bg-slate-50 border border-slate-100 flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shadow-sm font-black text-primary italic">
                                 {userName.charAt(0)}

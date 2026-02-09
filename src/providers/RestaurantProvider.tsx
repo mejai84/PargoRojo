@@ -23,11 +23,13 @@ interface Restaurant {
 interface RestaurantContextType {
     restaurant: Restaurant | null
     loading: boolean
+    accessibleRestaurants: Restaurant[]
 }
 
 const RestaurantContext = createContext<RestaurantContextType>({
     restaurant: null,
-    loading: true
+    loading: true,
+    accessibleRestaurants: []
 })
 
 export const useRestaurant = () => useContext(RestaurantContext)
@@ -35,85 +37,78 @@ export const useRestaurant = () => useContext(RestaurantContext)
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
     const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
     const [loading, setLoading] = useState(true)
+    const [accessibleRestaurants, setAccessibleRestaurants] = useState<Restaurant[]>([])
 
     useEffect(() => {
-        const fetchRestaurantData = async () => {
+        const initRestaurant = async () => {
             try {
                 setLoading(true)
+                const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
 
-                // 1. Obtener la sesión actual
+                // 1. Resolver por Subdominio (Prioridad Máxima)
+                let currentRes: Restaurant | null = null
+                if (hostname.includes('.jamalios.com') || (hostname !== 'localhost' && !hostname.includes('127.0.0.1'))) {
+                    const subdomain = hostname.includes('.jamalios.com') ? hostname.split('.')[0] : hostname
+                    const { data: resBySub } = await supabase
+                        .from('restaurants')
+                        .select('*')
+                        .eq('subdomain', subdomain)
+                        .maybeSingle()
+
+                    if (resBySub) currentRes = resBySub
+                }
+
+                // 2. Obtener Sesión y Perfil
                 const { data: { session } } = await supabase.auth.getSession()
 
-                if (session && session.user) {
-                    try {
-                        // 2. Si hay sesión, buscamos el restaurant_id en el perfil
-                        const { data: profile, error: profileError } = await supabase
-                            .from('profiles')
-                            .select('restaurant_id')
-                            .eq('id', session.user.id)
-                            .maybeSingle() // IMPORTANTE: Usa maybeSingle en vez de single para evitar error si no existe
+                if (session?.user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*, restaurants(*)')
+                        .eq('id', session.user.id)
+                        .maybeSingle()
 
-                        if (profileError) {
-                            console.warn("⚠️ Error leyendo perfil:", profileError);
-                        }
+                    // 3. Si no hay restaurante por subdominio, usar el del perfil
+                    if (!currentRes && profile?.restaurant_id) {
+                        const { data: resData } = await supabase
+                            .from('restaurants')
+                            .select('*')
+                            .eq('id', profile.restaurant_id)
+                            .maybeSingle()
+                        if (resData) currentRes = resData
+                    }
 
-                        if (profile?.restaurant_id) {
-                            const { data: resData, error: restError } = await supabase
+                    // 4. Lógica Multi-Negocio para Propietarios/Admins
+                    if (profile?.role === 'admin' || profile?.role === 'super_admin') {
+                        // Si es super_admin, puede ver TODOS los restaurantes
+                        if (profile.role === 'super_admin') {
+                            const { data: allRes } = await supabase
                                 .from('restaurants')
                                 .select('*')
-                                .eq('id', profile.restaurant_id)
-                                .maybeSingle()
-
-                            if (restError) console.warn("⚠️ Error leyendo restaurante:", restError);
-
-                            if (resData) {
-                                setRestaurant(resData)
-                                applyBranding(resData)
-                                return
-                            }
+                                .eq('is_active', true)
+                                .order('name')
+                            if (allRes) setAccessibleRestaurants(allRes)
+                        } else {
+                            // TODO: Implementar tabla restaurant_access para propietarios con múltiples locales
+                            // Por ahora solo el de su perfil
+                            if (currentRes) setAccessibleRestaurants([currentRes])
                         }
-                    } catch (innerError) {
-                        console.error("🔥 Error interno en Provider:", innerError);
                     }
                 }
 
-                // 3. Intento por subdominio (Opcional por ahora, pero preparado)
-                // const hostname = window.location.hostname
-                // if (hostname.includes('.') && !hostname.startsWith('localhost')) {
-                //   const subdomain = hostname.split('.')[0]
-                //   const { data: resBySub } = await supabase.from('restaurants').select('*').eq('subdomain', subdomain).single()
-                //   if (resBySub) {
-                //     setRestaurant(resBySub)
-                //     applyBranding(resBySub)
-                //   }
-                // }
+                if (currentRes) {
+                    setRestaurant(currentRes)
+                    applyBranding(currentRes)
+                }
 
             } catch (error) {
-                console.error("Error fetching restaurant context:", error)
+                console.error("Error context initializing:", error)
             } finally {
                 setLoading(false)
             }
         }
 
-        const fetchBySubdomain = async () => {
-            const hostname = window.location.hostname
-            if (hostname.includes('.') && !hostname.startsWith('localhost') && !hostname.includes('127.0.0.1')) {
-                const subdomain = hostname.split('.')[0]
-                const { data: resBySub } = await supabase
-                    .from('restaurants')
-                    .select('*')
-                    .eq('subdomain', subdomain)
-                    .maybeSingle()
-
-                if (resBySub) {
-                    setRestaurant(resBySub)
-                    applyBranding(resBySub)
-                }
-            }
-        }
-
-        fetchRestaurantData()
-        fetchBySubdomain()
+        initRestaurant()
     }, [])
 
     const applyBranding = (res: Restaurant) => {
@@ -135,7 +130,7 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return (
-        <RestaurantContext.Provider value={{ restaurant, loading }}>
+        <RestaurantContext.Provider value={{ restaurant, loading, accessibleRestaurants }}>
             {children}
         </RestaurantContext.Provider>
     )

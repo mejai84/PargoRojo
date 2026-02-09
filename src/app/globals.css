@@ -59,18 +59,21 @@
 }
 
 .dark {
-  --background: #020617; /* Slate 950 */
-  --foreground: #f8fafc; /* Slate 50 */
-  
-  --card: #1e293b; /* Slate 800 */
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #f8fafc;
+  /* Slate 50 */
+
+  --card: #1e293b;
+  /* Slate 800 */
   --card-foreground: #f8fafc;
-  
+
   --popover: #1e293b;
   --popover-foreground: #f8fafc;
-  
+
   --muted: #0f172a;
   --muted-foreground: #94a3b8;
-  
+
   --border: #334155;
   --input: #334155;
 }
@@ -91,8 +94,9 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #FF6B6B, #ee5a5a);
+  background: linear-gradient(135deg, var(--primary), #ee5a5a);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -106,7 +110,7 @@ body {
   position: absolute;
   width: 60px;
   height: 60px;
-  border: 2px solid #FF6B6B;
+  border: 2px solid var(--primary);
   opacity: 0.3;
   transform: rotate(45deg);
 }

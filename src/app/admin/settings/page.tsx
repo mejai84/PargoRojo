@@ -325,33 +325,33 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white border border-slate-200 rounded-[2.5rem] p-6 md:p-10 shadow-sm space-y-8">
-                                    <div className="grid md:grid-cols-2 gap-8">
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><Globe className="w-3 h-3" /> Subdominio Jamali</label>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    className="flex-1 min-w-0 h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 outline-none focus:border-primary font-bold text-slate-600 text-sm"
-                                                    value={businessInfo.subdomain}
-                                                    onChange={e => setBusinessInfo({ ...businessInfo, subdomain: e.target.value.toLowerCase() })}
-                                                    placeholder="nombre-del-negocio"
-                                                />
-                                                <span className="text-[10px] font-black text-slate-400 whitespace-nowrap">.jamalios.com</span>
-                                            </div>
+                                <div className="grid md:grid-cols-2 gap-10 pt-4">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2">
+                                            <Globe className="w-3 h-3" /> Subdominio Jamali (ej: pargorojo)
+                                        </label>
+                                        <div className="flex items-center h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 focus-within:border-primary transition-all">
+                                            <input
+                                                className="flex-1 bg-transparent outline-none font-bold text-slate-600 text-sm min-w-0"
+                                                value={businessInfo.subdomain}
+                                                onChange={e => setBusinessInfo({ ...businessInfo, subdomain: e.target.value.toLowerCase() })}
+                                                placeholder="nombre-del-negocio"
+                                            />
+                                            <span className="text-[10px] font-black text-slate-400 whitespace-nowrap ml-2">.jamalios.com</span>
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2">
-                                                Modo Visual (OS Theme)
-                                            </label>
-                                            <select
-                                                className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 outline-none focus:border-primary font-black uppercase text-[10px] tracking-widest"
-                                                value={businessInfo.theme}
-                                                onChange={e => setBusinessInfo({ ...businessInfo, theme: e.target.value })}
-                                            >
-                                                <option value="light">MODO CLARO (LIGHT)</option>
-                                                <option value="dark">MODO OSCURO (DARK)</option>
-                                            </select>
-                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2">
+                                            Modo Visual (OS Theme)
+                                        </label>
+                                        <select
+                                            className="w-full h-14 bg-slate-50 border border-slate-200 rounded-xl px-6 outline-none focus:border-primary font-black uppercase text-[10px] tracking-widest"
+                                            value={businessInfo.theme}
+                                            onChange={e => setBusinessInfo({ ...businessInfo, theme: e.target.value })}
+                                        >
+                                            <option value="light">MODO CLARO (LIGHT)</option>
+                                            <option value="dark">MODO OSCURO (DARK)</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>

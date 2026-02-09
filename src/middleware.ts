@@ -54,7 +54,15 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    await supabase.auth.getUser()
+    // Optimized session refresh with safety timeout
+    try {
+        await Promise.race([
+            supabase.auth.getUser(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+        ])
+    } catch (e) {
+        console.warn('Middleware: Supabase check skipped/timed out', e);
+    }
 
     return response
 }
