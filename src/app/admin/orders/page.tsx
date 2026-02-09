@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Clock, MapPin, Bike, CheckCircle2, ChefHat, AlertCircle, X, User, Phone, Map, RefreshCcw, Plus, Trash2, Search, ArrowLeft, Receipt, ShoppingBag, Minus, Star, MessageCircle, ArrowUpRight, ShieldCheck } from "lucide-react"
+import { Clock, MapPin, Bike, CheckCircle2, ChefHat, AlertCircle, X, User, Phone, Map, RefreshCcw, Plus, Trash2, Search, ArrowLeft, Receipt, ShoppingBag, Minus, Star, MessageCircle, ArrowUpRight, ShieldCheck, Heart } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
@@ -561,20 +561,45 @@ function OrdersContent() {
                                         </div>
 
                                         {restaurant?.apply_service_charge && (
-                                            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                                <div className="space-y-1">
-                                                    <p className="text-[9px] font-black uppercase text-slate-500">¿Incluir Propina Sugerida? ({restaurant.service_charge_percentage}%)</p>
-                                                    <p className="text-xl font-black italic text-primary">+ ${(selectedOrder.total * (restaurant.service_charge_percentage! / 100)).toLocaleString()}</p>
+                                            <div className="space-y-4">
+                                                <div className="bg-primary/5 border border-primary/20 p-6 rounded-[2rem] space-y-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                                            <Heart className="w-5 h-5 fill-current" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Paso Obligatorio: Propina Sugerida</p>
+                                                            <p className="text-sm font-black italic text-slate-900 uppercase tracking-tighter">Consultar con el Cliente ({restaurant.service_charge_percentage}%)</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <button
+                                                            onClick={() => setIncludeTip(true)}
+                                                            className={cn(
+                                                                "h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all transition-all border-2",
+                                                                includeTip
+                                                                    ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]"
+                                                                    : "bg-white text-slate-400 border-slate-100 hover:border-primary/30"
+                                                            )}
+                                                        >
+                                                            SÍ Acepta Propina
+                                                            <p className="text-[8px] font-bold opacity-70">+ ${(selectedOrder.total * (restaurant.service_charge_percentage! / 100)).toLocaleString()}</p>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setIncludeTip(false)}
+                                                            className={cn(
+                                                                "h-14 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border-2",
+                                                                !includeTip
+                                                                    ? "bg-slate-900 text-white border-slate-900 shadow-lg scale-[1.02]"
+                                                                    : "bg-white text-slate-400 border-slate-100 hover:border-slate-400/30"
+                                                            )}
+                                                        >
+                                                            NO Incluir Propina
+                                                            <p className="text-[8px] font-bold opacity-70">Solo Total Neto</p>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <button
-                                                    onClick={() => setIncludeTip(!includeTip)}
-                                                    className={cn(
-                                                        "w-12 h-6 rounded-full transition-all flex items-center px-1 shadow-inner",
-                                                        includeTip ? "bg-primary" : "bg-slate-200"
-                                                    )}
-                                                >
-                                                    <div className={cn("w-4 h-4 rounded-full bg-white transition-all shadow-md", includeTip ? "translate-x-6" : "translate-x-0")} />
-                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -596,15 +621,21 @@ function OrdersContent() {
                                                     const tip = includeTip && restaurant?.apply_service_charge ? (selectedOrder.total * (restaurant.service_charge_percentage! / 100)) : 0
                                                     const total = selectedOrder.total + tip
 
-                                                    if (!confirm(`¿Confirmas el pago de $${total.toLocaleString()} en EFECTIVO?`)) return
+                                                    if (!confirm(`¿Confirmas el pago de $${total.toLocaleString()} en EFECTIVO? ${includeTip ? '(INCLUYE PROPINA)' : '(SIN PROPINA)'}`)) return
 
                                                     try {
                                                         const { processOrderPayment } = await import("@/actions/pos")
-                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'cash', total, tip)
-                                                        fetchOrders(); setSelectedOrder(null)
-                                                        alert("✅ Venta Efectivo Registrada")
+                                                        const res = await processOrderPayment(selectedOrder.id, currentUser.id, 'cash', total, tip)
+
+                                                        if (res.success) {
+                                                            fetchOrders()
+                                                            setSelectedOrder(null)
+                                                            alert("✅ " + res.message)
+                                                        } else {
+                                                            alert("❌ Error: " + res.error)
+                                                        }
                                                     } catch (e: any) {
-                                                        alert("Error: " + e.message)
+                                                        alert("Error crítico: " + e.message)
                                                     }
                                                 }}
                                                 className="h-16 px-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-0.5"
@@ -621,11 +652,17 @@ function OrdersContent() {
 
                                                     try {
                                                         const { processOrderPayment } = await import("@/actions/pos")
-                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'card', total, tip)
-                                                        fetchOrders(); setSelectedOrder(null)
-                                                        alert("✅ Venta Tarjeta Registrada")
+                                                        const res = await processOrderPayment(selectedOrder.id, currentUser.id, 'card', total, tip)
+
+                                                        if (res.success) {
+                                                            fetchOrders()
+                                                            setSelectedOrder(null)
+                                                            alert("✅ " + res.message)
+                                                        } else {
+                                                            alert("❌ Error: " + res.error)
+                                                        }
                                                     } catch (e: any) {
-                                                        alert("Error: " + e.message)
+                                                        alert("Error crítico: " + e.message)
                                                     }
                                                 }}
                                                 className="h-16 px-4 bg-indigo-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-0.5"
@@ -642,11 +679,17 @@ function OrdersContent() {
 
                                                     try {
                                                         const { processOrderPayment } = await import("@/actions/pos")
-                                                        await processOrderPayment(selectedOrder.id, currentUser.id, 'transfer', total, tip)
-                                                        fetchOrders(); setSelectedOrder(null)
-                                                        alert("✅ Venta Transferencia Registrada")
+                                                        const res = await processOrderPayment(selectedOrder.id, currentUser.id, 'transfer', total, tip)
+
+                                                        if (res.success) {
+                                                            fetchOrders()
+                                                            setSelectedOrder(null)
+                                                            alert("✅ " + res.message)
+                                                        } else {
+                                                            alert("❌ Error: " + res.error)
+                                                        }
                                                     } catch (e: any) {
-                                                        alert("Error: " + e.message)
+                                                        alert("Error crítico: " + e.message)
                                                     }
                                                 }}
                                                 className="h-20 px-4 bg-cyan-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-cyan-500/20 hover:scale-105 transition-all flex-col gap-1"

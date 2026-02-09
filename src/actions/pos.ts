@@ -377,34 +377,50 @@ export async function processOrderPayment(
     amount: number,
     tipAmount: number = 0
 ) {
-    const supabase = await createClient()
+    try {
+        const supabase = await createClient()
 
-    // 1. Obtener estado POS para asegurar que hay caja abierta (si es efectivo)
-    const posStatus = await getPosStatus(userId)
+        // 1. Obtener estado POS para asegurar que hay caja abierta (si es efectivo)
+        const posStatus = await getPosStatus(userId)
 
-    if (paymentMethod === 'cash' && !posStatus.hasOpenCashbox) {
-        throw new Error("No hay caja abierta. Debes abrir caja para recibir efectivo.")
+        if (paymentMethod === 'cash' && !posStatus.hasOpenCashbox) {
+            return {
+                success: false,
+                error: "No hay caja abierta. Debos abrir caja para recibir efectivo."
+            }
+        }
+
+        const sessionId = posStatus.activeCashboxSession?.id || null
+
+        // 2. Ejecutar RPC
+        const { data, error } = await supabase.rpc('pay_order_atomic', {
+            p_order_id: orderId,
+            p_user_id: userId,
+            p_cashbox_session_id: sessionId,
+            p_payment_method: paymentMethod,
+            p_amount: amount,
+            p_tip_amount: tipAmount
+        })
+
+        if (error) {
+            console.error("Error paying order (RPC):", error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath('/admin/orders')
+        revalidatePath('/admin/cashier')
+        revalidatePath('/admin/tables')
+
+        return {
+            success: true,
+            data,
+            message: `Venta en ${paymentMethod.toUpperCase()} registrada exitosamente`
+        }
+    } catch (e: any) {
+        console.error("Excepción fatal en processOrderPayment:", e)
+        return {
+            success: false,
+            error: e.message || "Error interno inesperado al procesar el pago"
+        }
     }
-
-    const sessionId = posStatus.activeCashboxSession?.id || null
-
-    // 2. Ejecutar RPC
-    const { data, error } = await supabase.rpc('pay_order_atomic', {
-        p_order_id: orderId,
-        p_user_id: userId,
-        p_cashbox_session_id: sessionId,
-        p_payment_method: paymentMethod,
-        p_amount: amount,
-        p_tip_amount: tipAmount
-    })
-
-    if (error) {
-        console.error("Error paying order:", error)
-        throw new Error(error.message)
-    }
-
-    revalidatePath('/admin/orders')
-    revalidatePath('/admin/cashier')
-    revalidatePath('/admin/tables')
-    return data
 }

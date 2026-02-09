@@ -12,6 +12,12 @@ interface Restaurant {
     theme?: 'light' | 'dark'
     apply_service_charge?: boolean
     service_charge_percentage?: number
+    loyalty_points_per_1000?: number
+    currency_symbol?: string
+    tax_percentage?: number
+    whatsapp_number?: string
+    enable_whatsapp_receipts?: boolean
+    landing_page_config?: any
 }
 
 interface RestaurantContextType {

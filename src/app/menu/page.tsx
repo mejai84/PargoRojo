@@ -45,17 +45,32 @@ function MenuContent() {
         setLoading(true)
 
         try {
-            const { data: settingsData } = await supabase
-                .from('settings')
-                .select('value')
-                .eq('key', 'feature_flags')
-                .single()
+            // 1. Obtener restaurante por subdominio para SaaS
+            const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+            const subdomain = hostname.includes('.jamalios.com') ? hostname.split('.')[0] : null
 
-            if (settingsData?.value && settingsData.value.menu_show_images !== undefined) {
-                setShowImages(settingsData.value.menu_show_images)
-            } else {
-                setShowImages(true) // Forzar imagenes por defecto si no hay flag
+            let resQuery = supabase.from('restaurants').select('*')
+            if (subdomain) {
+                resQuery = resQuery.eq('subdomain', subdomain)
             }
+            const { data: resData } = await resQuery.limit(1).single()
+
+            // 2. Determinar si mostrar imágenes (Prioridad config de restaurante)
+            let showImg = true
+            if (resData?.landing_page_config?.feature_flags) {
+                showImg = resData.landing_page_config.feature_flags.menu_show_images ?? true
+            } else {
+                // Fallback a tabla settings global
+                const { data: settingsData } = await supabase
+                    .from('settings')
+                    .select('value')
+                    .eq('key', 'feature_flags')
+                    .single()
+                if (settingsData?.value) {
+                    showImg = settingsData.value.menu_show_images ?? true
+                }
+            }
+            setShowImages(showImg)
 
             const { data: catData, error: catError } = await supabase
                 .from('categories')

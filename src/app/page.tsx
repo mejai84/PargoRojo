@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Star, Clock, MapPin, ChefHat, Utensils, Users, Loader2, Zap, ArrowRight, Play, Award, Heart } from "lucide-react";
+import { Star, Clock, MapPin, ChefHat, Utensils, Users, Loader2, Zap, ArrowRight, Play, Award, Heart, ShoppingBag, Sparkles } from "lucide-react";
 import { Navbar } from "@/components/store/navbar";
 import { ProductCard } from "@/components/store/product-card";
 import { Footer } from "@/components/store/footer";
@@ -20,6 +20,7 @@ export default function Home() {
     tagline: "Gran Rafa | Experiencia Gastronómica de Mar",
     address: "C.Cial. Cauca Centro, Caucasia"
   })
+  const [landingConfig, setLandingConfig] = useState<any>(null)
   const [showImages, setShowImages] = useState(true)
 
   useEffect(() => {
@@ -29,27 +30,43 @@ export default function Home() {
   const fetchInitialData = async () => {
     setLoading(true)
     try {
-      const { data: settings } = await supabase.from('settings').select('*')
-      if (settings) {
-        const info = settings.find(s => s.key === 'business_info')
-        if (info && info.value) {
-          try {
-            // Parsear el JSON si viene como string
-            const parsedInfo = typeof info.value === 'string' ? JSON.parse(info.value) : info.value
-            if (parsedInfo && parsedInfo.name) {
-              setBusinessInfo(parsedInfo)
-            }
-          } catch (e) {
-            console.warn('Error parsing business_info:', e)
+      // 1. Obtener restaurante por el subdominio actual (o el primero por defecto para testing)
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+      const subdomain = hostname.includes('.jamalios.com') ? hostname.split('.')[0] : null
+
+      let query = supabase.from('restaurants').select('*')
+      if (subdomain) {
+        query = query.eq('subdomain', subdomain)
+      }
+
+      const { data: resData } = await query.limit(1).single()
+
+      if (resData) {
+        setBusinessInfo({
+          ...resData,
+          name: resData.name || "NEGOCIO",
+          tagline: resData.landing_page_config?.hero?.tagline || "Experiencia Gastronómica"
+        })
+        if (resData.landing_page_config) {
+          setLandingConfig(resData.landing_page_config)
+          if (resData.landing_page_config.feature_flags) {
+            setShowImages(resData.landing_page_config.feature_flags.menu_show_images ?? true)
           }
         }
-        const flags = settings.find(s => s.key === 'feature_flags')
-        if (flags && flags.value) {
-          try {
-            const parsedFlags = typeof flags.value === 'string' ? JSON.parse(flags.value) : flags.value
-            setShowImages(parsedFlags.menu_show_images ?? true)
-          } catch (e) {
-            console.warn('Error parsing feature_flags:', e)
+      }
+
+      // Fallback a settings solo si no se obtuvo la flag arriba
+      if (resData?.landing_page_config?.feature_flags?.menu_show_images === undefined) {
+        const { data: settings } = await supabase.from('settings').select('*')
+        if (settings) {
+          const flags = settings.find(s => s.key === 'feature_flags')
+          if (flags && flags.value) {
+            try {
+              const parsedFlags = typeof flags.value === 'string' ? JSON.parse(flags.value) : flags.value
+              setShowImages(parsedFlags.menu_show_images ?? true)
+            } catch (e) {
+              console.warn('Error parsing feature_flags:', e)
+            }
           }
         }
       }
@@ -82,6 +99,42 @@ export default function Home() {
     </div>
   )
 
+  // Configuración por defecto si no hay en la DB
+  const config = landingConfig || {
+    hero: {
+      image_url: "/premium_seafood_hero_1769294804705.png",
+      title_part1: businessInfo.name?.split(' ')[0] || "PARGO",
+      title_part2: businessInfo.name?.split(' ').slice(1).join(' ') || "ROJO",
+      tagline: businessInfo.tagline,
+      est_year: "2012",
+      location_city: "Caucasia, Antioquia"
+    },
+    essence: [
+      {
+        title: "Ingredientes Premium",
+        desc: "Seleccionamos diariamente la pesca más fresca y los cortes de carne más exclusivos de la región.",
+        icon: "Award"
+      },
+      {
+        title: "Maestría en Brasa",
+        desc: "Nuestra técnica de asado tradicional resalta los sabores naturales con el toque único.",
+        icon: "ChefHat"
+      },
+      {
+        title: "Legado Familiar",
+        desc: "Más que un restaurante, somos una tradición que celebra el sabor auténtico.",
+        icon: "Heart"
+      }
+    ],
+    experience: {
+      image_url: "/premium_restaurant_interior_1769294818416.png",
+      title_part1: "Un espacio diseñado para",
+      title_part2: "Celebrar",
+      description: `En ${businessInfo.name}, cada rincón cuenta una historia. Hemos creado una atmósfera que combina la calidez tropical con la sofisticación moderna.`,
+      tour_link: "#"
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white selection:bg-primary selection:text-black">
       <Navbar />
@@ -91,7 +144,7 @@ export default function Home() {
         {/* Background Image with Parallax-like effect */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/premium_seafood_hero_1769294804705.png"
+            src={config.hero.image_url || "/premium_seafood_hero_1769294804705.png"}
             alt="Premium Seafood"
             fill
             className="object-cover scale-105"
@@ -104,13 +157,13 @@ export default function Home() {
         <div className="container relative z-10 px-6 text-center space-y-8 animate-in fade-in zoom-in duration-1000">
           <div className="flex flex-col items-center gap-4">
             <span className="px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl">
-              Est. 2012 • Caucasia, Antioquia
+              Est. {config.hero.est_year} • {config.hero.location_city}
             </span>
             <h1 className="text-6xl md:text-9xl font-black text-white italic tracking-tighter leading-none uppercase">
-              {businessInfo.name.split(' ')[0]} <span className="text-primary">{businessInfo.name.split(' ').slice(1).join(' ')}</span>
+              {config.hero.title_part1} <span className="text-primary">{config.hero.title_part2}</span>
             </h1>
             <p className="text-white/80 text-xl md:text-2xl font-medium tracking-wide max-w-3xl mx-auto italic">
-              "{businessInfo.tagline}"
+              "{config.hero.tagline}"
             </p>
           </div>
 
@@ -138,21 +191,21 @@ export default function Home() {
       <section className="py-32 bg-white relative overflow-hidden">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-16">
-            <EssenceItem
-              icon={<Award className="w-10 h-10" />}
-              title="Ingredientes Premium"
-              desc="Seleccionamos diariamente la pesca más fresca y los cortes de carne más exclusivos de la región."
-            />
-            <EssenceItem
-              icon={<ChefHat className="w-10 h-10" />}
-              title="Maestría en Brasa"
-              desc="Nuestra técnica de asado tradicional resalta los sabores naturales con el toque único del Gran Rafa."
-            />
-            <EssenceItem
-              icon={<Heart className="w-10 h-10" />}
-              title="Legado Familiar"
-              desc="Más que un restaurante, somos una tradición que celebra el sabor auténtico del Cauca."
-            />
+            {config.essence.map((item: any, i: number) => {
+              const Icon = item.icon === 'Award' ? Award :
+                item.icon === 'ChefHat' ? ChefHat :
+                  item.icon === 'Star' ? Star :
+                    item.icon === 'Sparkles' ? Sparkles :
+                      item.icon === 'Zap' ? Zap : Heart;
+              return (
+                <EssenceItem
+                  key={i}
+                  icon={<Icon className="w-10 h-10" />}
+                  title={item.title}
+                  desc={item.desc}
+                />
+              );
+            })}
           </div>
         </div>
       </section>
@@ -161,7 +214,7 @@ export default function Home() {
       <section className="relative h-[80vh] w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/premium_restaurant_interior_1769294818416.png"
+            src={config.experience.image_url || "/premium_restaurant_interior_1769294818416.png"}
             alt="Restaurant Interior"
             fill
             className="object-cover"
@@ -173,26 +226,28 @@ export default function Home() {
           <div className="space-y-8 animate-in slide-in-from-left-10 duration-1000">
             <span className="text-primary font-black uppercase tracking-[0.4em] italic text-xs">Ambiente & Confort</span>
             <h2 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter uppercase leading-none">
-              Un espacio diseñado para <br /> <span className="text-primary">Celebrar</span>
+              {config.experience.title_part1} <br /> <span className="text-primary">{config.experience.title_part2}</span>
             </h2>
             <p className="text-white/70 text-lg leading-relaxed font-medium">
-              En {businessInfo.name}, cada rincón cuenta una historia. Hemos creado una atmósfera que combina la calidez tropical con la sofisticación moderna, ideal para cenas memorables y encuentros exclusivos.
+              {config.experience.description}
             </p>
             <div className="pt-6">
-              <Button className="h-16 px-10 bg-white text-black hover:bg-primary transition-all rounded-2xl font-black italic uppercase tracking-widest text-xs">
-                Tour Virtual <Play className="ml-3 w-4 h-4 fill-current" />
-              </Button>
+              <Link href={config.experience.tour_link || "#"}>
+                <Button className="h-16 px-10 bg-white text-black hover:bg-primary transition-all rounded-2xl font-black italic uppercase tracking-widest text-xs">
+                  Tour Virtual <Play className="ml-3 w-4 h-4 fill-current" />
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="hidden lg:grid grid-cols-2 gap-6 rotate-3">
             <div className="space-y-6 mt-12">
-              <div className="aspect-[3/4] rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl">
-                <Image src="/images/chef.jpg" alt="Chef" fill className="object-cover" />
+              <div className="aspect-[3/4] rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl relative">
+                <Image src={config.experience.image_url || "/premium_restaurant_interior_1769294818416.png"} alt="Chef" fill className="object-cover" />
               </div>
             </div>
             <div className="space-y-6">
-              <div className="aspect-[3/4] rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl">
-                <Image src="/premium_seafood_hero_1769294804705.png" alt="Detail" fill className="object-cover" />
+              <div className="aspect-[3/4] rounded-[2rem] border-4 border-white/10 overflow-hidden shadow-2xl relative">
+                <Image src={config.hero.image_url || "/premium_seafood_hero_1769294804705.png"} alt="Detail" fill className="object-cover" />
               </div>
             </div>
           </div>
@@ -217,9 +272,14 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {featuredDishes.map((dish) => (
+            {featuredDishes.length > 0 ? featuredDishes.map((dish) => (
               <div key={dish.id} className="group animate-in fade-in duration-700">
                 <ProductCard product={dish} showImages={showImages} />
+              </div>
+            )) : Array(4).fill(0).map((_, i) => (
+              <div key={i} className="h-[400px] bg-white rounded-[2.5rem] border border-slate-100 flex flex-col items-center justify-center gap-4 text-slate-300">
+                <ShoppingBag className="w-10 h-10 opacity-20" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Próximamente</p>
               </div>
             ))}
           </div>
@@ -239,7 +299,7 @@ export default function Home() {
               <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] border border-white inline-flex flex-col gap-2 shadow-2xl">
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-primary" />
-                  <span className="font-black italic text-slate-900 uppercase tracking-tighter">Punto Estratégico Caucasia</span>
+                  <span className="font-black italic text-slate-900 uppercase tracking-tighter">Punto Estratégico</span>
                 </div>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider pl-8">{businessInfo.address}</p>
               </div>
@@ -249,11 +309,11 @@ export default function Home() {
           <div className="order-1 lg:order-2 space-y-10 animate-in slide-in-from-right-10 duration-1000">
             <span className="text-primary font-black uppercase tracking-[0.4em] italic text-xs">Ubicación Privilegiada</span>
             <h2 className="text-5xl md:text-7xl font-black text-slate-900 italic tracking-tighter uppercase leading-none">
-              Encuéntranos en <br /> <span className="text-primary">Gran Rafa</span>
+              Encuéntranos en <br /> <span className="text-primary">{businessInfo.name}</span>
             </h2>
             <div className="space-y-6">
               <p className="text-slate-500 text-lg leading-relaxed font-medium italic">
-                Ubicados en el corazón comercial de Caucasia, ofrecemos un refugio gastronómico donde el confort y el sabor se encuentran.
+                {businessInfo.tagline}. Ofrecemos un refugio gastronómico donde el confort y el sabor se encuentran.
               </p>
               <div className="grid grid-cols-2 gap-8 pt-6">
                 <div className="space-y-2">
@@ -264,7 +324,7 @@ export default function Home() {
                 <div className="space-y-2">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Reservas Directas</p>
                   <p className="text-sm font-black text-slate-900 italic uppercase">Llamada o WhatsApp</p>
-                  <p className="text-xs font-bold text-slate-500">320 784 8287</p>
+                  <p className="text-xs font-bold text-slate-500">{businessInfo.whatsapp_number || "Contactar Soporte"}</p>
                 </div>
               </div>
             </div>

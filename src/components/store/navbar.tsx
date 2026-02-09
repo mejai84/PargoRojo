@@ -62,21 +62,38 @@ export function Navbar() {
     }
 
     const fetchSettings = async () => {
-        const { data } = await supabase
-            .from('settings')
-            .select('*')
+        // 1. Obtener restaurante por subdominio para SaaS
+        const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+        const subdomain = hostname.includes('.jamalios.com') ? hostname.split('.')[0] : null
 
+        let resQuery = supabase.from('restaurants').select('*')
+        if (subdomain) {
+            resQuery = resQuery.eq('subdomain', subdomain)
+        }
+        const { data: resData } = await resQuery.limit(1).single()
+
+        if (resData) {
+            setBusinessInfo({
+                name: resData.name || "JAMALI OS",
+                logo_url: resData.logo_url || ""
+            })
+            if (resData.landing_page_config?.feature_flags) {
+                setShowCombos(!!resData.landing_page_config.feature_flags.enable_combos)
+            }
+        }
+
+        // 2. Fallback o complementos de settings global
+        const { data } = await supabase.from('settings').select('*')
         if (data) {
             const features = data.find(s => s.key === 'feature_flags')
-            if (features) setShowCombos(!!features.value.enable_combos)
+            if (features && !resData) setShowCombos(!!features.value.enable_combos)
 
             const info = data.find(s => s.key === 'business_info')
-            if (info) {
+            if (info && !resData) {
                 try {
                     const parsedInfo = typeof info.value === 'string' ? JSON.parse(info.value) : info.value
                     setBusinessInfo(parsedInfo)
                 } catch (e) {
-                    console.warn("Error parsing business_info:", e)
                     setBusinessInfo({ name: info.value || "JAMALI OS", logo_url: "" })
                 }
             }
