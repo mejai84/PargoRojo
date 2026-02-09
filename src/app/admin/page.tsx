@@ -38,7 +38,9 @@ export default function AdminDashboard() {
         activeOrders: 0,
         totalOrdersToday: 0,
         yesterdayOrders: 0,
-        newCustomers: 0
+        newCustomers: 0,
+        openAccountsSum: 0,
+        cashInDrawer: 0
     })
     const [recentOrders, setRecentOrders] = useState<any[]>([])
     const [topProducts, setTopProducts] = useState<any[]>([])
@@ -76,13 +78,40 @@ export default function AdminDashboard() {
 
         if (oToday) {
             const revenue = oToday.reduce((a, b) => a + (b.total || 0), 0)
-            const active = oToday.filter(o => !['delivered', 'cancelled'].includes(o.status)).length
+            const active = oToday.filter(o => !['delivered', 'cancelled', 'paid', 'completed'].includes(o.status)).length
+            const openSum = oToday.filter(o => !['delivered', 'cancelled', 'paid', 'completed'].includes(o.status)).reduce((a, b) => a + (b.total || 0), 0)
+
             setStats(prev => ({
                 ...prev,
                 todayRevenue: revenue,
                 totalOrdersToday: oToday.length,
-                activeOrders: active
+                activeOrders: active,
+                openAccountsSum: openSum
             }))
+        }
+
+        // Fetch Cash in Drawer from active sessions
+        const { data: sessions } = await supabase
+            .from('cashbox_sessions')
+            .select('id, opening_balance, status')
+            .eq('status', 'open')
+
+        if (sessions && sessions.length > 0) {
+            let totalCash = 0
+            for (const session of sessions) {
+                const { data: moves } = await supabase
+                    .from('cash_movements')
+                    .select('amount, movement_type')
+                    .eq('cashbox_session_id', session.id)
+
+                if (moves) {
+                    const sales = moves.filter(m => m.movement_type === 'SALE').reduce((a, b) => a + b.amount, 0)
+                    const incomes = moves.filter(m => m.movement_type === 'DEPOSIT').reduce((a, b) => a + b.amount, 0)
+                    const expenses = moves.filter(m => m.movement_type === 'WITHDRAWAL').reduce((a, b) => a + b.amount, 0)
+                    totalCash += (Number(session.opening_balance) + sales + incomes - expenses)
+                }
+            }
+            setStats(prev => ({ ...prev, cashInDrawer: totalCash }))
         }
 
         const { data: recent } = await supabase
@@ -151,10 +180,10 @@ export default function AdminDashboard() {
 
             {/* 📊 CORE METRICS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <HighEndKPI label="Ventas Brutas" value={formatPrice(stats.todayRevenue)} trend="+12.5%" trendUp={true} delay="0" color="text-primary" />
-                <HighEndKPI label="Flujo de Caja" value={stats.totalOrdersToday} subValue="Órdenes hoy" trend="+4%" trendUp={true} delay="100" color="text-foreground" />
-                <HighEndKPI label="Ocupación Live" value={stats.activeOrders} subValue="Mesas activas" trend="High" trendUp={true} delay="200" color="text-emerald-600" />
-                <HighEndKPI label="Fidelización" value="24" subValue="Nuevos Clientes" trend="+8%" trendUp={true} delay="300" color="text-blue-600" />
+                <HighEndKPI label="Ventas Totales" value={formatPrice(stats.todayRevenue)} trend="+12.5%" trendUp={true} delay="0" color="text-primary" icon={<DollarSign />} />
+                <HighEndKPI label="Dinero en Caja" value={formatPrice(stats.cashInDrawer)} subValue="Efectivo Disponible" trend="Real Time" trendUp={true} delay="100" color="text-emerald-500" icon={<Zap />} />
+                <HighEndKPI label="Cuentas Abiertas" value={formatPrice(stats.openAccountsSum)} subValue={`${stats.activeOrders} mesas sin cobrar`} trend="Pendiente" trendUp={false} delay="200" color="text-amber-500" icon={<Clock />} />
+                <HighEndKPI label="Órdenes Hoy" value={stats.totalOrdersToday} subValue="Despachos realizados" trend="+8%" trendUp={true} delay="300" color="text-blue-500" icon={<ShoppingBag />} />
             </div>
 
             {/* 🛠️ CONTROL GRID */}
@@ -252,22 +281,22 @@ export default function AdminDashboard() {
     )
 }
 
-function HighEndKPI({ label, value, trend, trendUp, delay, color, subValue }: any) {
+function HighEndKPI({ label, value, trend, trendUp, delay, color, subValue, icon }: any) {
     return (
-        <div className="bg-card border border-border p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-sm relative overflow-hidden group hover:border-primary/50 transition-all">
+        <div className="bg-card border border-border p-6 md:p-8 rounded-[2.5rem] shadow-sm relative overflow-hidden group hover:border-primary/50 transition-all">
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 group-hover:rotate-6 transition-all duration-700">
-                <Zap className={cn("w-12 h-12", color)} />
+                {icon ? icon : <Zap className={cn("w-12 h-12", color)} />}
             </div>
             <div className="relative z-10 space-y-4">
                 <div className="flex justify-between items-start">
                     <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">{label}</p>
-                    <div className={cn("flex items-center gap-1.5 text-[10px] font-black italic", trendUp ? "text-emerald-600" : "text-rose-600")}>
-                        {trendUp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                    <div className={cn("flex items-center gap-1.5 text-[10px] font-black italic", trendUp ? "text-emerald-600" : "text-amber-600")}>
+                        {trendUp ? <ArrowUpRight className="w-3.5 h-3.5" /> : <Activity className="w-3.5 h-3.5" />}
                         {trend}
                     </div>
                 </div>
                 <div>
-                    <h2 className={cn("text-4xl font-black italic tracking-tighter leading-none shrink-0", color)}>{value}</h2>
+                    <h2 className={cn("text-3xl font-black italic tracking-tighter leading-none shrink-0", color)}>{value}</h2>
                     {subValue && <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-2 italic">{subValue}</p>}
                 </div>
             </div>
