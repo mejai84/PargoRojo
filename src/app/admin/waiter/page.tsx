@@ -279,7 +279,7 @@ export default function WaiterApp() {
     const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.qty), 0)
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col h-screen overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-slate-50">
             {/* Header Orden */}
             <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shrink-0 h-16">
                 <div className="flex items-center gap-3">
@@ -296,9 +296,9 @@ export default function WaiterApp() {
                 </div>
             </header>
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden relative">
                 {/* MENU (IZQUIERDA) */}
-                <div className="flex-1 flex flex-col bg-slate-50">
+                <div className="flex-1 flex flex-col bg-slate-50 min-w-0">
                     {/* Categorías */}
                     <div className="h-14 overflow-x-auto flex items-center gap-2 px-4 border-b border-slate-200 bg-white shrink-0 scrollbar-hide">
                         <button
@@ -357,7 +357,7 @@ export default function WaiterApp() {
 
                 {/* RESUMEN (DERECHA - SLIDEOVER EN MOBILE O PANEL FIJO EN TABLET) */}
                 {cart.length > 0 && (
-                    <div className="w-80 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-50 absolute inset-y-0 right-0 md:relative shrink-0 transition-all duration-300">
+                    <div className="w-80 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-50 absolute inset-y-0 right-0 md:static md:inset-auto shrink-0 transition-all duration-300 h-full max-h-full">
                         <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                             <h3 className="font-black italic uppercase text-sm">Resumen</h3>
                             <span className="bg-black text-white text-[10px] px-2 py-0.5 rounded-full">{cart.reduce((acc, item) => acc + item.qty, 0)} Items</span>
