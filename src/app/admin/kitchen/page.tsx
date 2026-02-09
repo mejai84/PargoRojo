@@ -10,26 +10,16 @@ import {
     Loader2,
     Flame,
     Bell,
-    Eye,
-    X,
     Timer,
-    Utensils,
-    ChevronRight,
-    Search,
-    Zap,
     Activity,
-    Box,
-    Sparkles,
-    MonitorIcon,
-    ArrowRight,
-    Signal,
-    Layers,
     Cpu,
-    TrendingUp,
     BarChart3,
     Target,
     Award,
-    Gauge
+    Gauge,
+    Play,
+    CheckCircle,
+    Package
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -82,9 +72,9 @@ interface KitchenMetrics {
 }
 
 const STATUS_COLUMNS = [
-    { id: 'pending' as const, label: 'COLA DE ENTRADA', color: 'text-blue-500', bg: 'bg-blue-500/5', accent: 'border-blue-500/20', icon: Clock },
-    { id: 'preparing' as const, label: 'EN FOGÓN ACTIVO', color: 'text-primary', bg: 'bg-primary/5', accent: 'border-primary/20', icon: Flame },
-    { id: 'ready' as const, label: 'LISTO / PICKUP', color: 'text-emerald-500', bg: 'bg-emerald-500/5', accent: 'border-emerald-500/20', icon: Check }
+    { id: 'pending' as const, label: 'COLA DE ENTRADA', color: 'text-slate-300' },
+    { id: 'preparing' as const, label: 'EN FOGÓN ACTIVO', color: 'text-slate-300' },
+    { id: 'ready' as const, label: 'LISTO / PICKUP', color: 'text-slate-300' }
 ];
 
 export default function KitchenPage() {
@@ -191,7 +181,7 @@ export default function KitchenPage() {
                     .map(o => {
                         const start = new Date(o.preparation_started_at!).getTime()
                         const end = new Date(o.preparation_finished_at!).getTime()
-                        return (end - start) / 60000 // minutes
+                        return (end - start) / 60000
                     })
 
                 const avgTime = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
@@ -218,7 +208,7 @@ export default function KitchenPage() {
         if (!error) {
             fetchData()
             calculateMetrics()
-            toast.success(`PEDIDO ACTUALIZADO A ${newStatus.toUpperCase()}`, {
+            toast.success(`PEDIDO ACTUALIZADO`, {
                 icon: newStatus === 'ready' ? <Check className="text-emerald-500" /> : <Flame className="text-primary" />
             })
         }
@@ -230,16 +220,18 @@ export default function KitchenPage() {
         return diff
     }
 
-    const getTimeColor = (minutes: number) => {
-        if (minutes < 5) return { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/30' }
-        if (minutes < 10) return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/30' }
-        if (minutes < 15) return { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/30' }
-        return { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/30', pulse: true }
+    const formatTime = (minutes: number) => {
+        const hrs = Math.floor(minutes / 60)
+        const mins = minutes % 60
+        const secs = Math.floor((new Date().getTime() - new Date(currentTime).getTime()) / 1000) % 60
+        return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
     }
 
-    const getEstimatedTime = (items: OrderItem[]) => {
-        const maxTime = Math.max(...items.map(item => item.products?.preparation_time || 10))
-        return maxTime
+    const getTimeColor = (minutes: number) => {
+        if (minutes < 5) return 'text-emerald-400'
+        if (minutes < 10) return 'text-yellow-400'
+        if (minutes < 15) return 'text-orange-400'
+        return 'text-red-400'
     }
 
     const filteredOrders = orders.filter(order => {
@@ -251,62 +243,53 @@ export default function KitchenPage() {
     const criticalOrders = orders.filter(o => getElapsed(o.created_at) > 15).length
 
     if (loading && orders.length === 0) return (
-        <div className="min-h-screen flex items-center justify-center bg-transparent">
-            <div className="flex flex-col items-center gap-8 animate-in fade-in duration-1000">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                    <Loader2 className="w-16 h-16 text-primary animate-spin relative z-10" />
-                </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary italic animate-pulse">Sincronizando Nodos de Cocina...</p>
+        <div className="min-h-screen flex items-center justify-center bg-slate-900">
+            <div className="flex flex-col items-center gap-8">
+                <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                <p className="text-sm font-bold uppercase tracking-wider text-slate-400">Cargando KDS...</p>
             </div>
         </div>
     )
 
     return (
-        <div className="min-h-screen bg-transparent text-foreground p-4 md:p-12 font-sans selection:bg-primary selection:text-primary-foreground relative overflow-hidden">
+        <div className="min-h-screen bg-slate-900 text-white font-sans relative overflow-hidden">
 
-            {/* 🌌 AMBIANCE LAYER */}
-            <div className="fixed top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
-            <div className="fixed -bottom-40 -left-40 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-20 z-0 animate-pulse" />
+            {/* Background Effect */}
+            <div className="fixed inset-0 bg-gradient-to-br from-orange-900/20 via-slate-900 to-slate-950 pointer-events-none" />
+            <div className="fixed inset-0 bg-[url('/fire-texture.png')] opacity-5 pointer-events-none" />
 
-            <div className="max-w-[1900px] mx-auto space-y-12 animate-in fade-in duration-1000 relative z-10 h-[calc(100vh-100px)] flex flex-col">
+            <div className="relative z-10 p-6 space-y-6">
 
-                {/* 🚀 KITCHEN MANAGEMENT HEADER */}
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-12 border-b border-border/50 pb-12 shrink-0">
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-10">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
                         <Link href="/admin">
-                            <Button variant="ghost" size="icon" className="h-20 w-20 rounded-[2.5rem] bg-card border border-border shadow-3xl hover:bg-muted active:scale-90 transition-all group overflow-hidden relative">
-                                <ArrowLeft className="w-10 h-10 group-hover:-translate-x-1 transition-transform relative z-10" />
+                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-700">
+                                <ArrowLeft className="w-6 h-6" />
                             </Button>
                         </Link>
-                        <div className="space-y-6">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <h1 className="text-6xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-foreground">KDS <span className="text-primary italic">PRO</span></h1>
-                                <div className="px-5 py-2 bg-primary/10 border-2 border-primary/20 rounded-[1.5rem] text-[11px] font-black text-primary tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
-                                    <Activity className="w-3 h-3" />
-                                    REALTIME_SYNC_ACTIVE
-                                </div>
-                                {criticalOrders > 0 && (
-                                    <div className="px-5 py-2 bg-rose-500/10 border-2 border-rose-500/20 rounded-[1.5rem] text-[11px] font-black text-rose-500 tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
-                                        <AlertTriangle className="w-3 h-3 animate-bounce" />
-                                        {criticalOrders} CRÍTICAS
-                                    </div>
-                                )}
+
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-4xl font-black italic text-white">
+                                KDS <span className="text-white">PRO</span>
+                            </h1>
+                            <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center gap-2">
+                                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">REALTIME_SYNC_ACTIVE</span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.5em] italic flex items-center gap-4 opacity-60">
-                                <Flame className="w-5 h-5 text-primary" /> Estación: {stations.find(s => s.id === activeStationId)?.name || "CENTRO_CONTROL_TOTAL"}
-                            </p>
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-6">
-                        {/* Station Switcher */}
-                        <div className="flex bg-card/60 backdrop-blur-md p-2 rounded-[2rem] border-2 border-border/40 shadow-xl overflow-x-auto no-scrollbar max-w-full">
+                    <div className="flex items-center gap-4">
+                        {/* Station Filters */}
+                        <div className="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700">
                             <button
                                 onClick={() => setActiveStationId("TODAS")}
                                 className={cn(
-                                    "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all italic whitespace-nowrap",
-                                    activeStationId === "TODAS" ? "bg-primary text-black shadow-lg" : "text-muted-foreground/40 hover:text-foreground"
+                                    "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                                    activeStationId === "TODAS"
+                                        ? "bg-primary text-black shadow-lg shadow-primary/20"
+                                        : "text-slate-400 hover:text-white"
                                 )}
                             >
                                 TODAS
@@ -316,92 +299,86 @@ export default function KitchenPage() {
                                     key={station.id}
                                     onClick={() => setActiveStationId(station.id)}
                                     className={cn(
-                                        "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all italic whitespace-nowrap",
-                                        activeStationId === station.id ? "bg-primary text-black shadow-lg" : "text-muted-foreground/40 hover:text-foreground"
+                                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                                        activeStationId === station.id
+                                            ? "bg-primary text-black shadow-lg shadow-primary/20"
+                                            : "text-slate-400 hover:text-white"
                                     )}
                                 >
-                                    {station.name.toUpperCase()}
+                                    {station.name}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => setShowMetrics(!showMetrics)}
-                                className="px-8 py-4 bg-slate-900 text-white rounded-[2rem] flex flex-col items-center shadow-3xl group/metrics active:scale-95 transition-all border-2 border-primary/20 hover:border-primary/40"
-                            >
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 italic">ANALÍTICA</span>
-                                <BarChart3 className="w-6 h-6 text-primary group-hover/metrics:scale-110 transition-transform" />
-                            </button>
-                            <div className="px-8 py-4 bg-foreground rounded-[2rem] text-background flex flex-col items-center shadow-3xl group/fire active:scale-95 transition-all">
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 italic">EN FOGÓN</span>
-                                <span className="text-3xl font-black italic text-primary drop-shadow-[0_0_10px_rgba(255,77,0,0.5)] group-hover/fire:scale-110 transition-transform">{preparingCount}</span>
-                            </div>
-                            <Button onClick={fetchData} className="h-20 w-20 bg-card border-4 border-border/40 rounded-[2.5rem] hover:text-primary hover:border-primary/40 shadow-3xl transition-all group/btn active:scale-90 flex items-center justify-center">
-                                <RefreshCw className={cn("w-8 h-8 group-hover/btn:rotate-180 transition-transform duration-700", loading && "animate-spin")} />
-                            </Button>
+                        {/* En Fogón Counter */}
+                        <div className="px-6 py-3 bg-primary/20 border border-primary/30 rounded-xl">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">EN FOGÓN:</span>
+                            <span className="text-2xl font-black text-primary">{preparingCount}</span>
                         </div>
+
+                        <Button onClick={fetchData} variant="ghost" size="icon" className="h-12 w-12 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-700">
+                            <RefreshCw className={cn("w-5 h-5", loading && "animate-spin")} />
+                        </Button>
                     </div>
                 </div>
 
-                {/* 📊 METRICS DASHBOARD */}
+                {/* Metrics Dashboard */}
                 {showMetrics && (
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 animate-in slide-in-from-top-4 duration-500 shrink-0">
-                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Target className="w-8 h-8 text-blue-500" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">ÓRDENES ACTIVAS</span>
+                    <div className="grid grid-cols-4 gap-4 animate-in slide-in-from-top-4 duration-300">
+                        <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <Target className="w-5 h-5 text-blue-400" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Activas</span>
                             </div>
-                            <p className="text-5xl font-black italic text-blue-500">{metrics.totalOrders}</p>
+                            <p className="text-3xl font-black text-blue-400">{metrics.totalOrders}</p>
                         </div>
-                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Timer className="w-8 h-8 text-amber-500" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">TIEMPO PROMEDIO</span>
+                        <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <Timer className="w-5 h-5 text-amber-400" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Promedio</span>
                             </div>
-                            <p className="text-5xl font-black italic text-amber-500">{metrics.avgPrepTime}<span className="text-2xl">min</span></p>
+                            <p className="text-3xl font-black text-amber-400">{metrics.avgPrepTime}<span className="text-lg">min</span></p>
                         </div>
-                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Award className="w-8 h-8 text-emerald-500" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">COMPLETADAS HOY</span>
+                        <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <Award className="w-5 h-5 text-emerald-400" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Hoy</span>
                             </div>
-                            <p className="text-5xl font-black italic text-emerald-500">{metrics.completedToday}</p>
+                            <p className="text-3xl font-black text-emerald-400">{metrics.completedToday}</p>
                         </div>
-                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Gauge className="w-8 h-8 text-primary" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">EFICIENCIA</span>
+                        <div className="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <Gauge className="w-5 h-5 text-primary" />
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Eficiencia</span>
                             </div>
-                            <p className="text-5xl font-black italic text-primary">{metrics.efficiency}<span className="text-2xl">%</span></p>
+                            <p className="text-3xl font-black text-primary">{metrics.efficiency}<span className="text-lg">%</span></p>
                         </div>
                     </div>
                 )}
 
-                {/* 🏗️ KDS KANBAN GRID */}
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-12 overflow-hidden pb-4">
+                {/* Kanban Columns */}
+                <div className="grid grid-cols-3 gap-6 h-[calc(100vh-200px)]">
                     {STATUS_COLUMNS.map(column => (
-                        <div key={column.id} className={cn("flex flex-col h-full rounded-[4.5rem] border-4 overflow-hidden shadow-3xl backdrop-blur-md transition-all", column.bg, column.accent)}>
-                            <div className="p-10 pb-6 flex items-center justify-between border-b-2 border-current/5 relative overflow-hidden group/col">
-                                <div className="absolute inset-0 bg-current/2 opacity-[0.05] group-hover/col:opacity-10 transition-opacity" />
-                                <div className="flex items-center gap-4 relative z-10">
-                                    <column.icon className={cn("w-8 h-8", column.color)} />
-                                    <h2 className={cn("text-[12px] font-black uppercase tracking-[0.6em] italic", column.color)}>
-                                        {column.label}
-                                    </h2>
-                                </div>
-                                <div className="w-12 h-12 rounded-2xl bg-card border-2 border-current/20 flex items-center justify-center text-[12px] font-black text-foreground shadow-xl relative z-10">
-                                    {filteredOrders.filter(o => o.status === column.id).length}
+                        <div key={column.id} className="flex flex-col">
+                            {/* Column Header */}
+                            <div className="bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-t-2xl p-4 flex items-center justify-between">
+                                <h2 className={cn("text-sm font-black italic uppercase tracking-wider", column.color)}>
+                                    {column.label}
+                                </h2>
+                                <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center">
+                                    <span className="text-sm font-black text-slate-300">
+                                        {filteredOrders.filter(o => o.status === column.id).length}
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                            {/* Column Content */}
+                            <div className="flex-1 bg-slate-800/30 backdrop-blur-sm border-x border-b border-slate-700 rounded-b-2xl p-4 overflow-y-auto space-y-4 custom-scrollbar">
                                 {filteredOrders
                                     .filter(o => o.status === column.id)
-                                    .map((order, idx) => {
+                                    .map((order) => {
                                         const minutes = getElapsed(order.created_at)
-                                        const timeStyle = getTimeColor(minutes)
-                                        const estimatedTime = getEstimatedTime(order.order_items)
+                                        const timeColor = getTimeColor(minutes)
                                         const itemsToDisplay = order.order_items.filter(item =>
                                             activeStationId === 'TODAS' || item.products?.station_id === activeStationId
                                         )
@@ -411,97 +388,62 @@ export default function KitchenPage() {
                                         return (
                                             <div
                                                 key={order.id}
-                                                className={cn(
-                                                    "group/card bg-card/80 backdrop-blur-xl rounded-[3.5rem] border-4 p-8 space-y-8 transition-all relative overflow-hidden shadow-2xl animate-in zoom-in-95 active:scale-[0.98]",
-                                                    minutes > 15 ? "border-rose-500/40 shadow-rose-500/10" : "border-border/40 hover:border-primary/40",
-                                                    timeStyle.pulse && "animate-pulse"
-                                                )}
-                                                style={{ animationDelay: `${idx * 100}ms` }}
+                                                className="bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-2xl p-4 space-y-3 hover:border-primary/30 transition-all"
                                             >
-                                                {/* Header Info */}
-                                                <div className="flex justify-between items-start">
-                                                    <div className="space-y-2">
-                                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground leading-none group-hover/card:text-primary transition-colors">
-                                                            {order.tables?.table_name || 'DOMICILIO / HUB'}
-                                                        </h3>
-                                                        <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-[0.4em] italic font-mono flex items-center gap-2">
-                                                            <Cpu className="w-3 h-3 text-primary" /> NODE_{order.id.split('-')[0].toUpperCase()}
-                                                        </p>
-                                                    </div>
-                                                    <div className={cn(
-                                                        "px-6 py-3 rounded-[1.5rem] border-2 flex flex-col items-center min-w-[100px] shadow-lg",
-                                                        timeStyle.bg,
-                                                        timeStyle.border
-                                                    )}>
-                                                        <Timer className={cn("w-5 h-5 mb-1", timeStyle.text)} />
-                                                        <span className={cn("text-2xl font-black italic leading-none", timeStyle.text)}>{minutes}</span>
-                                                        <span className={cn("text-[8px] font-black uppercase tracking-widest mt-1", timeStyle.text)}>MIN</span>
+                                                {/* Order Header */}
+                                                <div className="flex items-start justify-between">
+                                                    <h3 className="text-xl font-black italic uppercase text-white">
+                                                        {order.tables?.table_name || 'DOMICILIO'}
+                                                    </h3>
+                                                    <div className={cn("text-sm font-mono font-bold tabular-nums", timeColor)}>
+                                                        {String(Math.floor(minutes / 60)).padStart(2, '0')}:
+                                                        {String(minutes % 60).padStart(2, '0')}:
+                                                        {String(Math.floor((Date.now() - new Date(order.created_at).getTime()) / 1000) % 60).padStart(2, '0')}
+                                                        {minutes > 15 && <AlertTriangle className="w-3 h-3 inline ml-1 animate-pulse" />}
                                                     </div>
                                                 </div>
 
-                                                {/* Items List */}
-                                                <div className="space-y-4">
-                                                    {itemsToDisplay.map((item, itemIdx) => (
-                                                        <div key={itemIdx} className="flex items-center gap-6 bg-muted/20 p-6 rounded-[2rem] border border-border/20 group/item hover:bg-muted/40 transition-all">
-                                                            <div className="w-12 h-12 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-xl font-black text-primary shadow-lg group-hover/item:scale-110 transition-transform">
-                                                                {item.quantity}
-                                                            </div>
-                                                            <div className="flex-1 space-y-1">
-                                                                <p className="text-lg font-black uppercase tracking-tight text-foreground leading-none">{item.products?.name}</p>
-                                                                {item.customizations && Object.keys(item.customizations).length > 0 && (
-                                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide italic">
-                                                                        + {Object.values(item.customizations).join(', ')}
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                            {item.products?.preparation_time && (
-                                                                <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                                                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest italic">
-                                                                        ~{item.products.preparation_time}min
-                                                                    </span>
-                                                                </div>
-                                                            )}
+                                                {/* Order Items */}
+                                                <div className="space-y-2">
+                                                    {itemsToDisplay.map((item, idx) => (
+                                                        <div key={idx} className="flex items-start gap-2 text-sm">
+                                                            <span className="font-bold text-white min-w-[24px]">{item.quantity}x</span>
+                                                            <span className="text-slate-300">{item.products?.name}</span>
                                                         </div>
                                                     ))}
                                                 </div>
 
                                                 {/* Notes */}
                                                 {order.notes && (
-                                                    <div className="p-6 bg-amber-500/5 border-2 border-amber-500/20 rounded-[2rem]">
-                                                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2 italic flex items-center gap-2">
-                                                            <AlertTriangle className="w-3 h-3" /> NOTA ESPECIAL
-                                                        </p>
-                                                        <p className="text-sm font-bold text-foreground">{order.notes}</p>
+                                                    <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                                        <p className="text-xs text-amber-400">{order.notes}</p>
                                                     </div>
                                                 )}
 
                                                 {/* Action Buttons */}
-                                                <div className="flex gap-4 pt-4 border-t-2 border-border/10">
+                                                <div className="flex gap-2 pt-2">
                                                     {order.status === 'pending' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'preparing')}
-                                                            className="flex-1 h-16 bg-primary hover:bg-primary/90 text-black rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl shadow-primary/20 gap-3 group/btn"
+                                                            className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold uppercase text-xs rounded-lg h-10"
                                                         >
-                                                            <Flame className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                                                            INICIAR PREPARACIÓN
+                                                            EMPEZAR
                                                         </Button>
                                                     )}
                                                     {order.status === 'preparing' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'ready')}
-                                                            className="flex-1 h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl shadow-emerald-500/20 gap-3 group/btn"
+                                                            className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold uppercase text-xs rounded-lg h-10"
                                                         >
-                                                            <Check className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                                                            MARCAR LISTO
+                                                            COMPLETAR
                                                         </Button>
                                                     )}
                                                     {order.status === 'ready' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'delivered')}
-                                                            className="flex-1 h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl gap-3 group/btn"
+                                                            className="flex-1 bg-primary hover:bg-primary/90 text-black font-bold uppercase text-xs rounded-lg h-10"
                                                         >
-                                                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                                            ENTREGADO
+                                                            RETIRADO
                                                         </Button>
                                                     )}
                                                 </div>
@@ -510,10 +452,10 @@ export default function KitchenPage() {
                                     })}
 
                                 {filteredOrders.filter(o => o.status === column.id).length === 0 && (
-                                    <div className="h-full flex flex-col items-center justify-center py-20 space-y-6 opacity-20">
-                                        <column.icon className="w-24 h-24 text-muted-foreground" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground italic">
-                                            SIN ÓRDENES EN {column.label}
+                                    <div className="h-full flex flex-col items-center justify-center py-12 opacity-30">
+                                        <Package className="w-16 h-16 text-slate-600 mb-3" />
+                                        <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                            Sin órdenes
                                         </p>
                                     </div>
                                 )}
@@ -525,24 +467,18 @@ export default function KitchenPage() {
 
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
-                    width: 8px;
+                    width: 6px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
+                    background: rgba(15, 23, 42, 0.3);
+                    border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: hsl(var(--primary) / 0.2);
+                    background: rgba(255, 77, 0, 0.3);
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: hsl(var(--primary) / 0.4);
-                }
-                .no-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .no-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
+                    background: rgba(255, 77, 0, 0.5);
                 }
             `}</style>
         </div>

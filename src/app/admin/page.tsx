@@ -10,25 +10,8 @@ import {
     Loader2,
     ArrowUpRight,
     ArrowDownRight,
-    Eye,
-    Zap,
-    Calendar,
-    ArrowRight,
-    Search,
     RefreshCw,
     Activity,
-    Smartphone,
-    Monitor,
-    Globe,
-    Shield,
-    FileText,
-    Target,
-    BarChart3,
-    ArrowLeft,
-    Layers,
-    PieChart,
-    ChevronRight,
-    MoreHorizontal,
     Flame,
     Package,
     Utensils,
@@ -37,7 +20,10 @@ import {
     AlertCircle,
     CheckCircle,
     Sparkles,
-    Cpu
+    BarChart3,
+    ChevronRight,
+    Star,
+    Target
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
@@ -56,7 +42,11 @@ export default function AdminDashboard() {
         yesterdayOrders: 0,
         newCustomers: 0,
         openAccountsSum: 0,
-        cashInDrawer: 0
+        cashInDrawer: 0,
+        criticalStock: 0,
+        activeTables: 0,
+        totalTables: 0,
+        avgRating: 0
     })
     const [recentOrders, setRecentOrders] = useState<any[]>([])
     const [topProducts, setTopProducts] = useState<any[]>([])
@@ -113,7 +103,6 @@ export default function AdminDashboard() {
             }))
         }
 
-        // Fetch Cash in Drawer from active sessions
         const { data: sessions } = await supabase
             .from('cashbox_sessions')
             .select('id, opening_balance, status')
@@ -137,11 +126,21 @@ export default function AdminDashboard() {
             setStats(prev => ({ ...prev, cashInDrawer: totalCash }))
         }
 
+        // Stock crítico
+        const { data: products } = await supabase.from('products').select('current_stock, min_stock').gt('min_stock', 0)
+        const critical = products?.filter(p => p.current_stock <= p.min_stock).length || 0
+        setStats(prev => ({ ...prev, criticalStock: critical }))
+
+        // Mesas ocupadas
+        const { data: tables } = await supabase.from('tables').select('id, status').eq('restaurant_id', restaurant?.id)
+        const occupied = tables?.filter(t => t.status === 'occupied').length || 0
+        setStats(prev => ({ ...prev, activeTables: occupied, totalTables: tables?.length || 0 }))
+
         const { data: recent } = await supabase
             .from('orders')
             .select(`*, order_items(quantity, products(name)), tables(table_name)`)
             .order('created_at', { ascending: false })
-            .limit(8)
+            .limit(6)
 
         if (recent) setRecentOrders(recent)
 
@@ -166,381 +165,210 @@ export default function AdminDashboard() {
         ? ((stats.todayRevenue - stats.yesterdayRevenue) / stats.yesterdayRevenue * 100).toFixed(1)
         : 0
 
-    const ordersChange = stats.yesterdayOrders > 0
-        ? ((stats.totalOrdersToday - stats.yesterdayOrders) / stats.yesterdayOrders * 100).toFixed(1)
-        : 0
-
     if (loading && !stats.todayRevenue) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-transparent">
-                <div className="flex flex-col items-center gap-8 animate-in fade-in duration-1000">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                        <Loader2 className="w-16 h-16 text-primary animate-spin relative z-10" />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary italic animate-pulse">Sincronizando Centro de Comando...</p>
+            <div className="min-h-screen flex items-center justify-center bg-slate-900">
+                <div className="flex flex-col items-center gap-8">
+                    <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                    <p className="text-sm font-bold uppercase tracking-wider text-slate-400">Cargando Dashboard...</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-transparent text-foreground p-4 md:p-12 font-sans selection:bg-primary selection:text-primary-foreground relative overflow-hidden">
+        <div className="min-h-screen bg-slate-900 text-white p-6 font-sans relative overflow-hidden">
 
-            {/* 🌌 AMBIANCE LAYER */}
-            <div className="fixed top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/[0.02] to-transparent pointer-events-none z-0" />
-            <div className="fixed -bottom-40 -right-40 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none opacity-20 z-0 animate-pulse" />
+            {/* Background Effect */}
+            <div className="fixed inset-0 bg-gradient-to-br from-orange-900/20 via-slate-900 to-slate-950 pointer-events-none" />
 
-            <div className="max-w-[1900px] mx-auto space-y-12 animate-in fade-in duration-1000 relative z-10">
+            <div className="max-w-[1900px] mx-auto space-y-8 relative z-10">
 
-                {/* 🎯 COMMAND CENTER HEADER */}
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-12 border-b border-border/50 pb-12">
-                    <div className="space-y-6">
-                        <div className="flex flex-wrap items-center gap-4">
-                            <h1 className="text-6xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-foreground">
-                                COMMAND <span className="text-primary italic">CENTER</span>
-                            </h1>
-                            <div className="px-5 py-2 bg-emerald-500/10 border-2 border-emerald-500/20 rounded-[1.5rem] text-[11px] font-black text-emerald-500 tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
-                                <Activity className="w-3 h-3" />
-                                REALTIME_SYNC_ACTIVE
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.5em] italic flex items-center gap-4 opacity-60">
-                                <Cpu className="w-5 h-5 text-primary" />
-                                Bienvenido, {userName}
-                            </p>
-                            <div className="h-4 w-px bg-border/40" />
-                            <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.5em] italic flex items-center gap-4 opacity-60">
-                                <Clock className="w-5 h-5 text-primary" />
-                                {currentTime.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </p>
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-slate-700 pb-6">
+                    <div>
+                        <h1 className="text-5xl font-black italic text-white mb-2">
+                            DASHBOARD <span className="text-white">ADMINISTRATIVO</span>
+                        </h1>
+                        <div className="flex items-center gap-4 text-sm text-slate-400">
+                            <span className="font-bold">Bienvenido, {userName}</span>
+                            <span>•</span>
+                            <span className="font-mono">{currentTime.toLocaleTimeString('es-CO')}</span>
                         </div>
                     </div>
-
-                    <Button
-                        onClick={fetchData}
-                        className="h-20 w-20 bg-card border-4 border-border/40 rounded-[2.5rem] hover:text-primary hover:border-primary/40 shadow-3xl transition-all group/btn active:scale-90 flex items-center justify-center"
-                    >
-                        <RefreshCw className={cn("w-8 h-8 group-hover/btn:rotate-180 transition-transform duration-700", loading && "animate-spin")} />
+                    <Button onClick={fetchData} variant="ghost" size="icon" className="h-12 w-12 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-700">
+                        <RefreshCw className={cn("w-5 h-5", loading && "animate-spin")} />
                     </Button>
                 </div>
 
-                {/* 📊 CORE METRICS GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                    {/* Revenue Card */}
-                    <div className="group/card bg-gradient-to-br from-emerald-500/10 via-card/60 to-card/60 backdrop-blur-xl p-8 rounded-[3.5rem] border-4 border-emerald-500/20 shadow-2xl hover:shadow-emerald-500/10 transition-all relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="w-16 h-16 rounded-[2rem] bg-emerald-500/10 border-2 border-emerald-500/20 flex items-center justify-center shadow-lg">
-                                    <DollarSign className="w-8 h-8 text-emerald-500" />
+                {/* Main Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    {/* Revenue */}
+                    <div className="bg-gradient-to-br from-orange-900/20 to-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                                <DollarSign className="w-6 h-6 text-primary" />
+                            </div>
+                            {Number(revenueChange) !== 0 && (
+                                <div className={cn(
+                                    "flex items-center gap-1 text-xs font-bold",
+                                    Number(revenueChange) > 0 ? "text-emerald-400" : "text-red-400"
+                                )}>
+                                    {Number(revenueChange) > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                    {Math.abs(Number(revenueChange))}%
                                 </div>
-                                {Number(revenueChange) !== 0 && (
-                                    <div className={cn(
-                                        "px-4 py-2 rounded-[1.5rem] border-2 flex items-center gap-2",
-                                        Number(revenueChange) > 0
-                                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                                            : "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                                    )}>
-                                        {Number(revenueChange) > 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                        <span className="text-xs font-black italic">{Math.abs(Number(revenueChange))}%</span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-emerald-500/60 uppercase tracking-[0.3em] italic">INGRESOS HOY</p>
-                                <p className="text-5xl font-black italic text-emerald-500 leading-none tracking-tighter">
-                                    {formatPrice(stats.todayRevenue)}
-                                </p>
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                    Ayer: {formatPrice(stats.yesterdayRevenue)}
-                                </p>
-                            </div>
+                            )}
                         </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Ventas Hoy</p>
+                        <p className="text-3xl font-black text-primary">{formatPrice(stats.todayRevenue)}</p>
                     </div>
 
-                    {/* Active Orders Card */}
-                    <div className="group/card bg-gradient-to-br from-primary/10 via-card/60 to-card/60 backdrop-blur-xl p-8 rounded-[3.5rem] border-4 border-primary/20 shadow-2xl hover:shadow-primary/10 transition-all relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="w-16 h-16 rounded-[2rem] bg-primary/10 border-2 border-primary/20 flex items-center justify-center shadow-lg">
-                                    <Flame className="w-8 h-8 text-primary" />
-                                </div>
-                                {stats.activeOrders > 0 && (
-                                    <div className="px-4 py-2 rounded-[1.5rem] border-2 bg-primary/10 border-primary/20 text-primary animate-pulse">
-                                        <span className="text-xs font-black italic">ACTIVAS</span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] italic">ÓRDENES EN PROCESO</p>
-                                <p className="text-5xl font-black italic text-primary leading-none tracking-tighter">
-                                    {stats.activeOrders}
-                                </p>
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                    Total hoy: {stats.totalOrdersToday} ({Number(ordersChange) > 0 ? '+' : ''}{ordersChange}%)
-                                </p>
+                    {/* Active Orders */}
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                                <Flame className="w-6 h-6 text-blue-400" />
                             </div>
                         </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Órdenes Activas</p>
+                        <p className="text-3xl font-black text-blue-400">{stats.activeOrders}</p>
                     </div>
 
-                    {/* Cash in Drawer Card */}
-                    <div className="group/card bg-gradient-to-br from-blue-500/10 via-card/60 to-card/60 backdrop-blur-xl p-8 rounded-[3.5rem] border-4 border-blue-500/20 shadow-2xl hover:shadow-blue-500/10 transition-all relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="w-16 h-16 rounded-[2rem] bg-blue-500/10 border-2 border-blue-500/20 flex items-center justify-center shadow-lg">
-                                    <Wallet className="w-8 h-8 text-blue-500" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-blue-500/60 uppercase tracking-[0.3em] italic">EFECTIVO EN CAJA</p>
-                                <p className="text-5xl font-black italic text-blue-500 leading-none tracking-tighter">
-                                    {formatPrice(stats.cashInDrawer)}
-                                </p>
-                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                    Cuentas abiertas: {formatPrice(stats.openAccountsSum)}
-                                </p>
+                    {/* Critical Stock */}
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                                <AlertCircle className="w-6 h-6 text-red-400" />
                             </div>
                         </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Inventario Crítico</p>
+                        <p className="text-3xl font-black text-red-400">{stats.criticalStock} <span className="text-lg text-slate-500">items</span></p>
                     </div>
 
-                    {/* Top Products Card */}
-                    <div className="group/card bg-gradient-to-br from-amber-500/10 via-card/60 to-card/60 backdrop-blur-xl p-8 rounded-[3.5rem] border-4 border-amber-500/20 shadow-2xl hover:shadow-amber-500/10 transition-all relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                        <div className="relative z-10 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="w-16 h-16 rounded-[2rem] bg-amber-500/10 border-2 border-amber-500/20 flex items-center justify-center shadow-lg">
-                                    <Utensils className="w-8 h-8 text-amber-500" />
-                                </div>
-                                {topProducts.length > 0 && (
-                                    <div className="px-4 py-2 rounded-[1.5rem] border-2 bg-amber-500/10 border-amber-500/20 text-amber-500">
-                                        <span className="text-xs font-black italic">TOP {topProducts.length}</span>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-amber-500/60 uppercase tracking-[0.3em] italic">MÁS VENDIDO HOY</p>
-                                {topProducts[0] ? (
-                                    <>
-                                        <p className="text-3xl font-black italic text-amber-500 leading-none tracking-tighter truncate">
-                                            {topProducts[0].name}
-                                        </p>
-                                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            {topProducts[0].qty} unidades vendidas
-                                        </p>
-                                    </>
-                                ) : (
-                                    <p className="text-2xl font-black italic text-amber-500/40 leading-none">Sin datos</p>
-                                )}
+                    {/* Tables */}
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-800/30 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                                <Target className="w-6 h-6 text-amber-400" />
                             </div>
                         </div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mesas Ocupadas</p>
+                        <p className="text-3xl font-black text-amber-400">{stats.activeTables}<span className="text-lg text-slate-500">/{stats.totalTables}</span></p>
                     </div>
                 </div>
 
-                {/* 🎮 QUICK ACCESS MODULES */}
-                <div className="space-y-8">
-                    <h2 className="text-3xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-4">
-                        <Zap className="w-8 h-8 text-primary" />
-                        ACCESO RÁPIDO
+                {/* Quick Access Modules */}
+                <div>
+                    <h2 className="text-xl font-black italic uppercase text-white mb-6 flex items-center gap-3">
+                        <Sparkles className="w-6 h-6 text-primary" />
+                        Acceso Rápido
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                        {/* KDS Module */}
-                        <Link href="/admin/kitchen">
-                            <div className="group/module bg-gradient-to-br from-primary/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-primary/20 shadow-2xl hover:shadow-primary/20 hover:border-primary/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-primary opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-primary/10 border-2 border-primary/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <Flame className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-primary transition-colors">
-                                            KDS PRO
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Kitchen Display System
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-
-                        {/* Inventory Module */}
-                        <Link href="/admin/inventory">
-                            <div className="group/module bg-gradient-to-br from-emerald-500/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-emerald-500/20 shadow-2xl hover:shadow-emerald-500/20 hover:border-emerald-500/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-emerald-500 opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-emerald-500/10 border-2 border-emerald-500/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <Package className="w-10 h-10 text-emerald-500" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-emerald-500 transition-colors">
-                                            INVENTARIO PRO
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Gestión de Stock & Recetas
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-
-                        {/* Payroll Module */}
-                        <Link href="/admin/payroll">
-                            <div className="group/module bg-gradient-to-br from-blue-500/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-blue-500/20 shadow-2xl hover:shadow-blue-500/20 hover:border-blue-500/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-blue-500 opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-blue-500/10 border-2 border-blue-500/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <Users className="w-10 h-10 text-blue-500" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-blue-500 transition-colors">
-                                            NÓMINA
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Gestión de Personal
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-
-                        {/* POS Module */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                         <Link href="/admin/pos">
-                            <div className="group/module bg-gradient-to-br from-amber-500/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-amber-500/20 shadow-2xl hover:shadow-amber-500/20 hover:border-amber-500/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-amber-500 opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-amber-500/10 border-2 border-amber-500/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <ShoppingBag className="w-10 h-10 text-amber-500" />
+                            <div className="group bg-slate-800/50 backdrop-blur-sm border-2 border-primary/30 rounded-2xl p-6 hover:border-primary/60 transition-all cursor-pointer">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <ShoppingBag className="w-6 h-6 text-primary" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-amber-500 transition-colors">
-                                            PUNTO DE VENTA
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Sistema POS
-                                        </p>
-                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
+                                <h3 className="text-lg font-black uppercase text-white mb-1">POS</h3>
+                                <p className="text-xs text-slate-400">Punto de Venta</p>
                             </div>
                         </Link>
 
-                        {/* Cashier Module */}
-                        <Link href="/admin/cashier">
-                            <div className="group/module bg-gradient-to-br from-violet-500/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-violet-500/20 shadow-2xl hover:shadow-violet-500/20 hover:border-violet-500/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-violet-500 opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-violet-500/10 border-2 border-violet-500/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <Wallet className="w-10 h-10 text-violet-500" />
+                        <Link href="/admin/kitchen">
+                            <div className="group bg-slate-800/50 backdrop-blur-sm border-2 border-primary/30 rounded-2xl p-6 hover:border-primary/60 transition-all cursor-pointer">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Flame className="w-6 h-6 text-primary" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-violet-500 transition-colors">
-                                            CAJA
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Control de Efectivo
-                                        </p>
-                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
+                                <h3 className="text-lg font-black uppercase text-white mb-1">COCINA</h3>
+                                <p className="text-xs text-slate-400">KDS Pro</p>
                             </div>
                         </Link>
 
-                        {/* Audit Module */}
-                        <Link href="/admin/audit">
-                            <div className="group/module bg-gradient-to-br from-rose-500/10 via-card/80 to-card/80 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-rose-500/20 shadow-2xl hover:shadow-rose-500/20 hover:border-rose-500/40 transition-all relative overflow-hidden cursor-pointer active:scale-[0.98]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover/module:opacity-100 transition-opacity" />
-                                <div className="absolute top-6 right-6">
-                                    <ArrowRight className="w-8 h-8 text-rose-500 opacity-0 group-hover/module:opacity-100 group-hover/module:translate-x-2 transition-all" />
-                                </div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="w-20 h-20 rounded-[2.5rem] bg-rose-500/10 border-2 border-rose-500/20 flex items-center justify-center shadow-xl group-hover/module:scale-110 transition-transform">
-                                        <Shield className="w-10 h-10 text-rose-500" />
+                        <Link href="/admin/inventory">
+                            <div className="group bg-slate-800/50 backdrop-blur-sm border-2 border-primary/30 rounded-2xl p-6 hover:border-primary/60 transition-all cursor-pointer">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Package className="w-6 h-6 text-primary" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground group-hover/module:text-rose-500 transition-colors">
-                                            AUDITORÍA
-                                        </h3>
-                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                            Registro de Eventos
-                                        </p>
-                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
+                                <h3 className="text-lg font-black uppercase text-white mb-1">INVENTARIO</h3>
+                                <p className="text-xs text-slate-400">Gestión de Stock</p>
+                            </div>
+                        </Link>
+
+                        <Link href="/admin/payroll">
+                            <div className="group bg-slate-800/50 backdrop-blur-sm border-2 border-primary/30 rounded-2xl p-6 hover:border-primary/60 transition-all cursor-pointer">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Users className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                <h3 className="text-lg font-black uppercase text-white mb-1">NÓMINA</h3>
+                                <p className="text-xs text-slate-400">Gestión de Personal</p>
                             </div>
                         </Link>
                     </div>
                 </div>
 
-                {/* 📋 RECENT ACTIVITY */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                {/* Recent Activity & Top Products */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Recent Orders */}
-                    <div className="xl:col-span-2 bg-card/60 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-border/40 shadow-2xl space-y-8">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-4">
-                                <Activity className="w-6 h-6 text-primary" />
-                                ACTIVIDAD RECIENTE
+                    <div className="xl:col-span-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-black italic uppercase text-white flex items-center gap-3">
+                                <Activity className="w-5 h-5 text-primary" />
+                                Órdenes Recientes
                             </h2>
                             <Link href="/admin/orders">
-                                <Button variant="ghost" className="text-xs font-black uppercase tracking-widest italic hover:text-primary">
-                                    VER TODAS <ChevronRight className="w-4 h-4 ml-2" />
+                                <Button variant="ghost" className="text-xs font-bold uppercase text-slate-400 hover:text-primary">
+                                    Ver Todas <ChevronRight className="w-4 h-4 ml-1" />
                                 </Button>
                             </Link>
                         </div>
 
-                        <div className="space-y-4">
-                            {recentOrders.slice(0, 6).map((order, idx) => (
+                        <div className="space-y-3">
+                            {recentOrders.slice(0, 5).map((order) => (
                                 <div
                                     key={order.id}
-                                    className="group/order bg-muted/20 hover:bg-muted/40 p-6 rounded-[2rem] border-2 border-border/20 hover:border-primary/20 transition-all cursor-pointer"
-                                    style={{ animationDelay: `${idx * 50}ms` }}
+                                    className="bg-slate-700/30 border border-slate-600/50 rounded-xl p-4 hover:border-primary/30 transition-all"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-4">
                                             <div className={cn(
-                                                "w-12 h-12 rounded-2xl border-2 flex items-center justify-center shadow-lg",
-                                                order.status === 'delivered' ? "bg-emerald-500/10 border-emerald-500/20" :
-                                                    order.status === 'preparing' ? "bg-primary/10 border-primary/20" :
-                                                        "bg-blue-500/10 border-blue-500/20"
+                                                "w-10 h-10 rounded-lg border flex items-center justify-center",
+                                                order.status === 'delivered' ? "bg-emerald-500/20 border-emerald-500/30" :
+                                                    order.status === 'preparing' ? "bg-primary/20 border-primary/30" :
+                                                        "bg-blue-500/20 border-blue-500/30"
                                             )}>
-                                                {order.status === 'delivered' ? <CheckCircle className="w-6 h-6 text-emerald-500" /> :
-                                                    order.status === 'preparing' ? <Flame className="w-6 h-6 text-primary" /> :
-                                                        <Clock className="w-6 h-6 text-blue-500" />}
+                                                {order.status === 'delivered' ? <CheckCircle className="w-5 h-5 text-emerald-400" /> :
+                                                    order.status === 'preparing' ? <Flame className="w-5 h-5 text-primary" /> :
+                                                        <Clock className="w-5 h-5 text-blue-400" />}
                                             </div>
-                                            <div className="space-y-1">
-                                                <p className="text-lg font-black uppercase tracking-tight text-foreground">
+                                            <div>
+                                                <p className="text-sm font-bold text-white">
                                                     {order.tables?.table_name || 'Domicilio'}
                                                 </p>
-                                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+                                                <p className="text-xs text-slate-400">
                                                     {order.order_items?.length || 0} items • {new Date(order.created_at).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="text-right space-y-1">
-                                            <p className="text-xl font-black italic text-foreground">
-                                                {formatPrice(order.total)}
-                                            </p>
+                                        <div className="text-right">
+                                            <p className="text-lg font-black text-white">{formatPrice(order.total)}</p>
                                             <p className={cn(
-                                                "text-[9px] font-black uppercase tracking-widest italic",
-                                                order.status === 'delivered' ? "text-emerald-500" :
+                                                "text-[10px] font-bold uppercase",
+                                                order.status === 'delivered' ? "text-emerald-400" :
                                                     order.status === 'preparing' ? "text-primary" :
-                                                        "text-blue-500"
+                                                        "text-blue-400"
                                             )}>
                                                 {order.status}
                                             </p>
@@ -548,53 +376,35 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             ))}
-
-                            {recentOrders.length === 0 && (
-                                <div className="py-20 flex flex-col items-center justify-center opacity-20">
-                                    <Activity className="w-16 h-16 text-muted-foreground mb-4" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground italic">
-                                        SIN ACTIVIDAD RECIENTE
-                                    </p>
-                                </div>
-                            )}
                         </div>
                     </div>
 
                     {/* Top Products */}
-                    <div className="bg-card/60 backdrop-blur-xl p-10 rounded-[3.5rem] border-4 border-border/40 shadow-2xl space-y-8">
-                        <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-4">
-                            <BarChart3 className="w-6 h-6 text-amber-500" />
-                            TOP PRODUCTOS
+                    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-6">
+                        <h2 className="text-lg font-black italic uppercase text-white mb-6 flex items-center gap-3">
+                            <BarChart3 className="w-5 h-5 text-amber-400" />
+                            Top Productos
                         </h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {topProducts.map((product, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center justify-between p-6 bg-muted/20 rounded-[2rem] border-2 border-border/20"
+                                    className="flex items-center justify-between p-3 bg-slate-700/30 border border-slate-600/50 rounded-xl"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 border-2 border-amber-500/20 flex items-center justify-center shadow-lg">
-                                            <span className="text-sm font-black text-amber-500">#{idx + 1}</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
+                                            <span className="text-xs font-black text-amber-400">#{idx + 1}</span>
                                         </div>
-                                        <p className="text-sm font-black uppercase tracking-tight text-foreground truncate max-w-[150px]">
+                                        <p className="text-sm font-bold text-white truncate max-w-[150px]">
                                             {product.name}
                                         </p>
                                     </div>
-                                    <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                                        <span className="text-xs font-black text-amber-500 italic">{product.qty}</span>
+                                    <div className="px-3 py-1 bg-amber-500/20 border border-amber-500/30 rounded-lg">
+                                        <span className="text-xs font-black text-amber-400">{product.qty}</span>
                                     </div>
                                 </div>
                             ))}
-
-                            {topProducts.length === 0 && (
-                                <div className="py-20 flex flex-col items-center justify-center opacity-20">
-                                    <BarChart3 className="w-16 h-16 text-muted-foreground mb-4" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground italic">
-                                        SIN DATOS
-                                    </p>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
