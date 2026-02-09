@@ -100,15 +100,17 @@ export default function KitchenPage() {
             setLoading(true)
 
             // 1. Cargar Estaciones
-            const { data: stationsData } = await supabase
+            const { data: stationsData, error: sError } = await supabase
                 .from('prep_stations')
                 .select('id, name')
                 .eq('is_active', true)
+                .eq('restaurant_id', restaurant?.id)
 
+            if (sError) console.error("Error cargando estaciones:", sError)
             setStations(stationsData || [])
 
             // 2. Cargar Órdenes
-            const { data } = await supabase
+            const { data, error: oError } = await supabase
                 .from('orders')
                 .select(`
                     *, 
@@ -116,14 +118,22 @@ export default function KitchenPage() {
                     order_items (
                         quantity, 
                         customizations, 
-                        products (id, name, is_available, station_id, categories (name))
+                        products (id, name, is_available, station_id)
                     )
                 `)
                 .eq('restaurant_id', restaurant?.id)
                 .in('status', ['pending', 'preparing', 'ready'])
                 .order('created_at', { ascending: true })
 
-            if (data) setOrders(data as any)
+            if (oError) {
+                console.error("Error cargando pedidos KDS:", oError)
+                setOrders([])
+            } else {
+                setOrders(data || [])
+            }
+        } catch (err) {
+            console.error("Error fatal en KDS:", err)
+            setOrders([])
         } finally {
             setLoading(false)
         }

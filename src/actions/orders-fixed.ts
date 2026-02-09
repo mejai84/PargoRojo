@@ -119,15 +119,14 @@ export async function createOrderWithNotes(orderData: CreateOrderData) {
         await client.query('COMMIT')
 
         revalidatePath('/admin/orders')
-        revalidatePath('/admin/waiter')
         if (orderData.table_id) revalidatePath('/admin/tables')
 
         return { success: true, data: order, message: 'Pedido creado exitosamente' }
 
     } catch (dbError: any) {
         await client.query('ROLLBACK')
-        console.error('Error DB Directo:', dbError)
-        throw new Error(dbError.message)
+        console.error('Error DB Directo (createOrder):', dbError)
+        return { success: false, error: dbError.message || 'Error desconocido al crear pedido' }
     } finally {
         client.release()
     }
@@ -157,7 +156,6 @@ export async function transferOrderBetweenTables(transferData: TransferOrderData
 
         revalidatePath('/admin/tables')
         revalidatePath('/admin/orders')
-        revalidatePath('/admin/waiter')
 
         return {
             success: true,
@@ -169,8 +167,8 @@ export async function transferOrderBetweenTables(transferData: TransferOrderData
 
     } catch (dbError: any) {
         await client.query('ROLLBACK')
-        console.error('Error DB Directo:', dbError)
-        throw new Error(dbError.message)
+        console.error('Error DB Directo (transfer):', dbError)
+        return { success: false, error: dbError.message || 'Error al transferir pedido' }
     } finally {
         client.release()
     }
@@ -360,18 +358,20 @@ export async function addItemsToOrder(orderId: string, items: OrderItemWithNotes
         await client.query(`
             UPDATE orders 
             SET subtotal = (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = $1),
-                total = (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = $1)
+                total = (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = $1),
+                updated_at = NOW()
             WHERE id = $1
         `, [orderId])
         await client.query('COMMIT')
+
         revalidatePath('/admin/orders')
-        revalidatePath('/admin/waiter')
         revalidatePath('/admin/tables')
+
         return { success: true, message: 'Productos adicionados exitosamente' }
     } catch (dbError: any) {
         await client.query('ROLLBACK')
         console.error('Error Adicionando Items:', dbError)
-        throw new Error(dbError.message)
+        return { success: false, error: dbError.message || 'Error al adicionar items' }
     } finally {
         client.release()
     }
