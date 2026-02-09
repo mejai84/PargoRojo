@@ -442,8 +442,8 @@ function OrdersContent() {
 
             {/* 📋 DETAIL MODAL (Updated with Loyalty and WhatsApp Center) */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white border border-slate-200 rounded-[4rem] w-full max-w-3xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-3xl">
+                <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-6">
+                    <div className="bg-white border border-slate-200 rounded-[3rem] md:rounded-[4rem] w-full max-w-3xl max-h-[96vh] overflow-y-auto animate-in zoom-in-95 duration-300 shadow-3xl custom-scrollbar-hidden">
                         <div className={cn(
                             "p-12 border-b border-slate-100 flex justify-between items-start text-slate-900 relative",
                             selectedOrder.status === 'payment_pending' ? 'bg-primary/10 border-primary/20' : 'bg-slate-50/50'
@@ -607,10 +607,10 @@ function OrdersContent() {
                                                         alert("Error: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-4 bg-emerald-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                                className="h-16 px-4 bg-emerald-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex-col gap-0.5"
                                             >
                                                 <span>EFECTIVO</span>
-                                                <span className="text-lg">💵</span>
+                                                <span className="text-sm">💵</span>
                                             </Button>
 
                                             <Button
@@ -628,10 +628,10 @@ function OrdersContent() {
                                                         alert("Error: " + e.message)
                                                     }
                                                 }}
-                                                className="h-20 px-4 bg-indigo-500 text-white rounded-[1.5rem] font-black text-xs italic tracking-tighter uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-1"
+                                                className="h-16 px-4 bg-indigo-500 text-white rounded-2xl font-black text-[10px] italic tracking-tight uppercase shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all flex-col gap-0.5"
                                             >
                                                 <span>TARJETA</span>
-                                                <span className="text-lg">💳</span>
+                                                <span className="text-sm">💳</span>
                                             </Button>
 
                                             <Button

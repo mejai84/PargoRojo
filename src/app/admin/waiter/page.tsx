@@ -300,11 +300,19 @@ export default function WaiterApp() {
                         <span className="font-black italic uppercase tracking-widest text-sm">Unir / Traspasar Mesa</span>
                     </button>
 
-                    <button onClick={() => router.push(`/admin/orders?order=${selectedTableOrder?.id}`)} className="bg-black p-10 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6 active:scale-95 transition-all group col-span-1 md:col-span-2">
+                    <button
+                        disabled={!selectedTableOrder?.id}
+                        onClick={() => router.push(`/admin/orders?order=${selectedTableOrder.id}`)}
+                        className={cn(
+                            "bg-black p-10 rounded-[3rem] shadow-2xl flex flex-col items-center gap-6 active:scale-95 transition-all group col-span-1 md:col-span-2 disabled:opacity-50 disabled:grayscale"
+                        )}
+                    >
                         <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-primary transition-colors">
-                            <Receipt className="w-8 h-8 text-white group-hover:text-black" />
+                            {loadingOrder ? <Loader2 className="w-8 h-8 text-white animate-spin" /> : <Receipt className="w-8 h-8 text-white group-hover:text-black" />}
                         </div>
-                        <span className="font-black italic uppercase tracking-widest text-sm text-white">IR A COBRAR</span>
+                        <span className="font-black italic uppercase tracking-widest text-sm text-white">
+                            {loadingOrder ? "CARGANDO..." : "IR A COBRAR"}
+                        </span>
                     </button>
                 </div>
 
