@@ -83,16 +83,12 @@ export default function CloseShiftPage() {
             setShiftId(shift.id)
 
             // 2. Buscar Sesión de Caja Activa
-            // Asumimos que la sesión de caja está ligada al usuario o turno
-            // Buscamos la última sesión OPEN de este usuario
             const { data: session } = await supabase
                 .from('cashbox_sessions')
                 .select('*')
-                .eq('opened_by', user.id)
-                .is('closed_at', null)
-                .order('opened_at', { ascending: false })
-                .limit(1)
-                .single()
+                .eq('user_id', user.id)
+                .eq('status', 'OPEN')
+                .maybeSingle()
 
             if (session) {
                 setSessionId(session.id)
@@ -156,29 +152,34 @@ export default function CloseShiftPage() {
         setLoading(true)
         try {
             const now = new Date().toISOString()
+            const { data: { user } } = await supabase.auth.getUser()
 
             // 1. Cerrar Sesión de Caja (si existe)
             if (sessionId) {
-                await supabase.from('cashbox_sessions').update({
-                    closed_at: now,
-                    closed_by: (await supabase.auth.getUser()).data.user?.id,
+                const { error: sessionError } = await supabase.from('cashbox_sessions').update({
+                    status: 'CLOSED',
+                    closing_time: now,
                     closing_amount: calculatedTotal,
-                    difference: difference,
-                    final_notes: "Cierre asistido por Smart Z-Report"
+                    system_amount: systemTotal,
+                    closing_notes: "Cierre asistido por Smart Z-Report"
                 }).eq('id', sessionId)
+
+                if (sessionError) throw sessionError
             }
 
             // 2. Cerrar Turno
-            await supabase.from('shifts').update({
+            const { error: shiftError } = await supabase.from('shifts').update({
                 ended_at: now,
                 status: 'CLOSED'
             }).eq('id', shiftId)
 
+            if (shiftError) throw shiftError
+
             setStep(3) // Éxito
-            toast.success("Turno cerrado correctamente")
-        } catch (error) {
+            toast.success("Turno y caja cerrados correctamente")
+        } catch (error: any) {
             console.error("Error closing", error)
-            toast.error("Error al cerrar el turno")
+            toast.error("Error al cerrar el turno: " + (error.message || "Error desconocido"))
         } finally {
             setLoading(false)
         }

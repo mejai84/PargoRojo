@@ -22,6 +22,7 @@ import {
     Users,
     Loader2,
     X,
+    Minus,
     Save,
     Activity,
     Signal,
@@ -32,7 +33,8 @@ import {
     Layers,
     Warehouse,
     BarChart4,
-    Scale
+    Scale,
+    AlertCircle
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -195,15 +197,34 @@ export default function InventoryPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <Link href="/admin/inventory/recipes">
+                            <Button className="h-20 px-10 bg-slate-900 border border-border/50 text-white hover:bg-primary hover:text-black font-black uppercase text-[10px] tracking-[0.3em] italic rounded-[2rem] shadow-2xl transition-all gap-4 border-none group active:scale-95">
+                                <ChefHat className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                                LIBRO DE RECETAS
+                            </Button>
+                        </Link>
+                        <Link href="/admin/inventory/suppliers">
+                            <Button className="h-20 px-10 bg-slate-900 border border-border/50 text-white hover:bg-primary hover:text-black font-black uppercase text-[10px] tracking-[0.3em] italic rounded-[2rem] shadow-2xl transition-all gap-4 border-none group active:scale-95">
+                                <Users className="w-6 h-6" />
+                                PROVEEDORES
+                            </Button>
+                        </Link>
+                        <Link href="/admin/inventory/waste">
+                            <Button className="h-20 px-10 bg-slate-900 border border-border/50 text-white hover:bg-primary hover:text-black font-black uppercase text-[10px] tracking-[0.3em] italic rounded-[2rem] shadow-2xl transition-all gap-4 border-none group active:scale-95">
+                                <AlertCircle className="w-6 h-6 text-rose-500" />
+                                CONTROL DE MERMAS
+                            </Button>
+                        </Link>
                         <Link href="/admin/inventory/purchase-orders">
-                            <Button className="h-20 px-12 bg-emerald-500 text-white hover:bg-emerald-600 font-black uppercase text-xs tracking-[0.4em] italic rounded-[2.5rem] shadow-3xl shadow-emerald-500/20 transition-all gap-5 border-none group active:scale-95">
+                            <Button className="h-20 px-10 bg-emerald-500 text-white hover:bg-emerald-600 font-black uppercase text-[10px] tracking-[0.3em] italic rounded-[2.5rem] shadow-3xl shadow-emerald-500/20 transition-all gap-4 border-none group active:scale-95">
                                 <Truck className="w-7 h-7 group-hover:scale-110 transition-transform" />
                                 ENTRADA DE SUMINISTROS
                             </Button>
                         </Link>
                     </div>
                 </div>
+
 
                 {/* 📊 KPI CORE MESH */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">

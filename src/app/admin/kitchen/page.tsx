@@ -24,7 +24,12 @@ import {
     ArrowRight,
     Signal,
     Layers,
-    Cpu
+    Cpu,
+    TrendingUp,
+    BarChart3,
+    Target,
+    Award,
+    Gauge
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -40,6 +45,8 @@ type OrderItem = {
         id: string
         name: string
         is_available: boolean
+        preparation_time?: number
+        station_id?: string
         categories?: {
             name: string
         }
@@ -52,7 +59,7 @@ type Order = {
     id: string
     created_at: string
     status: OrderStatus
-    order_items: (OrderItem & { products: { station_id: string } })[]
+    order_items: OrderItem[]
     guest_info?: any
     tables?: {
         table_name: string
@@ -67,10 +74,17 @@ interface Station {
     name: string
 }
 
+interface KitchenMetrics {
+    totalOrders: number
+    avgPrepTime: number
+    completedToday: number
+    efficiency: number
+}
+
 const STATUS_COLUMNS = [
-    { id: 'pending' as const, label: 'POR PROCESAR', color: 'text-blue-500', bg: 'bg-blue-500/5', accent: 'border-blue-500/20' },
-    { id: 'preparing' as const, label: 'EN FOGÓN / PREP', color: 'text-primary', bg: 'bg-primary/5', accent: 'border-primary/20' },
-    { id: 'ready' as const, label: 'LISTAS / PICKUP', color: 'text-emerald-500', bg: 'bg-emerald-500/5', accent: 'border-emerald-500/20' }
+    { id: 'pending' as const, label: 'COLA DE ENTRADA', color: 'text-blue-500', bg: 'bg-blue-500/5', accent: 'border-blue-500/20', icon: Clock },
+    { id: 'preparing' as const, label: 'EN FOGÓN ACTIVO', color: 'text-primary', bg: 'bg-primary/5', accent: 'border-primary/20', icon: Flame },
+    { id: 'ready' as const, label: 'LISTO / PICKUP', color: 'text-emerald-500', bg: 'bg-emerald-500/5', accent: 'border-emerald-500/20', icon: Check }
 ];
 
 export default function KitchenPage() {
@@ -80,12 +94,20 @@ export default function KitchenPage() {
     const [loading, setLoading] = useState(true)
     const [activeStationId, setActiveStationId] = useState<string>("TODAS")
     const [currentTime, setCurrentTime] = useState(new Date())
+    const [showMetrics, setShowMetrics] = useState(false)
+    const [metrics, setMetrics] = useState<KitchenMetrics>({
+        totalOrders: 0,
+        avgPrepTime: 0,
+        completedToday: 0,
+        efficiency: 0
+    })
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
 
         if (restaurant) {
             fetchData()
+            calculateMetrics()
         }
 
         const channel = supabase
@@ -93,9 +115,13 @@ export default function KitchenPage() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
                 if (payload.eventType === 'INSERT') {
                     new Audio('/sounds/new-order.mp3').play().catch(() => { })
-                    toast.info("NUEVO PEDIDO ENTRANTE", { icon: <Bell className="text-primary" /> })
+                    toast.info("NUEVO PEDIDO ENTRANTE", {
+                        icon: <Bell className="text-primary animate-bounce" />,
+                        duration: 5000
+                    })
                 }
                 fetchData()
+                calculateMetrics()
             })
             .subscribe()
 
@@ -126,7 +152,7 @@ export default function KitchenPage() {
                     order_items (
                         quantity, 
                         customizations, 
-                        products (id, name, is_available, station_id)
+                        products (id, name, is_available, station_id, preparation_time)
                     )
                 `)
                 .eq('restaurant_id', restaurant?.id)
@@ -147,15 +173,54 @@ export default function KitchenPage() {
         }
     }
 
+    const calculateMetrics = async () => {
+        try {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+
+            const { data: completedOrders } = await supabase
+                .from('orders')
+                .select('preparation_started_at, preparation_finished_at')
+                .eq('restaurant_id', restaurant?.id)
+                .eq('status', 'delivered')
+                .gte('created_at', today.toISOString())
+
+            if (completedOrders && completedOrders.length > 0) {
+                const times = completedOrders
+                    .filter(o => o.preparation_started_at && o.preparation_finished_at)
+                    .map(o => {
+                        const start = new Date(o.preparation_started_at!).getTime()
+                        const end = new Date(o.preparation_finished_at!).getTime()
+                        return (end - start) / 60000 // minutes
+                    })
+
+                const avgTime = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0
+                const efficiency = avgTime > 0 ? Math.min(100, Math.max(0, 100 - (avgTime - 10) * 5)) : 0
+
+                setMetrics({
+                    totalOrders: orders.length,
+                    avgPrepTime: Math.round(avgTime),
+                    completedToday: completedOrders.length,
+                    efficiency: Math.round(efficiency)
+                })
+            }
+        } catch (err) {
+            console.error("Error calculando métricas:", err)
+        }
+    }
+
     const updateStatus = async (id: string, newStatus: OrderStatus) => {
         const updateData: any = { status: newStatus }
         if (newStatus === 'preparing') updateData.preparation_started_at = new Date().toISOString()
         if (newStatus === 'ready') updateData.preparation_finished_at = new Date().toISOString()
 
-        const { error } = await supabase.from('orders').update(updateData).eq(id, id)
+        const { error } = await supabase.from('orders').update(updateData).eq('id', id)
         if (!error) {
             fetchData()
-            toast.success(`PEDIDO ACTUALIZADO A ${newStatus.toUpperCase()}`)
+            calculateMetrics()
+            toast.success(`PEDIDO ACTUALIZADO A ${newStatus.toUpperCase()}`, {
+                icon: newStatus === 'ready' ? <Check className="text-emerald-500" /> : <Flame className="text-primary" />
+            })
         }
     }
 
@@ -165,12 +230,25 @@ export default function KitchenPage() {
         return diff
     }
 
+    const getTimeColor = (minutes: number) => {
+        if (minutes < 5) return { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/30' }
+        if (minutes < 10) return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/30' }
+        if (minutes < 15) return { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'border-orange-500/30' }
+        return { bg: 'bg-rose-500/10', text: 'text-rose-500', border: 'border-rose-500/30', pulse: true }
+    }
+
+    const getEstimatedTime = (items: OrderItem[]) => {
+        const maxTime = Math.max(...items.map(item => item.products?.preparation_time || 10))
+        return maxTime
+    }
+
     const filteredOrders = orders.filter(order => {
         if (activeStationId === 'TODAS') return true
         return order.order_items.some(item => item.products?.station_id === activeStationId)
     })
 
     const preparingCount = orders.filter(o => o.status === 'preparing').length
+    const criticalOrders = orders.filter(o => getElapsed(o.created_at) > 15).length
 
     if (loading && orders.length === 0) return (
         <div className="min-h-screen flex items-center justify-center bg-transparent">
@@ -203,11 +281,17 @@ export default function KitchenPage() {
                         </Link>
                         <div className="space-y-6">
                             <div className="flex flex-wrap items-center gap-4">
-                                <h1 className="text-6xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-foreground">CORE <span className="text-primary italic">KDS</span></h1>
-                                <div className="px-5 py-2 bg-rose-500/10 border-2 border-rose-500/20 rounded-[1.5rem] text-[11px] font-black text-rose-500 tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
+                                <h1 className="text-6xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-foreground">KDS <span className="text-primary italic">PRO</span></h1>
+                                <div className="px-5 py-2 bg-primary/10 border-2 border-primary/20 rounded-[1.5rem] text-[11px] font-black text-primary tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
                                     <Activity className="w-3 h-3" />
-                                    FOGON_SENSOR_V12
+                                    REALTIME_SYNC_ACTIVE
                                 </div>
+                                {criticalOrders > 0 && (
+                                    <div className="px-5 py-2 bg-rose-500/10 border-2 border-rose-500/20 rounded-[1.5rem] text-[11px] font-black text-rose-500 tracking-[0.3em] italic uppercase shadow-xl animate-pulse flex items-center gap-3">
+                                        <AlertTriangle className="w-3 h-3 animate-bounce" />
+                                        {criticalOrders} CRÍTICAS
+                                    </div>
+                                )}
                             </div>
                             <p className="text-[11px] text-muted-foreground font-black uppercase tracking-[0.5em] italic flex items-center gap-4 opacity-60">
                                 <Flame className="w-5 h-5 text-primary" /> Estación: {stations.find(s => s.id === activeStationId)?.name || "CENTRO_CONTROL_TOTAL"}
@@ -242,6 +326,13 @@ export default function KitchenPage() {
                         </div>
 
                         <div className="flex gap-4">
+                            <button
+                                onClick={() => setShowMetrics(!showMetrics)}
+                                className="px-8 py-4 bg-slate-900 text-white rounded-[2rem] flex flex-col items-center shadow-3xl group/metrics active:scale-95 transition-all border-2 border-primary/20 hover:border-primary/40"
+                            >
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50 italic">ANALÍTICA</span>
+                                <BarChart3 className="w-6 h-6 text-primary group-hover/metrics:scale-110 transition-transform" />
+                            </button>
                             <div className="px-8 py-4 bg-foreground rounded-[2rem] text-background flex flex-col items-center shadow-3xl group/fire active:scale-95 transition-all">
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 italic">EN FOGÓN</span>
                                 <span className="text-3xl font-black italic text-primary drop-shadow-[0_0_10px_rgba(255,77,0,0.5)] group-hover/fire:scale-110 transition-transform">{preparingCount}</span>
@@ -253,15 +344,52 @@ export default function KitchenPage() {
                     </div>
                 </div>
 
+                {/* 📊 METRICS DASHBOARD */}
+                {showMetrics && (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 animate-in slide-in-from-top-4 duration-500 shrink-0">
+                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Target className="w-8 h-8 text-blue-500" />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">ÓRDENES ACTIVAS</span>
+                            </div>
+                            <p className="text-5xl font-black italic text-blue-500">{metrics.totalOrders}</p>
+                        </div>
+                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Timer className="w-8 h-8 text-amber-500" />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">TIEMPO PROMEDIO</span>
+                            </div>
+                            <p className="text-5xl font-black italic text-amber-500">{metrics.avgPrepTime}<span className="text-2xl">min</span></p>
+                        </div>
+                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Award className="w-8 h-8 text-emerald-500" />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">COMPLETADAS HOY</span>
+                            </div>
+                            <p className="text-5xl font-black italic text-emerald-500">{metrics.completedToday}</p>
+                        </div>
+                        <div className="bg-card/60 backdrop-blur-xl p-8 rounded-[3rem] border-2 border-border/40 shadow-2xl space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Gauge className="w-8 h-8 text-primary" />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">EFICIENCIA</span>
+                            </div>
+                            <p className="text-5xl font-black italic text-primary">{metrics.efficiency}<span className="text-2xl">%</span></p>
+                        </div>
+                    </div>
+                )}
+
                 {/* 🏗️ KDS KANBAN GRID */}
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-12 overflow-hidden pb-4">
                     {STATUS_COLUMNS.map(column => (
                         <div key={column.id} className={cn("flex flex-col h-full rounded-[4.5rem] border-4 overflow-hidden shadow-3xl backdrop-blur-md transition-all", column.bg, column.accent)}>
                             <div className="p-10 pb-6 flex items-center justify-between border-b-2 border-current/5 relative overflow-hidden group/col">
                                 <div className="absolute inset-0 bg-current/2 opacity-[0.05] group-hover/col:opacity-10 transition-opacity" />
-                                <h2 className={cn("text-[12px] font-black uppercase tracking-[0.6em] italic relative z-10", column.color)}>
-                                    {column.label}
-                                </h2>
+                                <div className="flex items-center gap-4 relative z-10">
+                                    <column.icon className={cn("w-8 h-8", column.color)} />
+                                    <h2 className={cn("text-[12px] font-black uppercase tracking-[0.6em] italic", column.color)}>
+                                        {column.label}
+                                    </h2>
+                                </div>
                                 <div className="w-12 h-12 rounded-2xl bg-card border-2 border-current/20 flex items-center justify-center text-[12px] font-black text-foreground shadow-xl relative z-10">
                                     {filteredOrders.filter(o => o.status === column.id).length}
                                 </div>
@@ -272,6 +400,8 @@ export default function KitchenPage() {
                                     .filter(o => o.status === column.id)
                                     .map((order, idx) => {
                                         const minutes = getElapsed(order.created_at)
+                                        const timeStyle = getTimeColor(minutes)
+                                        const estimatedTime = getEstimatedTime(order.order_items)
                                         const itemsToDisplay = order.order_items.filter(item =>
                                             activeStationId === 'TODAS' || item.products?.station_id === activeStationId
                                         )
@@ -284,6 +414,7 @@ export default function KitchenPage() {
                                                 className={cn(
                                                     "group/card bg-card/80 backdrop-blur-xl rounded-[3.5rem] border-4 p-8 space-y-8 transition-all relative overflow-hidden shadow-2xl animate-in zoom-in-95 active:scale-[0.98]",
                                                     minutes > 15 ? "border-rose-500/40 shadow-rose-500/10" : "border-border/40 hover:border-primary/40",
+                                                    timeStyle.pulse && "animate-pulse"
                                                 )}
                                                 style={{ animationDelay: `${idx * 100}ms` }}
                                             >
@@ -298,118 +429,121 @@ export default function KitchenPage() {
                                                         </p>
                                                     </div>
                                                     <div className={cn(
-                                                        "flex flex-col items-center gap-1 px-4 py-2 rounded-[1.5rem] border-2 italic transition-all shadow-xl",
-                                                        minutes > 15
-                                                            ? "bg-rose-500 text-white border-rose-400 animate-pulse shadow-[0_0_20px_rgba(244,63,94,0.3)]"
-                                                            : "bg-muted/40 text-muted-foreground border-border/40"
+                                                        "px-6 py-3 rounded-[1.5rem] border-2 flex flex-col items-center min-w-[100px] shadow-lg",
+                                                        timeStyle.bg,
+                                                        timeStyle.border
                                                     )}>
-                                                        <span className="text-[10px] font-black uppercase tracking-widest">{minutes} M</span>
-                                                        <Clock className="w-4 h-4 opacity-50" />
+                                                        <Timer className={cn("w-5 h-5 mb-1", timeStyle.text)} />
+                                                        <span className={cn("text-2xl font-black italic leading-none", timeStyle.text)}>{minutes}</span>
+                                                        <span className={cn("text-[8px] font-black uppercase tracking-widest mt-1", timeStyle.text)}>MIN</span>
                                                     </div>
                                                 </div>
 
-                                                {/* Alerts / Notes */}
-                                                {order.notes && (
-                                                    <div className="p-5 bg-rose-500/10 border-2 border-rose-500/20 rounded-[2rem] flex items-start gap-4">
-                                                        <AlertTriangle className="w-6 h-6 text-rose-500 flex-shrink-0 mt-1" />
-                                                        <p className="text-[11px] font-black text-rose-500 uppercase italic leading-tight tracking-tight">
-                                                            ATENCIÓN: {order.notes}
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                <div className="space-y-5 border-t-2 border-border/20 pt-6">
-                                                    {itemsToDisplay.map((item, i) => (
-                                                        <div key={i} className="flex gap-6 group/item">
-                                                            <div className="w-14 h-14 rounded-[1.2rem] bg-foreground text-background flex items-center justify-center text-2xl font-black italic shadow-xl group-hover/item:text-primary transition-colors">
+                                                {/* Items List */}
+                                                <div className="space-y-4">
+                                                    {itemsToDisplay.map((item, itemIdx) => (
+                                                        <div key={itemIdx} className="flex items-center gap-6 bg-muted/20 p-6 rounded-[2rem] border border-border/20 group/item hover:bg-muted/40 transition-all">
+                                                            <div className="w-12 h-12 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-xl font-black text-primary shadow-lg group-hover/item:scale-110 transition-transform">
                                                                 {item.quantity}
                                                             </div>
-                                                            <div className="space-y-3 flex-1 pt-1">
-                                                                <p className="text-base font-black uppercase italic tracking-tighter text-foreground leading-none">{item.products?.name}</p>
-
-                                                                {/* Customizations */}
-                                                                {(item.customizations?.notes || (item.customizations as any)?.name) && (
-                                                                    <div className="space-y-2">
-                                                                        {item.customizations?.notes && (
-                                                                            <div className="px-4 py-2 bg-amber-500/10 border-2 border-amber-500/20 rounded-xl inline-flex items-center gap-3">
-                                                                                <Zap className="w-3 h-3 text-amber-500" />
-                                                                                <p className="text-[9px] font-black text-amber-500 uppercase italic leading-none whitespace-nowrap">
-                                                                                    {item.customizations.notes}
-                                                                                </p>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
+                                                            <div className="flex-1 space-y-1">
+                                                                <p className="text-lg font-black uppercase tracking-tight text-foreground leading-none">{item.products?.name}</p>
+                                                                {item.customizations && Object.keys(item.customizations).length > 0 && (
+                                                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide italic">
+                                                                        + {Object.values(item.customizations).join(', ')}
+                                                                    </p>
                                                                 )}
                                                             </div>
+                                                            {item.products?.preparation_time && (
+                                                                <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest italic">
+                                                                        ~{item.products.preparation_time}min
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
 
-                                                <div className="pt-4 flex gap-4">
-                                                    {order.status === 'pending' ? (
+                                                {/* Notes */}
+                                                {order.notes && (
+                                                    <div className="p-6 bg-amber-500/5 border-2 border-amber-500/20 rounded-[2rem]">
+                                                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-2 italic flex items-center gap-2">
+                                                            <AlertTriangle className="w-3 h-3" /> NOTA ESPECIAL
+                                                        </p>
+                                                        <p className="text-sm font-bold text-foreground">{order.notes}</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-4 pt-4 border-t-2 border-border/10">
+                                                    {order.status === 'pending' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'preparing')}
-                                                            className="flex-1 h-20 bg-foreground text-background hover:bg-primary hover:text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.4em] italic transition-all shadow-xl group/march active:scale-95"
+                                                            className="flex-1 h-16 bg-primary hover:bg-primary/90 text-black rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl shadow-primary/20 gap-3 group/btn"
                                                         >
-                                                            MARCHAR_SYNC <ArrowRight className="w-5 h-5 ml-4 group-hover/march:translate-x-2 transition-transform" />
+                                                            <Flame className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                                                            INICIAR PREPARACIÓN
                                                         </Button>
-                                                    ) : order.status === 'preparing' ? (
+                                                    )}
+                                                    {order.status === 'preparing' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'ready')}
-                                                            className="flex-1 h-20 bg-primary text-black hover:bg-emerald-500 hover:text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.4em] italic transition-all shadow-xl group/ready active:scale-95"
+                                                            className="flex-1 h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl shadow-emerald-500/20 gap-3 group/btn"
                                                         >
-                                                            DESPACHAR <Check className="w-6 h-6 ml-4 group-hover/ready:scale-125 transition-transform" />
+                                                            <Check className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                                                            MARCAR LISTO
                                                         </Button>
-                                                    ) : (
+                                                    )}
+                                                    {order.status === 'ready' && (
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'delivered')}
-                                                            className="flex-1 h-20 bg-emerald-500 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.4em] italic shadow-xl group/final active:scale-95"
+                                                            className="flex-1 h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-[2rem] font-black uppercase text-xs tracking-[0.3em] italic shadow-xl gap-3 group/btn"
                                                         >
-                                                            FINALIZADO <Check className="w-6 h-6 ml-4" />
+                                                            <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                                            ENTREGADO
                                                         </Button>
                                                     )}
                                                 </div>
                                             </div>
                                         )
                                     })}
+
+                                {filteredOrders.filter(o => o.status === column.id).length === 0 && (
+                                    <div className="h-full flex flex-col items-center justify-center py-20 space-y-6 opacity-20">
+                                        <column.icon className="w-24 h-24 text-muted-foreground" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground italic">
+                                            SIN ÓRDENES EN {column.label}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
                 </div>
-
-                {/* 🏷️ GLOBAL METRIC HUB */}
-                <div className="p-10 bg-foreground rounded-[4rem] text-background flex flex-col md:flex-row items-center justify-between shadow-3xl group/metric relative overflow-hidden shrink-0 mt-4">
-                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover/metric:opacity-100 transition-opacity" />
-                    <div className="flex items-center gap-10 relative z-10">
-                        <div className="w-20 h-20 rounded-[2rem] bg-background/10 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-2xl group-hover/metric:rotate-12 transition-transform duration-500">
-                            <MonitorIcon className="w-10 h-10 text-primary drop-shadow-[0_0_15px_rgba(255,77,0,0.6)]" />
-                        </div>
-                        <div className="space-y-2 text-center md:text-left">
-                            <h4 className="text-2xl font-black italic uppercase tracking-tighter text-primary">Master Kitchen Hub</h4>
-                            <p className="text-[10px] text-background/40 font-black uppercase tracking-[0.4em] italic leading-none">
-                                SYSTEM v8.42 • KERNEL OPTIMIZED FOR KDS_REALTIME_SYNC
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-12 mt-8 md:mt-0 relative z-10">
-                        <div className="text-right">
-                            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/20 mb-1 italic">Process Load</p>
-                            <p className="text-2xl font-black italic tracking-tighter text-emerald-500">{orders.length} NODOS ACTIVOS</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/20 mb-1 italic">Sensor Health</p>
-                            <p className="text-2xl font-black italic tracking-tighter text-white">NOMINAL_SYNC</p>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,102,0,0.1); border-radius: 20px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,102,0,0.3); }
-                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: hsl(var(--primary) / 0.2);
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: hsl(var(--primary) / 0.4);
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
             `}</style>
         </div>
     )

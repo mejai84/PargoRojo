@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { toast } from "sonner"
 
 interface Employee {
     id: string
@@ -77,44 +78,125 @@ export default function PayrollPage() {
     }
 
     const startShift = async (employeeId: string) => {
-        const { data: profile } = await supabase.from('profiles').select('restaurant_id').eq('id', employeeId).single()
-        if (!profile?.restaurant_id) return
+        try {
+            const { data: profile } = await supabase.from('profiles').select('restaurant_id').eq('id', employeeId).single()
+            if (!profile?.restaurant_id) {
+                toast.error("El perfil del empleado no tiene un restaurante asignado")
+                return
+            }
 
-        const { error } = await supabase
-            .from('shifts')
-            .insert([{
-                user_id: employeeId,
-                restaurant_id: profile.restaurant_id,
-                status: 'OPEN',
-                started_at: new Date().toISOString()
-            }])
+            const { error } = await supabase
+                .from('shifts')
+                .insert([{
+                    user_id: employeeId,
+                    restaurant_id: profile.restaurant_id,
+                    status: 'OPEN',
+                    started_at: new Date().toISOString()
+                }])
 
-        if (!error) fetchData()
+            if (error) throw error
+
+            toast.success("Turno iniciado exitosamente")
+            fetchData()
+        } catch (error: any) {
+            toast.error("Error al iniciar turno: " + error.message)
+        }
     }
 
     const endShift = async (shiftId: string) => {
         const shift = activeShifts.find(s => s.id === shiftId)
         if (!shift) return
 
-        const endTime = new Date()
-        const startTime = new Date(shift.started_at)
-        const diffMs = endTime.getTime() - startTime.getTime()
-        const diffHours = diffMs / (1000 * 60 * 60)
+        setLoading(true)
+        try {
+            const endTime = new Date()
+            const startTime = new Date(shift.started_at)
+            const diffMs = endTime.getTime() - startTime.getTime()
+            const diffHours = diffMs / (1000 * 60 * 60)
 
-        const rate = shift.employee.hourly_rate || 5000
-        const totalPay = diffHours * rate
+            const rate = shift.employee.hourly_rate || 5000
+            const totalPay = diffHours * rate
 
-        const { error } = await supabase
-            .from('shifts')
-            .update({
-                ended_at: endTime.toISOString(),
-                total_hours: parseFloat(diffHours.toFixed(2)),
-                total_payment: Math.round(totalPay),
-                status: 'CLOSED'
+            const { error } = await supabase
+                .from('shifts')
+                .update({
+                    ended_at: endTime.toISOString(),
+                    total_hours: parseFloat(diffHours.toFixed(2)),
+                    total_payment: Math.round(totalPay),
+                    status: 'CLOSED'
+                })
+                .eq('id', shiftId)
+
+            if (error) throw error
+
+            toast.success(`Turno cerrado. Pago estimado: $${Math.round(totalPay).toLocaleString()}`)
+            fetchData()
+        } catch (error: any) {
+            toast.error("Error al cerrar turno: " + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const executeLiquidation = async () => {
+        setLoading(true)
+        try {
+            // 1. Obtener todos los turnos CERRADOS
+            const { data: closedShifts, error: shiftsError } = await supabase
+                .from('shifts')
+                .select('*, employee:profiles(*)')
+                .eq('status', 'CLOSED')
+
+            if (shiftsError) throw shiftsError
+            if (!closedShifts || closedShifts.length === 0) {
+                toast.info("No hay turnos CERRADOS para liquidar")
+                setLoading(false)
+                return
+            }
+
+            // 2. Agrupar por empleado
+            const employeeShifts: Record<string, any[]> = {}
+            closedShifts.forEach(s => {
+                if (!employeeShifts[s.user_id]) employeeShifts[s.user_id] = []
+                employeeShifts[s.user_id].push(s)
             })
-            .eq('id', shiftId)
 
-        if (!error) fetchData()
+            // 3. Crear liquidaciones y marcar turnos
+            for (const [employeeId, shifts] of Object.entries(employeeShifts)) {
+                const totalAmount = shifts.reduce((sum, s) => sum + (Number(s.total_payment) || 0), 0)
+                const restaurantId = shifts[0].restaurant_id
+
+                // Período
+                const start = shifts.reduce((min, s) => s.started_at < min ? s.started_at : min, shifts[0].started_at).split('T')[0]
+                const end = shifts.reduce((max, s) => s.started_at > max ? s.started_at : max, shifts[0].started_at).split('T')[0]
+
+                const { error: liqError } = await supabase
+                    .from('employee_liquidations')
+                    .insert({
+                        employee_id: employeeId,
+                        restaurant_id: restaurantId,
+                        period_start: start,
+                        period_end: end,
+                        total_amount: totalAmount,
+                        status: 'pending'
+                    })
+
+                if (liqError) throw liqError
+
+                await supabase
+                    .from('shifts')
+                    .update({ status: 'PAID' })
+                    .in('id', shifts.map(s => s.id))
+            }
+
+            toast.success("Liquidación completada exitosamente")
+            fetchData()
+        } catch (error: any) {
+            console.error("Error liquidación:", error)
+            toast.error("Error en liquidación: " + (error.message || "Error desconocido"))
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -138,8 +220,13 @@ export default function PayrollPage() {
                                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> RETORNO
                             </Button>
                         </Link>
-                        <Button className="h-16 px-10 bg-primary text-primary-foreground hover:bg-foreground hover:text-background font-black uppercase text-[10px] tracking-[0.2em] italic rounded-2xl shadow-3xl transition-all gap-3 border-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary active:scale-95 group">
-                            <Calculator className="w-5 h-5 group-hover:scale-110 transition-transform" /> EJECUTAR LIQUIDACIÓN
+                        <Button
+                            onClick={executeLiquidation}
+                            disabled={loading}
+                            className="h-16 px-10 bg-primary text-primary-foreground hover:bg-foreground hover:text-background font-black uppercase text-[10px] tracking-[0.2em] italic rounded-2xl shadow-3xl transition-all gap-3 border-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary active:scale-95 group"
+                        >
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Calculator className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                            EJECUTAR LIQUIDACIÓN
                         </Button>
                     </div>
                 </div>
