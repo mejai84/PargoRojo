@@ -7,6 +7,8 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import { useRestaurant } from "@/providers/RestaurantProvider"
+import { splitOrder } from "@/actions/orders-fixed"
+import { toast } from "sonner"
 
 // Helper para tiempo transcurrido
 const getElapsed = (dateString: string) => {
@@ -84,6 +86,10 @@ export default function AdminOrdersPage() {
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [searchTerm, setSearchTerm] = useState("")
     const [includeTip, setIncludeTip] = useState(true)
+
+    // Split Order State
+    const [isSplitting, setIsSplitting] = useState(false)
+    const [selectedItemsForSplit, setSelectedItemsForSplit] = useState<{ itemId: string, quantity: number }[]>([])
 
     // Customer Search State
     const [allCustomers, setAllCustomers] = useState<any[]>([])
@@ -447,18 +453,76 @@ export default function AdminOrdersPage() {
                         <div className="p-12 space-y-10">
                             <div className="grid grid-cols-2 gap-10">
                                 <div className="space-y-6">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">CONSOLidado de SKU</h3>
-                                    <div className="space-y-3">
-                                        {selectedOrder.order_items?.map((item: any, i: number) => (
-                                            <div key={i} className="flex justify-between items-center group">
-                                                <div className="flex items-center gap-4">
-                                                    <span className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center font-black text-primary italic text-xs">{item.quantity}</span>
-                                                    <span className="font-black italic uppercase text-xs text-slate-900 group-hover:text-primary transition-colors">{item.products?.name}</span>
-                                                </div>
-                                                <span className="font-black italic text-slate-400">${(item.unit_price * item.quantity).toLocaleString()}</span>
-                                            </div>
-                                        ))}
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">CONSOLidado de SKU</h3>
+                                        {!['delivered', 'cancelled'].includes(selectedOrder.status) && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setIsSplitting(!isSplitting)
+                                                    setSelectedItemsForSplit([])
+                                                }}
+                                                className={cn("text-[8px] font-black uppercase h-7 px-3 rounded-full border", isSplitting ? "bg-rose-500 text-white border-rose-500" : "bg-slate-100 text-slate-500 border-slate-200")}
+                                            >
+                                                {isSplitting ? "CANCELAR DIVISIÓN" : "DIVIDIR CUENTA"}
+                                            </Button>
+                                        )}
                                     </div>
+                                    <div className="space-y-3">
+                                        {selectedOrder.order_items?.map((item: any, i: number) => {
+                                            const isSelected = selectedItemsForSplit.find(si => si.itemId === item.id)
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => {
+                                                        if (!isSplitting) return
+                                                        if (isSelected) {
+                                                            setSelectedItemsForSplit(prev => prev.filter(si => si.itemId !== item.id))
+                                                        } else {
+                                                            setSelectedItemsForSplit(prev => [...prev, { itemId: item.id, quantity: item.quantity }])
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "flex justify-between items-center group p-2 rounded-xl border transition-all",
+                                                        isSplitting ? "cursor-pointer" : "",
+                                                        isSelected ? "bg-primary/10 border-primary" : "border-transparent"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <span className={cn(
+                                                            "w-10 h-10 rounded-xl flex items-center justify-center font-black italic text-xs border transition-all",
+                                                            isSelected ? "bg-primary text-black border-primary ring-2 ring-primary/20" : "bg-slate-50 border-slate-100 text-primary"
+                                                        )}>
+                                                            {item.quantity}
+                                                        </span>
+                                                        <span className="font-black italic uppercase text-xs text-slate-900 group-hover:text-primary transition-colors">{item.products?.name}</span>
+                                                    </div>
+                                                    <span className="font-black italic text-slate-400">${(item.unit_price * item.quantity).toLocaleString()}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                    {isSplitting && selectedItemsForSplit.length > 0 && (
+                                        <Button
+                                            onClick={async () => {
+                                                if (!currentUser) return toast.error("No hay usuario activo")
+                                                try {
+                                                    const res = await splitOrder(selectedOrder.id, selectedItemsForSplit, currentUser.id)
+                                                    toast.success(res.message)
+                                                    setIsSplitting(false)
+                                                    setSelectedItemsForSplit([])
+                                                    setSelectedOrder(null)
+                                                    fetchOrders()
+                                                } catch (e: any) {
+                                                    toast.error(e.message)
+                                                }
+                                            }}
+                                            className="w-full h-12 bg-black text-white rounded-2xl font-black italic uppercase text-[10px] tracking-widest mt-4 animate-bounce"
+                                        >
+                                            MOVER A NUEVA CUENTA
+                                        </Button>
+                                    )}
                                 </div>
                                 <div className="space-y-6 bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">INTELIGENCIA CLIENTE</h3>
