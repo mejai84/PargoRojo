@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Clock, MapPin, Bike, CheckCircle2, ChefHat, AlertCircle, X, User, Phone, Map, RefreshCcw, Plus, Trash2, Search, ArrowLeft, Receipt, ShoppingBag, Minus, Star, MessageCircle, ArrowUpRight, ShieldCheck } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import { useRestaurant } from "@/providers/RestaurantProvider"
@@ -68,8 +69,11 @@ interface Order {
     tables?: { table_name: string }
 }
 
-export default function AdminOrdersPage() {
+function OrdersContent() {
     const { restaurant } = useRestaurant()
+    const searchParams = useSearchParams()
+    const orderIdFromUrl = searchParams.get('order')
+
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
     const [orders, setOrders] = useState<Order[]>([])
     const [products, setProducts] = useState<Product[]>([])
@@ -159,6 +163,14 @@ export default function AdminOrdersPage() {
         }, 30000)
         return () => clearInterval(interval)
     }, [restaurant])
+
+    // Effect for auto-selecting order from URL
+    useEffect(() => {
+        if (orderIdFromUrl && orders.length > 0) {
+            const ord = orders.find(o => o.id === orderIdFromUrl)
+            if (ord) setSelectedOrder(ord)
+        }
+    }, [orderIdFromUrl, orders])
 
     const handleCreateOrder = async () => {
         if (newOrderItems.length === 0) return alert("Añade productos")
@@ -736,5 +748,13 @@ function OrderCard({ order, onView }: { order: Order; onView: () => void }) {
 
             {order.status === 'payment_pending' && <Receipt className="absolute -bottom-6 -right-6 w-32 h-32 text-primary opacity-5 group-hover:scale-110 transition-transform" />}
         </div>
+    )
+}
+
+export default function AdminOrdersPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><RefreshCcw className="w-10 h-10 animate-spin text-slate-200" /></div>}>
+            <OrdersContent />
+        </Suspense>
     )
 }

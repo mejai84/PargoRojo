@@ -1,20 +1,19 @@
-
 const { Client } = require('pg');
 require('dotenv').config({ path: '.env.local' });
 
-async function testConn() {
+async function test() {
+    console.log('Testing connection...');
     const client = new Client({
-        connectionString: "postgresql://postgres:%40Mejai840316*.@[2600:1f1e:75b:4b02:a72e:c2e8:3230:8eb4]:5432/postgres",
+        connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false }
     });
     try {
         await client.connect();
-        console.log('CONNECTED TO DB!');
-        const res = await client.query('SELECT current_user;');
-        console.log('USER:', res.rows[0]);
+        const res = await client.query('SELECT NOW()');
+        console.log('Connected!', res.rows[0]);
         await client.end();
     } catch (err) {
-        console.error('CONN ERROR:', err);
+        console.error('Connection failed:', err);
     }
 }
-testConn();
+test();

@@ -340,3 +340,39 @@ export async function generateReceipt(receiptData: Receipt) {
         throw new Error(error.message)
     }
 }
+
+/**
+ * Adiciona items a un pedido existente (para mesas ocupadas)
+ */
+export async function addItemsToOrder(orderId: string, items: OrderItemWithNotes[]) {
+    const client = await pool.connect()
+    try {
+        await client.query('BEGIN')
+        const insertItemsQuery = `
+            INSERT INTO order_items (order_id, product_id, quantity, unit_price, subtotal, notes)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `
+        for (const item of items) {
+            await client.query(insertItemsQuery, [
+                orderId, item.product_id, item.quantity, item.unit_price, item.subtotal, item.notes || null
+            ])
+        }
+        await client.query(`
+            UPDATE orders 
+            SET subtotal = (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = $1),
+                total = (SELECT COALESCE(SUM(subtotal), 0) FROM order_items WHERE order_id = $1)
+            WHERE id = $1
+        `, [orderId])
+        await client.query('COMMIT')
+        revalidatePath('/admin/orders')
+        revalidatePath('/admin/waiter')
+        revalidatePath('/admin/tables')
+        return { success: true, message: 'Productos adicionados exitosamente' }
+    } catch (dbError: any) {
+        await client.query('ROLLBACK')
+        console.error('Error Adicionando Items:', dbError)
+        throw new Error(dbError.message)
+    } finally {
+        client.release()
+    }
+}

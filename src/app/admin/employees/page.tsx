@@ -23,9 +23,10 @@ import {
     Eye,
     EyeOff,
     Edit,
-    Calendar
+    Calendar,
+    Receipt
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, formatPrice } from "@/lib/utils"
 
 interface Employee {
     id: string
@@ -36,6 +37,9 @@ interface Employee {
     document_id: string | null
     hire_date: string | null
     waiter_pin: string | null
+    food_discount_pct: number
+    max_credit: number
+    current_credit_spent: number
     created_at: string
 }
 
@@ -58,6 +62,8 @@ export default function EmployeesPage() {
         role: "staff",
         document_id: "",
         waiter_pin: "",
+        food_discount_pct: 0,
+        max_credit: 0,
         hire_date: new Date().toISOString().split('T')[0]
     })
     const [submitting, setSubmitting] = useState(false)
@@ -111,6 +117,8 @@ export default function EmployeesPage() {
             role: "staff",
             document_id: "",
             waiter_pin: "",
+            food_discount_pct: 0,
+            max_credit: 0,
             hire_date: new Date().toISOString().split('T')[0]
         })
         setIsAddModalOpen(true)
@@ -126,6 +134,8 @@ export default function EmployeesPage() {
             role: emp.role,
             document_id: emp.document_id || "",
             waiter_pin: emp.waiter_pin || "",
+            food_discount_pct: emp.food_discount_pct || 0,
+            max_credit: emp.max_credit || 0,
             hire_date: emp.hire_date || ""
         })
         setIsEditModalOpen(true)
@@ -167,6 +177,8 @@ export default function EmployeesPage() {
                     role: formData.role,
                     document_id: formData.document_id,
                     waiter_pin: formData.waiter_pin,
+                    food_discount_pct: formData.food_discount_pct,
+                    max_credit: formData.max_credit,
                     hire_date: formData.hire_date,
                     restaurant_id: restaurantId,
                     updated_at: new Date().toISOString()
@@ -200,6 +212,8 @@ export default function EmployeesPage() {
                     role: formData.role,
                     document_id: formData.document_id,
                     waiter_pin: formData.waiter_pin,
+                    food_discount_pct: formData.food_discount_pct,
+                    max_credit: formData.max_credit,
                     hire_date: formData.hire_date
                 })
                 .eq('id', selectedEmployee.id)
@@ -337,23 +351,23 @@ export default function EmployeesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-2 border-t border-white/5 pt-4">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                            <Mail className="w-3.5 h-3.5 opacity-50" />
-                                            {emp.email}
-                                        </div>
-                                        {emp.phone && (
+                                    <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                                        <div className="space-y-2">
                                             <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                                <Phone className="w-3.5 h-3.5 opacity-50" />
-                                                {emp.phone}
+                                                <Mail className="w-3.5 h-3.5 opacity-50" />
+                                                {emp.email}
                                             </div>
-                                        )}
-                                        {emp.hire_date && (
-                                            <div className="flex items-center gap-2 text-[10px] font-bold text-primary italic">
-                                                <Calendar className="w-3.5 h-3.5 opacity-50" />
-                                                Ingreso: {new Date(emp.hire_date).toLocaleDateString()}
-                                            </div>
-                                        )}
+                                            {emp.phone && (
+                                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                                                    <Phone className="w-3.5 h-3.5 opacity-50" />
+                                                    {emp.phone}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <div className="text-[10px] font-black text-emerald-500 uppercase italic">Disc: {emp.food_discount_pct}%</div>
+                                            <div className="text-[10px] font-black text-primary uppercase italic">Créd: {formatPrice(emp.max_credit)}</div>
+                                        </div>
                                     </div>
                                 </div>
                             )
@@ -469,6 +483,33 @@ export default function EmployeesPage() {
                                                 className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
                                                 value={formData.hire_date}
                                                 onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">% Descuento Comida</label>
+                                        <div className="relative">
+                                            <Utensils className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                type="number"
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                value={formData.food_discount_pct}
+                                                onChange={(e) => setFormData({ ...formData, food_discount_pct: Number(e.target.value) })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-50 ml-4">Límite Crédito ($)</label>
+                                        <div className="relative">
+                                            <Receipt className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30" />
+                                            <input
+                                                type="number"
+                                                className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-primary/50 transition-all font-bold"
+                                                value={formData.max_credit}
+                                                onChange={(e) => setFormData({ ...formData, max_credit: Number(e.target.value) })}
                                             />
                                         </div>
                                     </div>
