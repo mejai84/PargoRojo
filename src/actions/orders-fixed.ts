@@ -15,13 +15,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { Pool } from 'pg'
-
-// Configuración de conexión directa a BD (Bypass RLS)
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false } // Necesario para Supabase en producción
-})
 
 // ============================================================================
 // TIPOS
@@ -73,72 +66,39 @@ export async function createOrderWithNotes(orderData: CreateOrderData) {
     const supabase = await createClient()
 
     try {
-        // INTENTO 1: USAR CONEXIÓN DIRECTA (pg) PARA BYPASS RLS
-        // Esto es crucial para el modo "Kiosco" donde el usuario puede no estar autenticado en Supabase
-        const client = await pool.connect()
-        try {
-            await client.query('BEGIN')
-
-            // 1. Insertar Orden
-            const insertOrderQuery = `
-                INSERT INTO orders (
-                    restaurant_id, user_id, waiter_id, table_id, customer_id, 
-                    order_type, status, subtotal, tax, total, notes
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                RETURNING *
-            `
-            const orderValues = [
-                orderData.restaurant_id,
-                orderData.user_id,
-                orderData.waiter_id,
-                orderData.table_id || null,
-                orderData.customer_id || null,
-                orderData.table_id ? 'dine_in' : 'pos',
-                'pending',
-                orderData.subtotal,
-                orderData.tax || 0,
-                orderData.total,
-                orderData.notes || null
-            ]
-
-            const { rows: orderRows } = await client.query(insertOrderQuery, orderValues)
-            const order = orderRows[0]
-
-            // 2. Insertar Items
-            if (orderData.items.length > 0) {
-                const insertItemsQuery = `
-                    INSERT INTO order_items (
-                        order_id, product_id, quantity, unit_price, subtotal, notes
-                    ) VALUES ($1, $2, $3, $4, $5, $6)
-                `
-
-                for (const item of orderData.items) {
-                    await client.query(insertItemsQuery, [
-                        order.id,
-                        item.product_id,
-                        item.quantity,
-                        item.unit_price,
-                        item.subtotal,
-                        item.notes || null
-                    ])
-                }
+        // INTENTO 2: USAR RPC FUNCTION (SECURITY DEFINER) PARA BYPASS RLS
+        // Esta función 'create_order_v2' se ejecuta con permisos de admin en Postgres
+        const { data: order, error } = await supabase.rpc('create_order_v2', {
+            order_data: {
+                restaurant_id: orderData.restaurant_id,
+                user_id: orderData.user_id,
+                waiter_id: orderData.waiter_id,
+                table_id: orderData.table_id || null,
+                customer_id: orderData.customer_id || null,
+                order_type: orderData.table_id ? 'dine_in' : 'pos',
+                subtotal: orderData.subtotal,
+                tax: orderData.tax || 0,
+                total: orderData.total,
+                notes: orderData.notes,
+                items: orderData.items
             }
+        })
 
-            await client.query('COMMIT')
+        if (error) {
+            console.error('Error creando pedido RPC:', error)
+            throw new Error(error.message)
+        }
 
-            // Revalidar paths
-            revalidatePath('/admin/orders')
-            revalidatePath('/admin/waiter')
-            if (orderData.table_id) revalidatePath('/admin/tables')
+        revalidatePath('/admin/orders')
+        revalidatePath('/admin/waiter')
+        if (orderData.table_id) {
+            revalidatePath('/admin/tables')
+        }
 
-            return { success: true, data: order, message: 'Pedido creado exitosamente (Direct DB)' }
-
-        } catch (dbError: any) {
-            await client.query('ROLLBACK')
-            console.error('Error DB Directo:', dbError)
-            throw new Error(dbError.message)
-        } finally {
-            client.release()
+        return {
+            success: true,
+            data: order,
+            message: 'Pedido creado exitosamente'
         }
 
     } catch (error: any) {
@@ -159,45 +119,29 @@ export async function transferOrderBetweenTables(transferData: TransferOrderData
     const supabase = await createClient()
 
     try {
-        // INTENTO 1: USAR CONEXIÓN DIRECTA (pg) PARA BYPASS RLS
-        const client = await pool.connect()
-        try {
-            await client.query('BEGIN')
+        const { data, error } = await supabase
+            .rpc('transfer_order_to_table', {
+                p_order_id: transferData.order_id,
+                p_target_table_id: transferData.target_table_id,
+                p_user_id: transferData.user_id,
+                p_reason: transferData.reason || 'Cambio de mesa'
+            })
 
-            // Llamar a la función RPC directamente desde SQL
-            const transferQuery = `
-                SELECT transfer_order_to_table($1, $2, $3, $4) as result
-            `
-            const transferValues = [
-                transferData.order_id,
-                transferData.target_table_id,
-                transferData.user_id,
-                transferData.reason || 'Cambio de mesa'
-            ]
+        if (error) {
+            console.error('Error transfiriendo pedido:', error)
+            throw new Error(error.message)
+        }
 
-            const { rows } = await client.query(transferQuery, transferValues)
-            const result = rows[0].result
+        revalidatePath('/admin/tables')
+        revalidatePath('/admin/orders')
+        revalidatePath('/admin/waiter')
 
-            await client.query('COMMIT')
-
-            revalidatePath('/admin/tables')
-            revalidatePath('/admin/orders')
-            revalidatePath('/admin/waiter')
-
-            return {
-                success: true,
-                data: result,
-                message: result.merged
-                    ? 'Pedido fusionado con orden existente en mesa destino'
-                    : 'Pedido transferido a nueva mesa'
-            }
-
-        } catch (dbError: any) {
-            await client.query('ROLLBACK')
-            console.error('Error DB Directo:', dbError)
-            throw new Error(dbError.message)
-        } finally {
-            client.release()
+        return {
+            success: true,
+            data: data,
+            message: data.merged
+                ? 'Pedido fusionado con orden existente en mesa destino'
+                : 'Pedido transferido a nueva mesa'
         }
 
     } catch (error: any) {
