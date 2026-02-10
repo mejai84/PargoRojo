@@ -377,6 +377,8 @@ export default function CashierPage() {
                                 <div className="relative group/search">
                                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within/search:text-primary transition-colors" />
                                     <input
+                                        type="search"
+                                        autoComplete="new-password"
                                         onChange={(e) => {
                                             if (e.target.value.length > 3) {
                                                 // toast.info(`Filtrando por: ${e.target.value}`)

@@ -167,6 +167,8 @@ export default function InventoryPage() {
                         <div className="relative w-96">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
+                                type="search"
+                                autoComplete="new-password"
                                 placeholder="Buscar Referencia_Item..."
                                 className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-orange-500/50 transition-all"
                                 value={searchTerm}

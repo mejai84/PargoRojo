@@ -243,9 +243,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="relative group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <input
-                                type="text"
-                                name="pargo-module-search"
-                                autoComplete="off"
+                                type="search"
+                                name="pargo-master-search-no-autofill"
+                                autoComplete="new-password"
                                 placeholder="Buscar módulo..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}

@@ -176,6 +176,8 @@ export default function CustomersPagePremium() {
                         <div className="relative w-96 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
                             <input
+                                type="search"
+                                autoComplete="new-password"
                                 placeholder="Buscar en la base de datos de élite..."
                                 className="w-full bg-slate-800/30 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-orange-500/50"
                                 value={searchTerm}
