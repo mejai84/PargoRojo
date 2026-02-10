@@ -355,32 +355,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </Button>
                     </header>
 
-                    {/* 📱 MOBILE SIDEBAR OVERLAY */}
+                    {/* 📱 MOBILE SIDEBAR OVERLAY (AURA ELITE) */}
                     {isMobileMenuOpen && (
                         <div className="fixed inset-0 z-[100] lg:hidden">
                             <div
-                                className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300"
+                                className="absolute inset-0 bg-[#020406]/90 backdrop-blur-xl animate-in fade-in duration-500"
                                 onClick={() => setIsMobileMenuOpen(false)}
                             />
-                            <aside className="absolute left-0 top-0 bottom-0 w-[280px] bg-background border-r border-border flex flex-col animate-in slide-in-from-left duration-300 shadow-2xl">
-                                <div className="p-6 border-b border-border flex items-center justify-between">
+                            <aside className="absolute left-0 top-0 bottom-0 w-[300px] bg-[#0a0b0d] border-r border-white/5 flex flex-col animate-in slide-in-from-left duration-500 shadow-3xl overflow-hidden">
+                                {/* Decorative Glow */}
+                                <div className="absolute top-0 left-0 w-full h-64 bg-orange-500/5 blur-[80px] pointer-events-none" />
+
+                                <div className="p-8 border-b border-white/5 flex items-center justify-between relative z-10">
                                     <div className="flex items-center gap-3">
-                                        <Zap className="w-5 h-5 text-primary" />
-                                        <span className="font-black italic text-sm tracking-tighter uppercase text-foreground">JAMALI <span className="text-primary italic">OS</span></span>
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Zap className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <span className="font-black italic text-base tracking-tighter uppercase text-white">JAMALI <span className="text-primary">OS</span></span>
                                     </div>
-                                    <Button size="icon" variant="ghost" onClick={() => setIsMobileMenuOpen(false)}>
-                                        <X className="w-5 h-5" />
+                                    <Button size="icon" variant="ghost" className="rounded-xl hover:bg-white/5" onClick={() => setIsMobileMenuOpen(false)}>
+                                        <X className="w-5 h-5 text-slate-500" />
                                     </Button>
                                 </div>
 
-                                <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
-                                    {sidebarSections.map((section, idx) => (
-                                        <div key={idx} className="space-y-3">
-                                            <h4 className="px-4 text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em]">{section.title}</h4>
-                                            <div className="space-y-1">
-                                                {section.items
-                                                    .filter(item => userRole === 'admin' || item.roles.includes(userRole))
-                                                    .map((item) => {
+                                <div className="flex-1 overflow-y-auto p-6 space-y-10 custom-scrollbar relative z-10">
+                                    {sidebarSections.map((section, idx) => {
+                                        const filteredItems = section.items.filter(item => userRole === 'admin' || item.roles.includes(userRole))
+                                        if (filteredItems.length === 0) return null
+
+                                        return (
+                                            <div key={idx} className="space-y-4">
+                                                <h4 className="px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{section.title}</h4>
+                                                <div className="space-y-1">
+                                                    {filteredItems.map((item) => {
                                                         const Icon = item.icon
                                                         const isActive = pathname === item.href
 
@@ -389,34 +396,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                                                 key={item.href}
                                                                 href={item.href}
                                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                                className="block"
+                                                                className="block group relative"
                                                             >
                                                                 <div className={cn(
-                                                                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all",
-                                                                    isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                                                    "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative",
+                                                                    isActive
+                                                                        ? "bg-white/[0.04] text-white border border-white/5 shadow-lg"
+                                                                        : "text-slate-500 hover:text-slate-200"
                                                                 )}>
-                                                                    <Icon className="w-4 h-4" />
-                                                                    <span className="text-[10px] font-black uppercase italic tracking-widest">{item.label}</span>
+                                                                    <Icon className={cn(
+                                                                        "w-5 h-5 transition-all",
+                                                                        isActive ? "text-primary scale-110" : "group-hover:text-primary/70"
+                                                                    )} />
+                                                                    <span className={cn(
+                                                                        "text-[10px] font-black uppercase italic tracking-widest transition-all",
+                                                                        isActive ? "text-white" : "group-hover:translate-x-1"
+                                                                    )}>
+                                                                        {item.label}
+                                                                    </span>
                                                                 </div>
                                                             </Link>
                                                         )
                                                     })}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
 
-                                <div className="p-6 border-t border-border">
+                                <div className="p-8 border-t border-white/5 bg-black/20 relative z-10">
                                     <Button
                                         variant="ghost"
-                                        className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-600"
+                                        className="w-full justify-start gap-4 h-14 text-[10px] font-black uppercase italic tracking-[0.3em] text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-400 rounded-xl transition-all border border-rose-500/5 group"
                                         onClick={async () => {
                                             await supabase.auth.signOut()
                                             router.push("/login")
                                         }}
                                     >
-                                        <LogOut className="w-4 h-4" />
-                                        SALIR
+                                        <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                                        CERRAR SESIÓN
                                     </Button>
                                 </div>
                             </aside>

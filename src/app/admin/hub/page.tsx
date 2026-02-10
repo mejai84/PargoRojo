@@ -178,11 +178,11 @@ export default function PargoHubPage() {
                             )}
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                         </div>
-                        <div className="space-y-0.5">
-                            <h1 className="text-xl font-black tracking-tighter uppercase italic leading-none border-b border-orange-500/20 pb-0.5 text-white">{businessInfo.name}</h1>
+                        <div className="space-y-0 pb-1">
+                            <h1 className="text-lg md:text-xl font-black tracking-tighter uppercase italic leading-none border-b border-orange-500/20 pb-0.5 text-white">{businessInfo.name}</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500 italic">Core Live Engine</span>
-                                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">• Hub v5.0</span>
+                                <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] text-orange-500 italic">Core Live Engine</span>
+                                <span className="text-[7px] md:text-[8px] font-bold text-slate-500 uppercase tracking-widest">• Hub v5.0</span>
                             </div>
                         </div>
                     </div>
@@ -202,31 +202,31 @@ export default function PargoHubPage() {
             <main className="relative z-10 px-6 pt-10 space-y-12 max-w-xl mx-auto animate-in fade-in slide-in-from-bottom-10 duration-1000">
 
                 {/* 💰 PRIMARY REVENUE CORE */}
-                <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[4rem] p-12 shadow-3xl relative overflow-hidden group/rev">
+                <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 shadow-3xl relative overflow-hidden group/rev">
                     <div className="absolute -top-12 -right-12 opacity-[0.02] group-hover/rev:scale-110 group-hover/rev:rotate-12 transition-all duration-1000">
-                        <DollarSign className="w-64 h-64 text-orange-500" />
+                        <DollarSign className="w-48 h-48 md:w-64 md:h-64 text-orange-500" />
                     </div>
 
-                    <div className="relative z-10 text-center space-y-8">
+                    <div className="relative z-10 text-center space-y-6 md:space-y-8">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.5em] italic leading-none">Ventas en Tiempo Real</p>
-                            <p className="text-[8px] font-bold text-slate-700 uppercase tracking-widest">Sincronizado con Master Ledger</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] md:tracking-[0.5em] italic leading-none">Ventas en Tiempo Real</p>
+                            <p className="text-[7px] md:text-[8px] font-bold text-slate-700 uppercase tracking-widest">Sincronizado con Master Ledger</p>
                         </div>
 
                         <div className="relative inline-block">
                             <div className="absolute -inset-4 bg-orange-500/10 blur-2xl rounded-full scale-150 animate-pulse opacity-0 group-hover/rev:opacity-100 transition-opacity" />
-                            <h2 className="text-7xl font-black tracking-tighter italic leading-none text-white drop-shadow-sm whitespace-nowrap">{formatPrice(stats.revenue)}</h2>
+                            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter italic leading-none text-white drop-shadow-sm whitespace-nowrap">{formatPrice(stats.revenue)}</h2>
                         </div>
 
-                        <div className="pt-10 border-t border-white/5 flex justify-center gap-12 items-center">
+                        <div className="pt-6 md:pt-10 border-t border-white/5 flex justify-center gap-8 md:gap-12 items-center">
                             <div className="text-center space-y-1">
-                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] italic opacity-60">Avg. Ticket</p>
-                                <p className="text-2xl font-black italic tracking-tighter text-white leading-none">{formatPrice(stats.avgTicket)}</p>
+                                <p className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] italic opacity-60">Avg. Ticket</p>
+                                <p className="text-xl md:text-2xl font-black italic tracking-tighter text-white leading-none">{formatPrice(stats.avgTicket)}</p>
                             </div>
-                            <div className="w-px h-14 bg-gradient-to-b from-transparent via-white/5 to-transparent" />
+                            <div className="w-px h-10 md:h-14 bg-gradient-to-b from-transparent via-white/5 to-transparent" />
                             <div className="text-center space-y-1">
-                                <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] italic opacity-60">Payload Orders</p>
-                                <p className="text-2xl font-black italic tracking-tighter text-white leading-none">{stats.orders}</p>
+                                <p className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] italic opacity-60">Orders</p>
+                                <p className="text-xl md:text-2xl font-black italic tracking-tighter text-white leading-none">{stats.orders}</p>
                             </div>
                         </div>
                     </div>
@@ -289,37 +289,37 @@ export default function PargoHubPage() {
                 </div>
 
                 {/* ⚡ GRID FEED: RAPID ANALYTICS */}
-                <div className="grid grid-cols-2 gap-6">
-                    <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-8 space-y-6 shadow-xl relative overflow-hidden group">
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                    <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-2xl md:rounded-[3rem] p-6 md:p-8 space-y-4 md:space-y-6 shadow-xl relative overflow-hidden group">
                         <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:scale-110 transition-transform">
-                            <Activity className="w-24 h-24 text-orange-500" />
+                            <Activity className="w-20 h-20 md:w-24 md:h-24 text-orange-500" />
                         </div>
-                        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner group-hover:bg-orange-500 group-hover:text-black transition-all duration-500">
-                            <Activity className="w-7 h-7" />
+                        <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-inner group-hover:bg-orange-500 group-hover:text-black transition-all duration-500">
+                            <Activity className="w-5 h-5 md:w-7 md:h-7" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic mb-1">Ocupación Live</p>
-                            <p className="text-4xl font-black italic tracking-tighter text-white leading-none group-hover:text-orange-500 transition-colors">{stats.activeTables} <span className="text-[11px] text-slate-700 uppercase tracking-widest ml-1">Nodes</span></p>
+                            <p className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] italic mb-1">Ocupación Live</p>
+                            <p className="text-2xl md:text-4xl font-black italic tracking-tighter text-white leading-none group-hover:text-orange-500 transition-colors">{stats.activeTables} <span className="text-[9px] md:text-[11px] text-slate-700 uppercase tracking-widest ml-1">Nodes</span></p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-8 space-y-6 shadow-xl relative overflow-hidden group">
+                    <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/10 rounded-2xl md:rounded-[3rem] p-6 md:p-8 space-y-4 md:space-y-6 shadow-xl relative overflow-hidden group">
                         <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:scale-110 transition-transform">
-                            <Wallet className="w-24 h-24 text-orange-500" />
+                            <Wallet className="w-20 h-20 md:w-24 md:h-24 text-orange-500" />
                         </div>
                         <div className={cn(
-                            "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500",
+                            "w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-inner transition-all duration-500",
                             stats.cashboxStatus === 'OPEN' ? "bg-orange-500/10 text-orange-500 group-hover:bg-orange-500 group-hover:text-black" : "bg-rose-500/10 text-rose-500 group-hover:bg-rose-500 group-hover:text-white"
                         )}>
-                            <Wallet className="w-7 h-7" />
+                            <Wallet className="w-5 h-5 md:w-7 md:h-7" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] italic mb-1">Status Cashbox</p>
+                            <p className="text-[8px] md:text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] italic mb-1">Status Cashbox</p>
                             <p className={cn(
-                                "text-lg font-black italic tracking-[0.1em] uppercase leading-none flex items-center gap-2",
+                                "text-[10px] md:text-lg font-black italic tracking-[0.1em] uppercase leading-none flex items-center gap-2",
                                 stats.cashboxStatus === 'OPEN' ? "text-orange-500" : "text-rose-500"
                             )}>
-                                <span className="w-2 h-2 rounded-full bg-current animate-pulse shadow-sm" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse shadow-sm" />
                                 {stats.cashboxStatus === 'OPEN' ? 'ABIERTA' : 'OFFLINE'}
                             </p>
                         </div>
@@ -344,26 +344,26 @@ export default function PargoHubPage() {
 
                     <div className="space-y-4">
                         {recentSales.map((sale) => (
-                            <div key={sale.id} className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 flex items-center justify-between group active:scale-[0.97] transition-all shadow-xl hover:border-orange-500/20 relative overflow-hidden">
-                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-white/5 group-hover:bg-orange-500 transition-colors" />
-                                <div className="flex items-center gap-6">
-                                    <div className="w-16 h-16 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center shadow-inner group-hover:border-orange-500/20 transition-all">
-                                        <span className="text-[7px] font-black text-slate-700 uppercase italic">ID-HEX</span>
-                                        <span className="text-[11px] font-black text-orange-500 italic leading-none">#{sale.id.split('-')[0].toUpperCase().slice(0, 5)}</span>
+                            <div key={sale.id} className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 flex items-center justify-between group active:scale-[0.97] transition-all shadow-xl hover:border-orange-500/20 relative overflow-hidden">
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/5 group-hover:bg-orange-500 transition-colors" />
+                                <div className="flex items-center gap-4 md:gap-6">
+                                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center shadow-inner group-hover:border-orange-500/20 transition-all">
+                                        <span className="text-[6px] md:text-[7px] font-black text-slate-700 uppercase italic leading-none mb-1">ID-HEX</span>
+                                        <span className="text-[9px] md:text-[11px] font-black text-orange-500 italic leading-none">#{sale.id.split('-')[0].toUpperCase().slice(0, 5)}</span>
                                     </div>
-                                    <div className="space-y-2">
-                                        <p className="text-xl font-black italic uppercase tracking-tighter text-white group-hover:text-orange-500 transition-colors leading-none">{sale.guest_info?.name || 'VENTA RÁPIDA'}</p>
-                                        <div className="flex items-center gap-3">
+                                    <div className="space-y-1">
+                                        <p className="text-base md:text-xl font-black italic uppercase tracking-tighter text-white group-hover:text-orange-500 transition-colors leading-none truncate max-w-[120px] md:max-w-none">{sale.guest_info?.name || 'VENTA RÁPIDA'}</p>
+                                        <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-1.5 h-1.5 rounded-full bg-orange-500/40" />
-                                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] italic">
-                                                Detección: {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            <p className="text-[8px] md:text-[9px] font-black text-slate-600 uppercase tracking-[0.1em] md:tracking-[0.2em] italic">
+                                                {new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="text-right space-y-1">
-                                    <p className="text-3xl font-black italic tracking-tighter text-white group-hover:text-orange-500 transition-all leading-none">{formatPrice(sale.total)}</p>
-                                    <span className="text-[8px] font-black uppercase text-emerald-500 italic px-2 py-0.5 bg-emerald-500/10 rounded-lg">VERIFIED</span>
+                                    <p className="text-xl md:text-3xl font-black italic tracking-tighter text-white group-hover:text-orange-500 transition-all leading-none">{formatPrice(sale.total)}</p>
+                                    <span className="text-[6px] md:text-[8px] font-black uppercase text-emerald-500 italic px-1.5 py-0.5 bg-emerald-500/10 rounded-lg">VERIFIED</span>
                                 </div>
                             </div>
                         ))}

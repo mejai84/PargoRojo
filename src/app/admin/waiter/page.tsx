@@ -168,8 +168,8 @@ export default function WaiterAppPremium() {
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{realTables.length} TOTALES</span>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 md:pr-2">
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
                                     {realTables.map(table => (
                                         <div
                                             key={table.id}
@@ -182,25 +182,25 @@ export default function WaiterAppPremium() {
                                                 }
                                             }}
                                             className={cn(
-                                                "relative aspect-square rounded-[2rem] p-6 flex flex-col justify-between border-2 transition-all cursor-pointer active:scale-95 group overflow-hidden",
+                                                "relative aspect-square rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 flex flex-col justify-between border-2 transition-all cursor-pointer active:scale-95 group overflow-hidden",
                                                 table.status === 'free'
                                                     ? "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/40"
                                                     : "bg-orange-500/5 border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/40"
                                             )}
                                         >
-                                            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-all">
-                                                <TableIcon className="w-20 h-20" />
+                                            <div className="absolute top-0 right-0 p-4 md:p-6 opacity-5 group-hover:opacity-10 transition-all">
+                                                <TableIcon className="w-16 h-16 md:w-20 md:h-20" />
                                             </div>
                                             <div className="relative z-10 flex flex-col h-full justify-between">
                                                 <div className={cn(
-                                                    "w-8 h-8 rounded-lg flex items-center justify-center border",
+                                                    "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center border",
                                                     table.status === 'free' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-orange-500/10 border-orange-500/20 text-orange-500"
                                                 )}>
-                                                    <span className="text-[10px] font-black italic">{table.capacity}</span>
+                                                    <span className="text-[9px] md:text-[10px] font-black italic">{table.capacity}</span>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{table.status === 'free' ? 'DISPONIBLE' : 'OCUPADA'}</p>
-                                                    <h3 className="text-3xl font-black italic tracking-tighter group-hover:text-white transition-colors uppercase">{table.table_name}</h3>
+                                                    <p className="text-[8px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">{table.status === 'free' ? 'DISPONIBLE' : 'OCUPADA'}</p>
+                                                    <h3 className="text-xl md:text-3xl font-black italic tracking-tighter group-hover:text-white transition-colors uppercase">{table.table_name}</h3>
                                                 </div>
                                             </div>
                                         </div>
@@ -209,67 +209,70 @@ export default function WaiterAppPremium() {
                             </div>
                         </div>
                     ) : view === 'options' ? (
-                        <div className="h-full flex flex-col p-6 items-center justify-center space-y-8 max-w-lg mx-auto w-full animate-in zoom-in duration-300">
+                        <div className="h-full flex flex-col p-4 md:p-6 items-center justify-center space-y-6 md:space-y-8 max-w-lg mx-auto w-full animate-in zoom-in duration-300">
                             <div className="text-center space-y-2">
-                                <div className="w-24 h-24 bg-orange-500/20 rounded-[2.5rem] flex items-center justify-center border border-orange-500/30 mx-auto mb-6">
-                                    <TableIcon className="w-10 h-10 text-orange-500" />
+                                <div className="w-20 h-20 md:w-24 md:h-24 bg-orange-500/20 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-center border border-orange-500/30 mx-auto mb-4 md:mb-6">
+                                    <TableIcon className="w-8 h-8 md:w-10 md:h-10 text-orange-500" />
                                 </div>
-                                <h2 className="text-5xl font-black italic tracking-tighter uppercase">{selectedTable?.table_name}</h2>
+                                <h2 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase">{selectedTable?.table_name}</h2>
                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">GESTIÓN DE MESA ACTIVA</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 w-full">
+                            <div className="grid grid-cols-2 gap-3 md:gap-4 w-full">
                                 <Button
                                     onClick={() => setView('order')}
-                                    className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-orange-600 hover:text-black hover:border-orange-600/50 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                    className="h-20 md:h-24 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-orange-600 hover:text-black hover:border-orange-600/50 transition-all font-black uppercase text-[10px] italic tracking-widest shadow-lg"
                                 >
-                                    <Plus className="w-6 h-6" />
+                                    <Plus className="w-5 h-5 md:w-6 md:h-6" />
                                     TOMAR PEDIDO
                                 </Button>
                                 <Button
                                     onClick={() => toast.info("RE-IMPRIMIENDO COMANDA A COCINA...")}
-                                    className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                    className="h-20 md:h-24 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
                                 >
-                                    <ChefHat className="w-6 h-6" />
+                                    <ChefHat className="w-5 h-5 md:w-6 md:h-6" />
                                     RE-PEDIR
                                 </Button>
 
-                                {/* ADMIN ACTIONS */}
-                                {(userRole === 'admin' || userRole === 'manager') && (
-                                    <>
-                                        <Button
-                                            onClick={() => toast.success("PROCESANDO PAGO EN CAJA...")}
-                                            className="h-24 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-3xl flex flex-col gap-2 hover:bg-emerald-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest shadow-xl shadow-emerald-500/10"
-                                        >
-                                            <Receipt className="w-6 h-6" />
-                                            PAGAR CUENTA
-                                        </Button>
-                                        <Button
-                                            onClick={() => toast.info("ENTRANDO A MODO DIVISIÓN DE CUENTA...")}
-                                            className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
-                                        >
-                                            <ArrowLeftRight className="w-6 h-6" />
-                                            DIVIDIR CUENTA
-                                        </Button>
-                                        <Button
-                                            onClick={() => toast.info("SELECCIONE MESA PARA UNIR...")}
-                                            className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
-                                        >
-                                            <LayoutGrid className="w-6 h-6" />
-                                            UNIR MESA
-                                        </Button>
-                                        <Button
-                                            onClick={() => {
-                                                toast.success("MESA LIBERADA CORRECTAMENTE")
-                                                setView('tables')
-                                            }}
-                                            className="h-24 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-3xl flex flex-col gap-2 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest"
-                                        >
-                                            <X className="w-6 h-6" />
-                                            LIBERAR MESA
-                                        </Button>
-                                    </>
-                                )}
+                                <Button
+                                    onClick={() => router.push(`/admin/pos?table=${selectedTable?.id}`)}
+                                    className="h-20 md:h-24 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-emerald-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest shadow-xl shadow-emerald-500/10"
+                                >
+                                    <Receipt className="w-5 h-5 md:w-6 md:h-6" />
+                                    PAGAR CUENTA
+                                </Button>
+                                <Button
+                                    onClick={() => toast.info("ENTRANDO A MODO DIVISIÓN DE CUENTA...")}
+                                    className="h-20 md:h-24 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                >
+                                    <ArrowLeftRight className="w-5 h-5 md:w-6 md:h-6" />
+                                    DIVIDIR CUENTA
+                                </Button>
+                                <Button
+                                    onClick={() => toast.info("SELECCIONE MESA PARA UNIR...")}
+                                    className="h-20 md:h-24 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                >
+                                    <LayoutGrid className="w-5 h-5 md:w-6 md:h-6" />
+                                    UNIR MESA
+                                </Button>
+                                <Button
+                                    onClick={async () => {
+                                        if (!confirm("¿LIBERAR MESA Y BORRAR PEDIDOS NO PAGADOS?")) return
+                                        try {
+                                            const { error } = await supabase.from('tables').update({ status: 'free' }).eq('id', selectedTable?.id)
+                                            if (error) throw error
+                                            toast.success("MESA LIBERADA CORRECTAMENTE")
+                                            fetchData()
+                                            setView('tables')
+                                        } catch (e) {
+                                            toast.error("ERROR AL LIBERAR MESA")
+                                        }
+                                    }}
+                                    className="h-20 md:h-24 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl md:rounded-3xl flex flex-col gap-1 md:gap-2 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                >
+                                    <X className="w-5 h-5 md:w-6 md:h-6" />
+                                    LIBERAR MESA
+                                </Button>
                             </div>
                             <Button
                                 variant="ghost"
@@ -321,19 +324,19 @@ export default function WaiterAppPremium() {
                                     </div>
                                 </div>
                                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                         {filteredProducts.map(prod => (
                                             <div
                                                 key={prod.id}
                                                 onClick={() => addToCart(prod)}
-                                                className="bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-2xl p-4 active:scale-95 transition-all flex flex-col h-32 justify-between"
+                                                className="bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-2xl p-4 active:scale-95 transition-all flex flex-col h-24 sm:h-32 justify-between cursor-pointer group hover:border-orange-500/30"
                                             >
-                                                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-500">
-                                                    <Plus className="w-4 h-4" />
+                                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20 text-orange-500 group-hover:bg-orange-500 group-hover:text-black">
+                                                    <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-black italic tracking-tighter uppercase line-clamp-2 leading-none mb-1">{prod.name}</p>
-                                                    <p className="text-lg font-black italic font-mono text-orange-400 leading-none">{formatPrice(prod.price)}</p>
+                                                    <p className="text-[9px] sm:text-[10px] font-black italic tracking-tighter uppercase line-clamp-1 leading-none mb-1">{prod.name}</p>
+                                                    <p className="text-sm sm:text-lg font-black italic font-mono text-orange-400 leading-none">{formatPrice(prod.price)}</p>
                                                 </div>
                                             </div>
                                         ))}

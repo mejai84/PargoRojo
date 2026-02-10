@@ -142,21 +142,21 @@ export default function KitchenPage() {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between shrink-0 gap-8 mb-4">
                     <div className="flex flex-col md:flex-row md:items-center gap-8">
                         <div className="space-y-1">
-                            <h1 className="text-6xl font-black tracking-tighter text-white italic leading-none">KDS <span className="text-orange-500">PRO</span></h1>
+                            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white italic leading-none">KDS <span className="text-orange-500">PRO</span></h1>
                             <div className="flex items-center gap-2.5">
                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.4em] italic leading-none">Realtime Sync Active</span>
+                                <span className="text-[8px] md:text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] md:tracking-[0.4em] italic leading-none">Realtime Sync Active</span>
                             </div>
                         </div>
 
                         {/* Filtros de Estación */}
-                        <div className="flex items-center gap-2 bg-white/5 backdrop-blur-3xl p-2 rounded-[2rem] border border-white/5 shadow-2xl">
+                        <div className="flex items-center gap-2 bg-white/5 backdrop-blur-3xl p-1.5 md:p-2 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto no-scrollbar max-w-full">
                             {['TODAS', 'PARRILLA', 'FRÍOS', 'POSTRES'].map(s => (
                                 <button
                                     key={s}
                                     onClick={() => setActiveStationId(s)}
                                     className={cn(
-                                        "px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all italic",
+                                        "px-4 md:px-6 py-2 md:py-3 rounded-[1.2rem] md:rounded-[1.5rem] text-[8px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-all italic whitespace-nowrap",
                                         activeStationId === s ? "bg-orange-600 text-black shadow-3xl shadow-orange-500/20" : "text-slate-500 hover:text-white"
                                     )}
                                 >
@@ -166,19 +166,19 @@ export default function KitchenPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 self-end lg:self-center">
-                        <div className="px-8 py-4 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-[2rem] flex items-center gap-5 shadow-inner">
+                    <div className="flex items-center gap-3 md:gap-4 self-end lg:self-center">
+                        <div className="px-5 md:px-8 py-3 md:py-4 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-[1.5rem] md:rounded-[2rem] flex items-center gap-3 md:gap-5 shadow-inner">
                             <div className="text-right">
-                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] italic mb-1 leading-none">Payload_Active</p>
-                                <p className="text-2xl font-black italic tracking-tighter text-white leading-none">{preparingCount} ORDENES</p>
+                                <p className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.4em] italic mb-0.5 md:mb-1 leading-none">Payload</p>
+                                <p className="text-lg md:text-2xl font-black italic tracking-tighter text-white leading-none">{preparingCount} ORD</p>
                             </div>
-                            <div className="w-12 h-12 bg-orange-600/10 rounded-2xl flex items-center justify-center text-orange-500">
-                                <Flame className="w-6 h-6 animate-pulse" />
+                            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-600/10 rounded-xl md:rounded-2xl flex items-center justify-center text-orange-500">
+                                <Flame className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />
                             </div>
                         </div>
                         <Link href="/admin">
-                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:text-rose-500 transition-all active:scale-90">
-                                <ArrowLeft className="w-6 h-6" />
+                            <Button variant="ghost" size="icon" className="h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:text-rose-500 transition-all active:scale-90">
+                                <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
                             </Button>
                         </Link>
                     </div>
@@ -206,14 +206,14 @@ export default function KitchenPage() {
                                             {/* Glow effect on hover */}
                                             <div className="absolute inset-0 bg-orange-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-                                            <div className="flex items-start justify-between relative z-10">
+                                            <div className="flex items-start justify-between relative z-10 gap-2">
                                                 <div className="space-y-1">
-                                                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Identifier</p>
-                                                    <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter leading-none">
+                                                    <p className="text-[7px] md:text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] md:tracking-[0.4em] italic leading-none">Identifier</p>
+                                                    <h3 className="text-xl md:text-3xl font-black italic text-white uppercase tracking-tighter leading-none">
                                                         {order.tables?.table_name || 'HUB_PICKUP'}
                                                     </h3>
                                                 </div>
-                                                <div className={cn("text-[11px] font-black tracking-[0.2em] italic bg-black/40 px-3 py-1.5 rounded-xl border border-white/5", getTimeColor(mins))}>
+                                                <div className={cn("text-[9px] md:text-[11px] font-black tracking-[0.1em] md:tracking-[0.2em] italic bg-black/40 px-2 md:px-3 py-1 md:py-1.5 rounded-lg md:rounded-xl border border-white/5 shrink-0", getTimeColor(mins))}>
                                                     {mins < 10 ? '0' + mins : mins}:00 MIN
                                                 </div>
                                             </div>
@@ -230,8 +230,8 @@ export default function KitchenPage() {
                                                 </div>
                                                 <div className="space-y-3">
                                                     {order.order_items.map((item, idx) => (
-                                                        <div key={idx} className="flex items-center gap-4 text-base">
-                                                            <span className="font-black text-orange-500 italic min-w-[30px]">{item.quantity}X</span>
+                                                        <div key={idx} className="flex items-center gap-3 md:gap-4 text-sm md:text-base">
+                                                            <span className="font-black text-orange-500 italic min-w-[24px] md:min-w-[30px]">{item.quantity}X</span>
                                                             <span className="font-bold text-slate-200 uppercase tracking-tight italic">{item.products?.name}</span>
                                                         </div>
                                                     ))}
@@ -245,23 +245,23 @@ export default function KitchenPage() {
                                                         <div className="flex gap-2 mr-auto">
                                                             <button
                                                                 onClick={() => toast.info("PRODUCCIÓN PAUSADA EN ESTACIÓN")}
-                                                                className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
+                                                                className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
                                                             >
-                                                                <Pause className="w-5 h-5 text-slate-300" />
+                                                                <Pause className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
                                                                     fetchData()
                                                                     toast.success("DATOS SINCRONIZADOS")
                                                                 }}
-                                                                className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
+                                                                className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
                                                             >
-                                                                <RefreshCw className="w-5 h-5 text-slate-300" />
+                                                                <RefreshCw className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />
                                                             </button>
                                                         </div>
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'preparing')}
-                                                            className="h-14 px-8 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-[11px] italic tracking-widest rounded-2xl shadow-3xl shadow-orange-500/20 active:scale-95 transition-all"
+                                                            className="h-10 md:h-14 px-4 md:px-8 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-[10px] md:text-[11px] italic tracking-widest rounded-xl md:rounded-2xl shadow-3xl shadow-orange-500/20 active:scale-95 transition-all"
                                                         >
                                                             EMPEZAR
                                                         </Button>

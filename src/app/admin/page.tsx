@@ -77,33 +77,33 @@ export default function AdminDashboard() {
             <div className="relative z-10 p-8 md:p-12 space-y-10 max-w-[1800px] mx-auto flex flex-col min-h-full">
 
                 {/* HEADER EJECUTIVO */}
-                <div className="flex items-center justify-between shrink-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0">
                     <div className="space-y-1">
-                        <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none">DASHBOARD <span className="text-orange-500">ADMINISTRATIVO</span></h1>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em] italic flex items-center gap-4">
+                        <h1 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-tight md:leading-none">DASHBOARD <span className="text-orange-500">ADMINISTRATIVO</span></h1>
+                        <p className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.5em] italic flex items-center gap-2 md:gap-4">
                             CENTRAL COMMAND HUB
                             <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
                             PARGO ROJO OS v2.0
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <div className="text-right">
-                            <p className="text-3xl font-black italic tracking-tighter font-mono">
+                    <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 w-full md:w-auto">
+                        <div className="text-left md:text-right">
+                            <p className="text-xl md:text-3xl font-black italic tracking-tighter font-mono">
                                 {currentTime.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </p>
-                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">TIEMPO REAL DE SISTEMA</p>
+                            <p className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest">TIEMPO REAL DE SISTEMA</p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2 md:gap-3">
                             <Button
                                 onClick={() => toast.info("CENTRO DE NOTIFICACIONES: Sin mensajes nuevos")}
-                                variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5"
+                                variant="ghost" size="icon" className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-slate-800/40 border border-white/5"
                             >
-                                <Bell className="w-6 h-6 text-slate-400" />
+                                <Bell className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
                             </Button>
                             <Link href="/admin/settings">
-                                <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5">
-                                    <Settings className="w-6 h-6 text-slate-400" />
+                                <Button variant="ghost" size="icon" className="h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-slate-800/40 border border-white/5">
+                                    <Settings className="w-5 h-5 md:w-6 md:h-6 text-slate-400" />
                                 </Button>
                             </Link>
                         </div>
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* KPI CARDS (Estilo Glow) */}
-                <div className="grid grid-cols-6 gap-6 shrink-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 shrink-0">
                     {[
                         { label: 'VENTAS HOY', val: formatPrice(stats.todayRevenue), icon: DollarSign, color: 'text-orange-500', glow: 'shadow-orange-500/20' },
                         { label: 'ÓRDENES ACTIVAS', val: stats.activeOrders, icon: Flame, color: 'text-orange-500', glow: 'shadow-orange-500/20' },
@@ -121,39 +121,39 @@ export default function AdminDashboard() {
                         { label: 'VALORACIÓN', val: stats.rating, icon: Star, color: 'text-yellow-400' },
                     ].map((card, i) => (
                         <div key={i} className={cn(
-                            "bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 transition-all hover:scale-105 hover:bg-slate-700/50",
+                            "bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-2xl md:rounded-3xl p-4 md:p-6 transition-all hover:scale-105 hover:bg-slate-700/50",
                             card.glow && `shadow-2xl ${card.glow}`
                         )}>
-                            <div className="flex items-center justify-between mb-4">
-                                <card.icon className={cn("w-5 h-5 opacity-40", card.color)} />
-                                <TrendingUp className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100" />
+                            <div className="flex items-center justify-between mb-2 md:mb-4">
+                                <card.icon className={cn("w-4 h-4 md:w-5 md:h-5 opacity-40", card.color)} />
+                                <TrendingUp className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 opacity-0 group-hover:opacity-100" />
                             </div>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{card.label}</p>
-                            <p className={cn("text-2xl font-black italic", card.color)}>{card.val}</p>
+                            <p className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 leading-none">{card.label}</p>
+                            <p className={cn("text-lg md:text-2xl font-black italic", card.color)}>{card.val}</p>
                         </div>
                     ))}
                 </div>
 
                 {/* MAIN GRID */}
-                <div className="grid grid-cols-12 gap-10 flex-1 min-h-0">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 flex-1 min-h-0">
 
                     {/* MODULOS DE CONTROL */}
-                    <div className="col-span-8 flex flex-col space-y-6">
-                        <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-500 italic">Módulos de Control Operativo</h2>
-                        <div className="grid grid-cols-2 gap-6 flex-1 overflow-y-auto pr-4 custom-scrollbar">
+                    <div className="lg:col-span-8 flex flex-col space-y-6">
+                        <h2 className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-slate-500 italic px-2">Módulos de Control Operativo</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 flex-1 lg:overflow-y-auto lg:pr-4 custom-scrollbar">
                             {navItems.map((item, i) => (
                                 <Link key={i} href={item.href}>
-                                    <div className="group bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 h-full transition-all hover:border-orange-500/40 cursor-pointer overflow-hidden relative">
+                                    <div className="group bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-3xl md:rounded-[2.5rem] p-6 md:p-8 h-full transition-all hover:border-orange-500/40 cursor-pointer overflow-hidden relative">
                                         <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all">
-                                            <item.icon className="w-32 h-32" />
+                                            <item.icon className="w-24 h-24 md:w-32 md:h-32" />
                                         </div>
-                                        <div className="relative z-10 flex flex-col h-full justify-between">
-                                            <div className="w-14 h-14 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-black transition-all">
-                                                <item.icon className="w-6 h-6" />
+                                        <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-black transition-all">
+                                                <item.icon className="w-5 h-5 md:w-6 md:h-6" />
                                             </div>
                                             <div>
-                                                <h3 className="text-3xl font-black italic tracking-tighter uppercase group-hover:text-orange-500 transition-colors">{item.label}</h3>
-                                                <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-2">{item.desc}</p>
+                                                <h3 className="text-xl md:text-3xl font-black italic tracking-tighter uppercase group-hover:text-orange-500 transition-colors leading-none">{item.label}</h3>
+                                                <p className="text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-widest mt-2">{item.desc}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -163,39 +163,39 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* REAL-TIME TRENDS (Estilo Mockup) */}
-                    <div className="col-span-4 bg-slate-800/40 backdrop-blur-3xl border border-orange-500/20 rounded-[3rem] p-8 shadow-2xl shadow-orange-950/20 flex flex-col overflow-hidden">
-                        <div className="flex items-center justify-between mb-10">
-                            <h2 className="text-lg font-black italic uppercase tracking-tight">Real-time <span className="text-orange-500">Sales</span></h2>
-                            <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-[9px] font-bold text-emerald-400 uppercase">Live Metrics</div>
+                    <div className="lg:col-span-4 bg-slate-800/40 backdrop-blur-3xl border border-orange-500/20 rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-2xl shadow-orange-950/20 flex flex-col overflow-hidden mb-20 lg:mb-0">
+                        <div className="flex items-center justify-between mb-8 md:mb-10">
+                            <h2 className="text-base md:text-lg font-black italic uppercase tracking-tight">Real-time <span className="text-orange-500">Sales</span></h2>
+                            <div className="px-2 md:px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-[8px] md:text-[9px] font-bold text-emerald-400 uppercase">Live Metrics</div>
                         </div>
 
                         {/* Simulación Gráfico Trend */}
-                        <div className="flex-1 relative mb-6">
-                            <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent rounded-3xl border border-orange-500/10 flex items-end p-6 gap-2">
+                        <div className="h-40 md:h-auto md:flex-1 relative mb-6">
+                            <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent rounded-3xl border border-orange-500/10 flex items-end p-4 md:p-6 gap-1 md:gap-2">
                                 {[30, 45, 60, 40, 75, 90, 85, 95, 100].map((h, i) => (
-                                    <div key={i} className="flex-1 bg-gradient-to-t from-orange-600 to-orange-400 rounded-lg hover:brightness-150 transition-all" style={{ height: `${h}%` }} />
+                                    <div key={i} className="flex-1 bg-gradient-to-t from-orange-600 to-orange-400 rounded-md md:rounded-lg hover:brightness-150 transition-all" style={{ height: `${h}%` }} />
                                 ))}
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="p-5 bg-slate-900/60 rounded-2xl border border-white/5 group hover:border-orange-500/30 transition-all cursor-pointer">
+                        <div className="space-y-3 md:space-y-4">
+                            <div className="p-4 md:p-5 bg-slate-900/60 rounded-2xl border border-white/5 group hover:border-orange-500/30 transition-all cursor-pointer">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                                            <ShoppingBag className="w-5 h-5 text-orange-500" />
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-orange-500/10 flex items-center justify-center">
+                                            <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black italic uppercase">Última Venta: Mesa 5</p>
-                                            <p className="text-[10px] font-medium text-slate-500">Hace 2 minutos</p>
+                                            <p className="text-xs md:text-sm font-black italic uppercase">Mesa 5</p>
+                                            <p className="text-[8px] md:text-[10px] font-medium text-slate-500 leading-none">Hace 2m</p>
                                         </div>
                                     </div>
-                                    <p className="text-lg font-black italic tracking-tighter">$145.000</p>
+                                    <p className="text-base md:text-lg font-black italic tracking-tighter">$145.000</p>
                                 </div>
                             </div>
                             <Button
                                 onClick={() => toast.success("CIERRE X GENERADO CORRECTAMENTE")}
-                                className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.2em] italic rounded-2xl hover:bg-slate-200 shadow-xl"
+                                className="w-full h-14 md:h-16 bg-white text-black font-black uppercase tracking-[0.2em] italic rounded-2xl hover:bg-slate-200 shadow-xl"
                             >
                                 EJECUTAR CIERRE X
                             </Button>
