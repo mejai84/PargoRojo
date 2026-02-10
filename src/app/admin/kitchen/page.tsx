@@ -139,25 +139,25 @@ export default function KitchenPage() {
             <div className="relative z-10 p-8 md:p-12 space-y-6 flex flex-col min-h-full">
 
                 {/* HEADER (Estilo Mockup) */}
-                <div className="flex items-center justify-between shrink-0 mb-2">
-                    <div className="flex items-center gap-8">
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-5xl font-black tracking-tight text-white italic">KDS PRO</h1>
-                            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
-                                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">REALTIME_SYNC_ACTIVE</span>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between shrink-0 gap-8 mb-4">
+                    <div className="flex flex-col md:flex-row md:items-center gap-8">
+                        <div className="space-y-1">
+                            <h1 className="text-6xl font-black tracking-tighter text-white italic leading-none">KDS <span className="text-orange-500">PRO</span></h1>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.4em] italic leading-none">Realtime Sync Active</span>
                             </div>
                         </div>
 
                         {/* Filtros de Estación */}
-                        <div className="flex items-center gap-2 bg-slate-800/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/5">
+                        <div className="flex items-center gap-2 bg-white/5 backdrop-blur-3xl p-2 rounded-[2rem] border border-white/5 shadow-2xl">
                             {['TODAS', 'PARRILLA', 'FRÍOS', 'POSTRES'].map(s => (
                                 <button
                                     key={s}
                                     onClick={() => setActiveStationId(s)}
                                     className={cn(
-                                        "px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
-                                        activeStationId === s ? "bg-slate-700 text-white shadow-xl" : "text-slate-500 hover:text-slate-300"
+                                        "px-6 py-3 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all italic",
+                                        activeStationId === s ? "bg-orange-600 text-black shadow-3xl shadow-orange-500/20" : "text-slate-500 hover:text-white"
                                     )}
                                 >
                                     {s}
@@ -166,95 +166,102 @@ export default function KitchenPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="px-6 py-3 bg-slate-800/50 backdrop-blur-md border border-white/5 rounded-2xl">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">EN FOGÓN:</span>
-                            <span className="text-xl font-black text-orange-500">{preparingCount}</span>
+                    <div className="flex items-center gap-4 self-end lg:self-center">
+                        <div className="px-8 py-4 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-[2rem] flex items-center gap-5 shadow-inner">
+                            <div className="text-right">
+                                <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.4em] italic mb-1 leading-none">Payload_Active</p>
+                                <p className="text-2xl font-black italic tracking-tighter text-white leading-none">{preparingCount} ORDENES</p>
+                            </div>
+                            <div className="w-12 h-12 bg-orange-600/10 rounded-2xl flex items-center justify-center text-orange-500">
+                                <Flame className="w-6 h-6 animate-pulse" />
+                            </div>
                         </div>
                         <Link href="/admin">
-                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-slate-800/40 border border-white/5">
-                                <ArrowLeft className="w-5 h-5 text-slate-400" />
+                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-rose-500/20 hover:text-rose-500 transition-all active:scale-90">
+                                <ArrowLeft className="w-6 h-6" />
                             </Button>
                         </Link>
                     </div>
                 </div>
 
                 {/* COLUMNAS (Estilo Mockup) */}
-                <div className="grid grid-cols-3 gap-6 flex-1 min-h-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-1 min-h-0 bg-transparent">
                     {STATUS_COLUMNS.map(column => (
-                        <div key={column.id} className="flex flex-col min-h-0 bg-slate-400/5 rounded-[2.5rem] border border-white/5 overflow-hidden">
-                            <div className="p-6 shrink-0 flex items-center justify-between bg-white/[0.02]">
-                                <h2 className="text-lg font-black italic text-slate-100 tracking-tight">{column.label}</h2>
-                                <div className="w-8 h-8 rounded-xl bg-slate-800/50 flex items-center justify-center font-black text-sm text-slate-400">
+                        <div key={column.id} className="flex flex-col min-h-0 bg-slate-950/40 backdrop-blur-3xl rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
+                            <div className="px-8 py-7 shrink-0 flex items-center justify-between border-b border-white/5 bg-white/[0.02]">
+                                <div className="space-y-1">
+                                    <h2 className="text-xl font-black italic text-white tracking-tighter uppercase leading-none">{column.label}</h2>
+                                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Queue Protocol</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center font-black text-sm text-orange-500 shadow-xl">
                                     {orders.filter(o => o.status === column.id).length}
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                                 {orders.filter(o => o.status === column.id).map((order) => {
                                     const mins = getElapsed(order.created_at)
                                     return (
-                                        <div key={order.id} className="bg-slate-800/40 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 space-y-4 shadow-2xl relative group overflow-hidden">
+                                        <div key={order.id} className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 space-y-6 shadow-3xl relative group overflow-hidden transition-all duration-500 hover:border-orange-500/30">
                                             {/* Glow effect on hover */}
-                                            <div className="absolute inset-0 bg-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                            <div className="absolute inset-0 bg-orange-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                                             <div className="flex items-start justify-between relative z-10">
-                                                <h3 className="text-2xl font-black italic text-white uppercase tracking-tighter">
-                                                    {order.tables?.table_name || 'DOMICILIO'}
-                                                </h3>
-                                                <div className={cn("text-xs font-mono font-bold tracking-widest", getTimeColor(mins))}>
-                                                    00:{mins < 10 ? '0' + mins : mins}:00
+                                                <div className="space-y-1">
+                                                    <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] italic leading-none">Identifier</p>
+                                                    <h3 className="text-3xl font-black italic text-white uppercase tracking-tighter leading-none">
+                                                        {order.tables?.table_name || 'HUB_PICKUP'}
+                                                    </h3>
+                                                </div>
+                                                <div className={cn("text-[11px] font-black tracking-[0.2em] italic bg-black/40 px-3 py-1.5 rounded-xl border border-white/5", getTimeColor(mins))}>
+                                                    {mins < 10 ? '0' + mins : mins}:00 MIN
                                                 </div>
                                             </div>
 
                                             {/* Items con barra de estado */}
-                                            <div className="space-y-3 relative z-10">
-                                                <div className="h-1 w-full bg-slate-700/50 rounded-full overflow-hidden">
+                                            <div className="space-y-4 relative z-10">
+                                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden shadow-inner">
                                                     <div className={cn(
                                                         "h-full transition-all duration-1000",
-                                                        mins < 5 ? "bg-emerald-500 w-1/3" : mins < 12 ? "bg-orange-500 w-2/3" : "bg-red-500 w-full"
+                                                        mins < 5 ? "bg-emerald-500 w-1/3 shadow-[0_0_10px_rgba(16,185,129,0.3)]" :
+                                                            mins < 12 ? "bg-orange-500 w-2/3 shadow-[0_0_10px_rgba(249,115,22,0.3)]" :
+                                                                "bg-rose-500 w-full shadow-[0_0_10px_rgba(244,63,94,0.3)]"
                                                     )} />
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-3">
                                                     {order.order_items.map((item, idx) => (
-                                                        <div key={idx} className="flex items-center gap-3 text-sm">
-                                                            <span className="font-bold text-orange-500">{item.quantity}x</span>
-                                                            <span className="font-medium text-slate-200">{item.products?.name}</span>
+                                                        <div key={idx} className="flex items-center gap-4 text-base">
+                                                            <span className="font-black text-orange-500 italic min-w-[30px]">{item.quantity}X</span>
+                                                            <span className="font-bold text-slate-200 uppercase tracking-tight italic">{item.products?.name}</span>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
 
                                             {/* Botones (Estilo Mockup) */}
-                                            <div className="flex gap-2 relative z-10 pt-2">
+                                            <div className="flex gap-3 relative z-10 pt-4 border-t border-white/5">
                                                 {order.status === 'pending' && (
                                                     <>
-                                                        <div className="flex gap-1.5 mr-auto">
+                                                        <div className="flex gap-2 mr-auto">
                                                             <button
                                                                 onClick={() => toast.info("PRODUCCIÓN PAUSADA EN ESTACIÓN")}
-                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
+                                                                className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
                                                             >
-                                                                <Pause className="w-4 h-4 text-slate-300" />
+                                                                <Pause className="w-5 h-5 text-slate-300" />
                                                             </button>
                                                             <button
                                                                 onClick={() => {
                                                                     fetchData()
                                                                     toast.success("DATOS SINCRONIZADOS")
                                                                 }}
-                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
+                                                                className="h-14 w-14 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex items-center justify-center"
                                                             >
-                                                                <RefreshCw className="w-4 h-4 text-slate-300" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => toast.success("PRODUCCIÓN REANUDADA")}
-                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
-                                                            >
-                                                                <Play className="w-4 h-4 text-slate-300" />
+                                                                <RefreshCw className="w-5 h-5 text-slate-300" />
                                                             </button>
                                                         </div>
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'preparing')}
-                                                            className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-black font-black uppercase text-[10px] italic tracking-widest rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                                                            className="h-14 px-8 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-[11px] italic tracking-widest rounded-2xl shadow-3xl shadow-orange-500/20 active:scale-95 transition-all"
                                                         >
                                                             EMPEZAR
                                                         </Button>
@@ -263,17 +270,17 @@ export default function KitchenPage() {
                                                 {order.status === 'preparing' && (
                                                     <Button
                                                         onClick={() => updateStatus(order.id, 'ready')}
-                                                        className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-black font-black uppercase text-[10px] italic tracking-widest rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                                                        className="w-full h-15 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-[12px] italic tracking-[0.2em] rounded-2xl shadow-3xl shadow-orange-500/20 active:scale-95 transition-all"
                                                     >
-                                                        COMPLETAR
+                                                        ORDEN COMPLETADA
                                                     </Button>
                                                 )}
                                                 {order.status === 'ready' && (
                                                     <Button
                                                         onClick={() => updateStatus(order.id, 'delivered')}
-                                                        className="w-full h-12 bg-orange-500/20 hover:bg-orange-500/30 text-orange-500 border border-orange-500/30 font-black uppercase text-[10px] italic tracking-widest rounded-xl"
+                                                        className="w-full h-15 bg-white/5 hover:bg-white/10 text-orange-500 border border-orange-500/30 font-black uppercase text-[12px] italic tracking-[0.2em] rounded-2xl shadow-3xl active:scale-90 transition-all"
                                                     >
-                                                        RETIRADO
+                                                        RETIRADO POR GESTIÓN
                                                     </Button>
                                                 )}
                                             </div>

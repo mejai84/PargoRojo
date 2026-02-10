@@ -103,42 +103,47 @@ export default function CustomersPagePremium() {
     )
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
+        <div className="min-h-screen bg-[#020406] text-white font-sans selection:bg-orange-500 overflow-hidden flex flex-col h-screen relative">
 
-            {/* 🖼️ FONDO PREMIUM: Lifestyle / Social con Blur */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556740734-7f1a02dd1d5c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="absolute inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
+            {/* 🌌 FONDO ESTRUCTURAL AURA */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-orange-500/5 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/5 blur-[120px] rounded-full opacity-50" />
+            </div>
 
-            {/* HEADER DE ELITE */}
-            <div className="relative z-20 p-8 flex items-center justify-between border-b border-white/5 bg-slate-950/40 backdrop-blur-xl shrink-0">
-                <div className="flex items-center gap-6">
-                    <Link href="/admin">
-                        <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10">
-                            <ArrowLeft className="w-6 h-6 text-slate-400" />
+            {/* HEADER DE ELITE TÁCTICA */}
+            <div className="relative z-30 p-10 flex items-center justify-between border-b border-white/5 bg-slate-900/40 backdrop-blur-3xl shrink-0">
+                <div className="flex items-center gap-8">
+                    <Link href="/admin/hub">
+                        <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[1.5rem] bg-white/5 border border-white/5 hover:bg-orange-600 hover:text-black transition-all group">
+                            <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                         </Button>
                     </Link>
-                    <div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">ELITE <span className="text-orange-500">DATABASE</span></h1>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-2 italic shadow-sm">Customer Relationship & Loyalty Intelligence</p>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-orange-500" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-orange-500 italic">User Intelligence Network</span>
+                        </div>
+                        <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none text-white">Elite <span className="text-orange-500">Database</span></h1>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="flex bg-slate-900/40 p-1.5 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-8">
+                    <div className="flex bg-white/[0.03] p-2 rounded-[1.5rem] border border-white/5 backdrop-blur-3xl shadow-2xl">
                         {[
-                            { id: 'database', label: 'CLIENTES', icon: Users },
-                            { id: 'loyalty', label: 'FIDELIDAD', icon: Trophy },
-                            { id: 'notifications', label: 'MENSAJERÍA', icon: MessageCircle }
+                            { id: 'database', label: 'DATABASE', icon: Users },
+                            { id: 'loyalty', label: 'LOYALTY', icon: Trophy },
+                            { id: 'notifications', label: 'CHANNELS', icon: MessageCircle }
                         ].map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setView(t.id as any)}
                                 className={cn(
-                                    "px-6 py-2.5 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all",
-                                    view === t.id ? "bg-orange-500 text-black shadow-xl shadow-orange-500/20" : "text-slate-500 hover:text-white"
+                                    "px-8 py-3 rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] italic transition-all duration-500 relative overflow-hidden group",
+                                    view === t.id ? "bg-orange-600 text-black shadow-3xl shadow-orange-600/20" : "text-slate-500 hover:text-white"
                                 )}
                             >
-                                <t.icon className="w-3.5 h-3.5" />
+                                <t.icon className={cn("w-4 h-4", view === t.id ? "animate-pulse" : "opacity-40")} />
                                 {t.label}
                             </button>
                         ))}
@@ -148,54 +153,61 @@ export default function CustomersPagePremium() {
 
             <div className="relative z-10 p-8 md:p-12 flex-1 flex flex-col gap-8 max-w-[1800px] mx-auto w-full min-h-full">
 
-                {/* 1. KPI DESCRIPTORS */}
-                <div className="grid grid-cols-4 gap-6 shrink-0">
+                {/* 1. KPI DESCRIPTORS ELITE */}
+                <div className="grid grid-cols-4 gap-10 shrink-0">
                     {[
-                        { label: 'CLIENTES TOTALES', val: customers.length, icon: Users, color: 'text-white' },
-                        { label: 'CLIENTES VIP (LTV > 500k)', val: customers.filter(c => c.totalSpent > 500000).length, icon: Star, color: 'text-yellow-400' },
-                        { label: 'PUNTOS CIRCULANTES', val: customers.reduce((acc, c) => acc + c.points, 0).toLocaleString(), icon: Trophy, color: 'text-orange-500' },
-                        { label: 'FIDELIZACIÓN RATE', val: '64%', icon: Heart, color: 'text-rose-500' },
+                        { label: 'CLIENTES TOTALES', val: customers.length, icon: Users, color: 'text-white', sub: 'Nodes_Active' },
+                        { label: 'CLIENTES VIP', val: customers.filter(c => c.totalSpent > 500000).length, icon: Star, color: 'text-orange-500', sub: 'High_LTV' },
+                        { label: 'PUNTOS CIRCULANTES', val: customers.reduce((acc, c) => acc + c.points, 0).toLocaleString(), icon: Trophy, color: 'text-amber-500', sub: 'Eco_System' },
+                        { label: 'FIDELIZACIÓN RATE', val: '64%', icon: Heart, color: 'text-rose-500', sub: 'Brand_Pulse' },
                     ].map((card, i) => (
-                        <div key={i} className="bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 flex items-center gap-6 group hover:border-orange-500/20 transition-all">
-                            <div className="p-4 bg-white/5 rounded-2xl group-hover:bg-orange-500/10 transition-all">
-                                <card.icon className={cn("w-6 h-6", card.color)} />
+                        <div key={i} className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-10 flex items-center gap-8 group hover:border-orange-500/20 transition-all duration-700 relative overflow-hidden shadow-2xl">
+                            <div className="absolute top-0 right-0 p-10 opacity-[0.02] group-hover:rotate-12 transition-transform duration-1000">
+                                <card.icon className="w-24 h-24" />
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{card.label}</p>
-                                <p className={cn("text-3xl font-black italic tracking-tighter", card.color)}>{card.val}</p>
+                            <div className="p-5 bg-white/5 rounded-2xl group-hover:bg-orange-600 group-hover:text-black transition-all">
+                                <card.icon className={cn("w-7 h-7", card.color, "group-hover:text-inherit")} />
+                            </div>
+                            <div className="relative z-10 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <div className={cn("w-1.5 h-1.5 rounded-full", card.color.replace('text', 'bg'))} />
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic leading-none">{card.label}</p>
+                                </div>
+                                <p className={cn("text-5xl font-black italic tracking-tighter text-white leading-none")}>{card.val}</p>
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.3em] italic group-hover:text-slate-500 transition-colors">{card.sub}</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* 2. MAIN WORKSPACE */}
-                <div className="flex-1 bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden flex flex-col relative">
+                {/* 2. MAIN WORKSPACE ELITE */}
+                <div className="flex-1 bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[4rem] overflow-hidden flex flex-col relative shadow-3xl">
 
                     {/* Search & Action Bar */}
-                    <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                        <div className="relative w-96 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
+                    <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                        <div className="relative w-[500px] group">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-700 group-focus-within:text-orange-500 transition-all" />
                             <input
                                 type="search"
                                 autoComplete="new-password"
-                                placeholder="Buscar en la base de datos de élite..."
-                                className="w-full bg-slate-800/30 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-orange-500/50"
+                                placeholder="ESCANEAR REGISTROS DE ÉLITE..."
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 pl-16 pr-8 text-xs font-black uppercase tracking-[0.2em] italic focus:outline-none focus:border-orange-500/30 transition-all placeholder:text-slate-800"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex gap-6">
                             <Button
                                 onClick={() => toast.info("HERRAMIENTA DE SEGMENTACIÓN: Próximamente")}
-                                variant="ghost" className="h-12 rounded-xl bg-white/5 border border-white/10 text-slate-400"
+                                variant="ghost" className="h-16 px-10 rounded-2xl bg-white/5 border border-white/5 text-slate-500 font-black uppercase italic text-[10px] tracking-[0.3em] transition-all hover:bg-white/10 hover:text-white"
                             >
-                                <Filter className="w-4 h-4 mr-2" /> Segmentar
+                                <Filter className="w-5 h-5 mr-4" /> Segmentar
                             </Button>
                             <Button
                                 onClick={() => toast.success("ABRIENDO FORMULARIO DE NUEVO CLIENTE")}
-                                className="h-12 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-[10px] italic tracking-widest rounded-xl"
+                                className="h-16 px-12 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-[11px] italic tracking-widest rounded-2xl shadow-3xl shadow-orange-600/20 active:scale-95 transition-all gap-4"
                             >
-                                NUEVO REGISTRO
+                                <Users className="w-6 h-6" /> CREAR PROTOCOLO
                             </Button>
                         </div>
                     </div>

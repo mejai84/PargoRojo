@@ -76,110 +76,116 @@ export default function InventoryPage() {
     const criticalCount = ingredients.filter(i => i.current_stock <= i.min_stock).length
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
+        <div className="min-h-screen bg-[#020406] text-white font-sans selection:bg-orange-500 overflow-hidden flex flex-col h-screen relative">
 
-            {/* 🖼️ FONDO AMBIENTE (Coherente con KDS) */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-110 pointer-events-none" />
-            <div className="absolute inset-0 backdrop-blur-[60px] bg-slate-950/90 pointer-events-none" />
+            {/* 🌌 FONDO ESTRUCTURAL AURA */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-orange-500/5 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-500/5 blur-[120px] rounded-full opacity-50" />
+            </div>
 
-            <div className="relative z-10 p-8 md:p-12 space-y-8 max-w-[1600px] mx-auto flex-1 min-h-full">
+            <div className="relative z-30 p-10 md:p-12 space-y-12 max-w-[1800px] mx-auto flex-1 min-h-full flex flex-col">
 
-                {/* HEADER TÉCNICO */}
+                {/* HEADER TÉCNICO ELITE */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <Link href="/admin">
-                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5 hover:bg-slate-700">
-                                <ArrowLeft className="w-6 h-6 text-slate-400" />
+                    <div className="flex items-center gap-8">
+                        <Link href="/admin/hub">
+                            <Button variant="ghost" size="icon" className="h-16 w-16 rounded-[1.5rem] bg-white/5 border border-white/5 hover:bg-orange-600 hover:text-black transition-all group">
+                                <ArrowLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                             </Button>
                         </Link>
-                        <div>
-                            <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">KERNEL <span className="text-slate-400">INVENTARIO</span></h1>
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.3em]">SUPPLY CHAIN SYNC_ACTIVE</span>
-                                <Signal className="w-3 h-3 text-orange-500 animate-pulse" />
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Signal className="w-4 h-4 text-orange-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-orange-500 italic">Core Supply Intelligence</span>
                             </div>
+                            <h1 className="text-6xl font-black italic tracking-tighter uppercase leading-none text-white text-glow">Kernel <span className="text-orange-500">Inventory</span></h1>
                         </div>
                     </div>
                     <Button
                         onClick={() => toast.success("ABRIENDO EDITOR DE NUEVO INSUMO")}
-                        className="h-14 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-orange-600/20"
+                        className="h-16 px-12 bg-orange-600 hover:bg-orange-500 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-3xl shadow-orange-600/20 transition-all active:scale-95 gap-4"
                     >
-                        <Plus className="w-5 h-5 mr-3" /> AGREGAR INSUMO
+                        <Plus className="w-6 h-6" /> ADQUIRIR PROTOCOLO
                     </Button>
                 </div>
 
-                {/* BOTONES DE ACCESO RÁPIDO (Estilo Mockup) */}
-                <div className="grid grid-cols-4 gap-4">
+                {/* BOTONES DE ACCESO RÁPIDO ELITE */}
+                <div className="grid grid-cols-4 gap-8">
                     {[
-                        { label: 'LIBRO DE RECETAS', icon: ChefHat, href: '/admin/inventory/recipes' },
-                        { label: 'PROVEEDORES', icon: Truck, onClick: () => toast.info("MÓDULO DE PROVEEDORES") },
-                        { label: 'CONTROL DE MERMAS', icon: Activity, onClick: () => toast.info("CONTRO DE MERMAS: Registro Activo") },
-                        { label: 'ENTRADA DE SUMINISTROS', icon: Warehouse, onClick: () => toast.info("MODULO DE ENTRADA: Supply Chain") }
-                    ].map((btn, i) => (
-                        btn.href ? (
-                            <Link key={i} href={btn.href}>
-                                <button className="w-full flex items-center gap-4 p-5 bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-orange-500/50 hover:bg-slate-700/50 transition-all group">
-                                    <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
-                                        <btn.icon className="w-5 h-5 text-orange-400" />
-                                    </div>
-                                    <span className="text-xs font-black tracking-widest uppercase italic">{btn.label}</span>
-                                </button>
-                            </Link>
-                        ) : (
-                            <button
-                                key={i}
-                                onClick={btn.onClick}
-                                className="w-full flex items-center gap-4 p-5 bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-orange-500/50 hover:bg-slate-700/50 transition-all group"
-                            >
-                                <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
-                                    <btn.icon className="w-5 h-5 text-orange-400" />
+                        { label: 'LIBRO DE RECETAS', icon: ChefHat, href: '/admin/inventory/recipes', sub: 'Recipe_Engine' },
+                        { label: 'PROVEEDORES', icon: Truck, onClick: () => toast.info("MÓDULO DE PROVEEDORES"), sub: 'Vendor_Matrix' },
+                        { label: 'CONTROL DE MERMAS', icon: Activity, onClick: () => toast.info("CONTRO DE MERMAS: Registro Activo"), sub: 'Loss_Analysis' },
+                        { label: 'ENTRADA SUMINISTROS', icon: Warehouse, onClick: () => toast.info("MODULO DE ENTRADA: Supply Chain"), sub: 'Ingress_Portal' }
+                    ].map((btn, i) => {
+                        const Content = (
+                            <div className="w-full h-24 flex items-center justify-between p-8 bg-slate-900/40 backdrop-blur-3xl rounded-[2rem] border border-white/5 hover:border-orange-500/30 hover:bg-orange-600 group transition-all duration-500 cursor-pointer shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-6 opacity-[0.02] group-hover:rotate-12 transition-transform duration-1000">
+                                    <btn.icon className="w-16 h-16" />
                                 </div>
-                                <span className="text-xs font-black tracking-widest uppercase italic">{btn.label}</span>
-                            </button>
-                        )
-                    ))}
+                                <div className="flex items-center gap-6 relative z-10 transition-all group-hover:translate-x-1">
+                                    <div className="p-4 bg-white/5 rounded-xl group-hover:bg-black/10 transition-colors">
+                                        <btn.icon className="w-6 h-6 text-orange-400 group-hover:text-black" />
+                                    </div>
+                                    <div className="space-y-1 text-left">
+                                        <p className="text-[11px] font-black tracking-[0.2em] uppercase italic text-white group-hover:text-black leading-none">{btn.label}</p>
+                                        <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-600 group-hover:text-black/50 leading-none">{btn.sub}</p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-800 group-hover:text-black/30 group-hover:translate-x-1 transition-all" />
+                            </div>
+                        );
+                        return btn.href ? (
+                            <Link key={i} href={btn.href} className="block">{Content}</Link>
+                        ) : (
+                            <button key={i} onClick={btn.onClick} className="block w-full">{Content}</button>
+                        );
+                    })}
                 </div>
 
-                {/* KPI CARDS (Estilo Mockup) */}
-                <div className="grid grid-cols-4 gap-6">
+                {/* KPI CARDS ELITE */}
+                <div className="grid grid-cols-4 gap-8">
                     {[
-                        { label: 'TOTAL REFERENCIAS', val: ingredients.length, icon: Package, color: 'text-white' },
-                        { label: 'STOCK CRÍTICO', val: criticalCount, icon: AlertCircle, color: 'text-red-500' },
-                        { label: 'VALORACIÓN TOTAL', val: `$${(totalCost / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-emerald-400' },
-                        { label: 'CATEGORÍAS', val: new Set(ingredients.map(i => i.category)).size, icon: Layers, color: 'text-blue-400' }
+                        { label: 'REFERENCIAS', val: ingredients.length, icon: Package, color: 'text-white', sub: 'Active_Nodes' },
+                        { label: 'STOCK CRÍTICO', val: criticalCount, icon: AlertCircle, color: 'text-rose-500', sub: 'At_Risk' },
+                        { label: 'VALORACIÓN', val: `$${(totalCost / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-orange-500', sub: 'Market_Index' },
+                        { label: 'CATEGORÍAS', val: new Set(ingredients.map(i => i.category)).size, icon: Layers, color: 'text-blue-500', sub: 'Cluster_Map' }
                     ].map((card, i) => (
-                        <div key={i} className="bg-slate-800/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <card.icon className="w-12 h-12" />
+                        <div key={i} className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-8 relative overflow-hidden group shadow-2xl transition-all duration-700 hover:border-orange-500/20">
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.02] group-hover:rotate-12 transition-transform duration-1000">
+                                <card.icon className="w-20 h-20" />
                             </div>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">{card.label}</p>
-                            <p className={cn("text-4xl font-black italic", card.color)}>{card.val}</p>
-                            <div className="mt-4 h-1 w-full bg-slate-700/30 rounded-full overflow-hidden">
-                                <div className={cn("h-full bg-current opacity-40", card.color)} style={{ width: '60%' }} />
+                            <div className="relative z-10 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <div className={cn("w-1.5 h-1.5 rounded-full", card.color.replace('text', 'bg'))} />
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] italic leading-none">{card.label}</p>
+                                </div>
+                                <p className={cn("text-4xl font-black italic tracking-tighter text-white leading-none")}>{card.val}</p>
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.3em] italic group-hover:text-slate-500 transition-colors">{card.sub}</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* TABLA COMMAND (Estilo Mockup) */}
-                <div className="bg-slate-900/40 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] overflow-hidden">
-                    <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                        <div className="relative w-96">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                {/* TABLA COMMAND ELITE */}
+                <div className="bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[4rem] overflow-hidden flex-1 flex flex-col shadow-3xl">
+                    <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+                        <div className="relative w-[500px] group">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-700 group-focus-within:text-orange-500 transition-all font-black" />
                             <input
                                 type="search"
                                 autoComplete="new-password"
-                                placeholder="Buscar Referencia_Item..."
-                                className="w-full bg-slate-800/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:border-orange-500/50 transition-all"
+                                placeholder="ESCANEAR REGISTROS DE KERNEL..."
+                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 pl-16 pr-8 text-xs font-black uppercase tracking-[0.2em] italic focus:outline-none focus:border-orange-500/30 transition-all placeholder:text-slate-800"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <Button
                             onClick={() => toast.info("FILTROS AVANZADOS")}
-                            variant="ghost" className="rounded-xl border border-white/5 text-slate-400"
+                            variant="ghost" className="h-16 px-10 rounded-2xl bg-white/5 border border-white/5 text-slate-500 font-black uppercase italic text-[10px] tracking-[0.3em] transition-all hover:bg-white/10 hover:text-white"
                         >
-                            <Filter className="w-4 h-4 mr-2" /> Filtrar
+                            <Filter className="w-5 h-5 mr-4" /> Filtrar
                         </Button>
                     </div>
 
