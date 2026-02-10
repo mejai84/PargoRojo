@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useOrderNotifications } from "@/hooks/use-order-notifications"
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster, toast } from "sonner"
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -196,67 +196,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
         <ShiftGuard>
             <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary selection:text-black">
-                {/* 🏰 ENTERPRISE SIDEBAR */}
-                <aside className="w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shadow-sm z-40 relative">
+                {/* 🏰 JAMALI OS ELITE SIDEBAR (AURA STYLE) */}
+                <aside className="w-72 border-r border-white/5 bg-[#0a0b0d]/80 backdrop-blur-[40px] hidden lg:flex flex-col sticky top-0 h-screen z-50 relative overflow-hidden">
+                    {/* Background Decorative Glows */}
+                    <div className="absolute -top-20 -left-20 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
+                    <div className="absolute bottom-40 -right-20 w-40 h-40 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
 
                     {/* Brand Header */}
-                    <div className="p-8 pb-4 flex items-center justify-between">
+                    <div className="p-10 pb-6 flex items-center justify-between relative z-10">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-secondary p-0.5 shadow-lg shadow-primary/20">
-                                <div className="w-full h-full bg-card rounded-[0.9rem] flex items-center justify-center overflow-hidden">
-                                    {restaurant?.logo_url ? (
-                                        <img src={restaurant.logo_url} className="w-full h-full object-contain" alt="Logo" />
-                                    ) : (
-                                        <Zap className="w-5 h-5 text-primary" />
-                                    )}
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full scale-0 group-hover:scale-150 transition-transform duration-500" />
+                                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center relative z-10">
+                                    <Zap className="w-6 h-6 text-primary" />
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-sm font-black italic uppercase tracking-tighter text-foreground">
-                                    {restaurant?.name || "RESTAURANTE"} <span className="text-primary italic">JAMALI OS</span>
+                                <span className="text-xl font-black italic uppercase tracking-tighter text-white leading-none">
+                                    JAMALI<span className="text-primary italic">OS</span>
                                 </span>
-                                <span className="text-[8px] font-bold text-muted-foreground tracking-[0.2em] uppercase">Enterprise v2.0</span>
+                                <span className="text-[8px] font-black text-slate-600 tracking-[0.4em] uppercase mt-1">Aura Enterprise</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Profile Card Mini */}
-                    <div className="px-6 py-4 mb-4">
+                    {/* Business Selector at Top */}
+                    <div className="px-8 mb-4 relative z-10">
                         <BusinessSelector />
-
-                        <div className="p-4 rounded-3xl bg-muted/50 border border-border flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center border border-border shadow-sm font-black text-primary italic">
-                                {userName.charAt(0)}
-                            </div>
-                            <div className="flex flex-col overflow-hidden">
-                                <span className="text-xs font-black italic text-foreground uppercase truncate">{userName}</span>
-                                <div className="flex items-center gap-1.5 pt-0.5">
-                                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{userRole}</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Navigation Search */}
-                    <div className="px-6 mb-6">
+                    <div className="px-8 mb-8 relative z-10">
                         <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="search"
                                 name="pargo-master-search-no-autofill"
                                 autoComplete="new-password"
-                                placeholder="Buscar módulo..."
+                                placeholder="Search modules..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 rounded-xl bg-background border border-border outline-none focus:border-primary/50 text-[10px] font-bold uppercase tracking-widest placeholder:text-muted-foreground/50 transition-all font-sans"
+                                className="w-full h-11 pl-12 pr-4 rounded-xl bg-white/[0.02] border border-white/5 outline-none focus:border-primary/30 text-[10px] font-bold uppercase tracking-[0.1em] placeholder:text-slate-700 transition-all font-sans text-white"
                             />
                         </div>
                     </div>
 
                     <QuickBusinessSwitch />
 
-                    <div className="flex-1 overflow-y-auto px-4 custom-scrollbar space-y-8 pb-10">
+                    <div className="flex-1 overflow-y-auto px-6 custom-scrollbar space-y-12 pb-10 relative z-10">
                         {sidebarSections.map((section, idx) => {
                             const filteredItems = section.items.filter(item => {
                                 const hasRole = userRole === 'admin' || item.roles.includes(userRole)
@@ -267,26 +254,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             if (filteredItems.length === 0) return null
 
                             return (
-                                <div key={idx} className="space-y-3">
-                                    <h4 className="px-4 text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] font-mono">{section.title}</h4>
+                                <div key={idx} className="space-y-4">
+                                    <h4 className="px-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">{section.title}</h4>
                                     <div className="space-y-1">
                                         {filteredItems.map((item) => {
                                             const Icon = item.icon
                                             const isActive = pathname === item.href
 
                                             return (
-                                                <Link key={item.href} href={item.href} className="block group">
+                                                <Link key={item.href} href={item.href} className="block group relative">
+                                                    {/* Active Indicator Bar */}
+                                                    {isActive && (
+                                                        <div className="absolute left-[-24px] top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-r-full shadow-[4px_0_15px_rgba(249,115,22,0.5)] animate-in slide-in-from-left-2 duration-300" />
+                                                    )}
+
                                                     <div className={cn(
-                                                        "flex items-center justify-between px-4 py-3 rounded-2xl transition-all relative overflow-hidden",
+                                                        "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 relative group/item",
                                                         isActive
-                                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                            ? "bg-white/[0.04] text-white border border-white/5"
+                                                            : "text-slate-500 hover:text-slate-200"
                                                     )}>
-                                                        <div className="flex items-center gap-3 relative z-10">
-                                                            <Icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "group-hover:text-primary transition-colors")} />
-                                                            <span className="text-[10px] font-black uppercase italic tracking-widest">{item.label}</span>
+                                                        <div className="relative">
+                                                            {isActive && (
+                                                                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full scale-150" />
+                                                            )}
+                                                            <Icon className={cn(
+                                                                "w-5 h-5 transition-all relative z-10",
+                                                                isActive ? "text-primary scale-110" : "group-hover:text-primary/70"
+                                                            )} />
                                                         </div>
-                                                        {isActive && <ChevronRight className="w-4 h-4" />}
+                                                        <span className={cn(
+                                                            "text-xs font-bold tracking-wide transition-all",
+                                                            isActive ? "text-white" : "group-hover:translate-x-1"
+                                                        )}>
+                                                            {item.label}
+                                                        </span>
                                                     </div>
                                                 </Link>
                                             )
@@ -297,19 +299,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         })}
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="p-6 border-t border-border space-y-4">
-                        <NotificationBell />
+                    {/* Footer / Profile Section at BOTTOM (Exact AURA match) */}
+                    <div className="p-8 pb-10 border-t border-white/5 bg-[#0a0b0d]/50 relative z-10 space-y-8">
+                        {/* Profile Section */}
+                        <div className="flex items-center gap-4 group cursor-default">
+                            <div className="relative">
+                                {/* Orange Glow behind profile */}
+                                <div className="absolute inset-0 bg-orange-500/30 blur-xl rounded-full scale-125" />
+                                <div className="w-12 h-12 rounded-full border border-white/10 overflow-hidden relative z-10 flex items-center justify-center bg-slate-900 shadow-2xl group-hover:border-primary/50 transition-all duration-500">
+                                    <span className="text-white font-black italic text-lg">{userName.charAt(0)}</span>
+                                </div>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[13px] font-black text-white tracking-wide uppercase italic">{userName}</span>
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">{userRole}</span>
+                            </div>
+                        </div>
+
+                        {/* Logout / System Action */}
                         <Button
                             variant="ghost"
-                            className="w-full justify-start gap-4 h-12 text-[10px] font-black uppercase italic tracking-widest text-rose-600 hover:bg-destructive/10 hover:text-destructive rounded-[1.5rem] transition-all"
+                            className="w-full justify-start gap-4 h-12 text-[9px] font-black uppercase italic tracking-[0.3em] text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-400 rounded-xl transition-all border border-rose-500/5 group"
                             onClick={async () => {
                                 await supabase.auth.signOut()
                                 router.push("/login")
                             }}
                         >
-                            <LogOut className="w-4 h-4" />
-                            DESCONECTAR SISTEMA
+                            <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            DISCONECT
                         </Button>
                     </div>
                 </aside>
@@ -422,11 +439,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #e2e8f0;
+                    background: rgba(255, 255, 255, 0.05);
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #cbd5e1;
+                    background: rgba(255, 255, 255, 0.1);
                 }
             `}</style>
             </div>

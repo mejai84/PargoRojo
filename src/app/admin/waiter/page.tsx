@@ -78,11 +78,22 @@ export default function WaiterAppPremium() {
     const [realTables, setRealTables] = useState<Table[]>([])
     const [loading, setLoading] = useState(true)
 
+    const [userRole, setUserRole] = useState<string | null>(null)
+
     useEffect(() => {
         if (restaurant) {
             fetchData()
+            checkUser()
         }
     }, [restaurant])
+
+    const checkUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            if (data) setUserRole(data.role)
+        }
+    }
 
     const fetchData = async () => {
         setLoading(true)
@@ -164,7 +175,11 @@ export default function WaiterAppPremium() {
                                             key={table.id}
                                             onClick={() => {
                                                 setSelectedTable(table)
-                                                setView('order')
+                                                if (table.status === 'occupied') {
+                                                    setView('options')
+                                                } else {
+                                                    setView('order')
+                                                }
                                             }}
                                             className={cn(
                                                 "relative aspect-square rounded-[2rem] p-6 flex flex-col justify-between border-2 transition-all cursor-pointer active:scale-95 group overflow-hidden",
@@ -192,6 +207,77 @@ export default function WaiterAppPremium() {
                                     ))}
                                 </div>
                             </div>
+                        </div>
+                    ) : view === 'options' ? (
+                        <div className="h-full flex flex-col p-6 items-center justify-center space-y-8 max-w-lg mx-auto w-full animate-in zoom-in duration-300">
+                            <div className="text-center space-y-2">
+                                <div className="w-24 h-24 bg-orange-500/20 rounded-[2.5rem] flex items-center justify-center border border-orange-500/30 mx-auto mb-6">
+                                    <TableIcon className="w-10 h-10 text-orange-500" />
+                                </div>
+                                <h2 className="text-5xl font-black italic tracking-tighter uppercase">{selectedTable?.table_name}</h2>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">GESTIÓN DE MESA ACTIVA</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 w-full">
+                                <Button
+                                    onClick={() => setView('order')}
+                                    className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-orange-600 hover:text-black hover:border-orange-600/50 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                >
+                                    <Plus className="w-6 h-6" />
+                                    TOMAR PEDIDO
+                                </Button>
+                                <Button
+                                    onClick={() => toast.info("RE-IMPRIMIENDO COMANDA A COCINA...")}
+                                    className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                >
+                                    <ChefHat className="w-6 h-6" />
+                                    RE-PEDIR
+                                </Button>
+
+                                {/* ADMIN ACTIONS */}
+                                {(userRole === 'admin' || userRole === 'manager') && (
+                                    <>
+                                        <Button
+                                            onClick={() => toast.success("PROCESANDO PAGO EN CAJA...")}
+                                            className="h-24 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-3xl flex flex-col gap-2 hover:bg-emerald-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest shadow-xl shadow-emerald-500/10"
+                                        >
+                                            <Receipt className="w-6 h-6" />
+                                            PAGAR CUENTA
+                                        </Button>
+                                        <Button
+                                            onClick={() => toast.info("ENTRANDO A MODO DIVISIÓN DE CUENTA...")}
+                                            className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                        >
+                                            <ArrowLeftRight className="w-6 h-6" />
+                                            DIVIDIR CUENTA
+                                        </Button>
+                                        <Button
+                                            onClick={() => toast.info("SELECCIONE MESA PARA UNIR...")}
+                                            className="h-24 bg-white/5 border border-white/10 rounded-3xl flex flex-col gap-2 hover:bg-white/10 transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                        >
+                                            <LayoutGrid className="w-6 h-6" />
+                                            UNIR MESA
+                                        </Button>
+                                        <Button
+                                            onClick={() => {
+                                                toast.success("MESA LIBERADA CORRECTAMENTE")
+                                                setView('tables')
+                                            }}
+                                            className="h-24 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-3xl flex flex-col gap-2 hover:bg-rose-500 hover:text-white transition-all font-black uppercase text-[10px] italic tracking-widest"
+                                        >
+                                            <X className="w-6 h-6" />
+                                            LIBERAR MESA
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setView('tables')}
+                                className="text-slate-500 font-black uppercase text-[10px] tracking-widest italic"
+                            >
+                                VOLVER A SALÓN
+                            </Button>
                         </div>
                     ) : (
                         <div className="h-full flex overflow-hidden">
