@@ -35,6 +35,7 @@ import { supabase } from "@/lib/supabase/client"
 import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { toast } from "sonner"
 
 interface Customer {
     id?: string
@@ -102,11 +103,11 @@ export default function CustomersPagePremium() {
     )
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col h-screen">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO PREMIUM: Lifestyle / Social con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1556740734-7f1a02dd1d5c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556740734-7f1a02dd1d5c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
 
             {/* HEADER DE ELITE */}
             <div className="relative z-20 p-8 flex items-center justify-between border-b border-white/5 bg-slate-950/40 backdrop-blur-xl shrink-0">
@@ -145,7 +146,7 @@ export default function CustomersPagePremium() {
                 </div>
             </div>
 
-            <div className="relative z-10 p-8 flex-1 overflow-hidden flex flex-col gap-8 max-w-[1800px] mx-auto w-full">
+            <div className="relative z-10 p-8 md:p-12 flex-1 flex flex-col gap-8 max-w-[1800px] mx-auto w-full min-h-full">
 
                 {/* 1. KPI DESCRIPTORS */}
                 <div className="grid grid-cols-4 gap-6 shrink-0">
@@ -182,80 +183,115 @@ export default function CustomersPagePremium() {
                             />
                         </div>
                         <div className="flex gap-4">
-                            <Button variant="ghost" className="h-12 rounded-xl bg-white/5 border border-white/10 text-slate-400">
+                            <Button
+                                onClick={() => toast.info("HERRAMIENTA DE SEGMENTACIÓN: Próximamente")}
+                                variant="ghost" className="h-12 rounded-xl bg-white/5 border border-white/10 text-slate-400"
+                            >
                                 <Filter className="w-4 h-4 mr-2" /> Segmentar
                             </Button>
-                            <Button className="h-12 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-[10px] italic tracking-widest rounded-xl">
-                                NUEVE REGISTRO
+                            <Button
+                                onClick={() => toast.success("ABRIENDO FORMULARIO DE NUEVO CLIENTE")}
+                                className="h-12 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-[10px] italic tracking-widest rounded-xl"
+                            >
+                                NUEVO REGISTRO
                             </Button>
                         </div>
                     </div>
 
                     {/* Table Style Database */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-white/[0.01]">
-                                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Perfil_Cliente</th>
-                                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">LTV_Metric (Ventas)</th>
-                                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Puntos_Loyalty</th>
-                                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic text-center">Status_Tag</th>
-                                    <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic text-right">Command</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filtered.map((cust, i) => (
-                                    <tr key={i} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors group">
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center border border-white/5 font-black text-slate-500 italic">
-                                                    {cust.name.substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-white group-hover:text-orange-400 transition-colors">{cust.name}</p>
-                                                    <p className="text-[10px] font-medium text-slate-500">{cust.phone}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <p className="font-black italic text-white tracking-tighter">{formatPrice(cust.totalSpent)}</p>
-                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{cust.totalOrders} órdenes</p>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex items-center gap-2">
-                                                <Trophy className="w-3.5 h-3.5 text-orange-500" />
-                                                <span className="text-sm font-black italic">{cust.points}</span>
-                                            </div>
-                                        </td>
-                                        <td className="p-6">
-                                            <div className="flex justify-center">
-                                                <span className={cn(
-                                                    "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest",
-                                                    cust.totalSpent > 500000 ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20" : "bg-slate-800 text-slate-500 border border-white/5"
-                                                )}>
-                                                    {cust.totalSpent > 500000 ? '⭐ ELITE VIP' : 'REGULAR'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="p-6 text-right">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-2.5 rounded-xl bg-orange-600/10 text-orange-500 hover:bg-orange-600 hover:text-black border border-orange-500/20 transition-all">
-                                                    <MessageCircle className="w-4 h-4" />
-                                                </button>
-                                                <button className="p-2.5 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/10 transition-all">
-                                                    <MoreHorizontal className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
+                        {view === 'database' ? (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-white/[0.01]">
+                                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Perfil_Cliente</th>
+                                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">LTV_Metric (Ventas)</th>
+                                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Puntos_Loyalty</th>
+                                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic text-center">Status_Tag</th>
+                                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest italic text-right">Command</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((cust, i) => (
+                                        <tr key={i} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors group">
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center border border-white/5 font-black text-slate-500 italic">
+                                                        {cust.name.substring(0, 2).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-white group-hover:text-orange-400 transition-colors">{cust.name}</p>
+                                                        <p className="text-[10px] font-medium text-slate-500">{cust.phone}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <p className="font-black italic text-white tracking-tighter">{formatPrice(cust.totalSpent)}</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{cust.totalOrders} órdenes</p>
+                                            </td>
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-2">
+                                                    <Trophy className="w-3.5 h-3.5 text-orange-500" />
+                                                    <span className="text-sm font-black italic">{cust.points}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <div className="flex justify-center">
+                                                    <span className={cn(
+                                                        "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest",
+                                                        cust.totalSpent > 500000 ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20" : "bg-slate-800 text-slate-500 border border-white/5"
+                                                    )}>
+                                                        {cust.totalSpent > 500000 ? '⭐ ELITE VIP' : 'REGULAR'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="p-6 text-right">
+                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toast.success(`INICIANDO MENSAJE PARA: ${cust.name}`)
+                                                        }}
+                                                        className="p-2.5 rounded-xl bg-orange-600/10 text-orange-500 hover:bg-orange-600 hover:text-black border border-orange-500/20 transition-all text-xs"
+                                                    >
+                                                        <MessageCircle className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toast.info(`DETALLES DE CLIENTE: ${cust.name}`)
+                                                        }}
+                                                        className="p-2.5 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/10 transition-all text-xs"
+                                                    >
+                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="p-20 text-center flex flex-col items-center gap-6 animate-in fade-in zoom-in duration-500">
+                                <Sparkles className="w-20 h-20 text-orange-500 opacity-20" />
+                                <div className="space-y-2">
+                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter">Módulo {view.toUpperCase()} en proceso</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sincronizando con el motor de inteligencia Jamali OS</p>
+                                </div>
+                                <Button
+                                    onClick={() => setView('database')}
+                                    variant="ghost"
+                                    className="text-orange-500 font-black italic uppercase text-[10px] tracking-widest"
+                                >
+                                    VOLVER A DATABASE
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* 3. AI INSIGHT FOOTER */}
-                <div className="flex items-center justify-between p-8 bg-orange-600 rounded-[2.5rem] shrink-0 shadow-2xl shadow-orange-950/20">
+                <div className="flex items-center justify-between p-8 bg-orange-600 rounded-[2.5rem] shrink-0 shadow-2xl shadow-orange-950/20 mb-10">
                     <div className="flex items-center gap-6">
                         <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center">
                             <Sparkles className="w-8 h-8 text-orange-500 animate-pulse" />
@@ -265,7 +301,13 @@ export default function CustomersPagePremium() {
                             <p className="text-[10px] font-bold text-black/60 uppercase tracking-widest mt-1">Se detectó una alta frecuencia de pedidos de mesa entre 20:00 y 22:00.</p>
                         </div>
                     </div>
-                    <Button className="bg-black text-white hover:bg-slate-900 h-14 px-10 rounded-2xl font-black italic uppercase text-xs tracking-[0.2em]">
+                    <Button
+                        onClick={() => {
+                            toast.success("CAMPAÑA WHATSAPP LANZADA CON ÉXITO")
+                            console.log("Launching WhatsApp campaign...")
+                        }}
+                        className="bg-black text-white hover:bg-slate-900 h-14 px-10 rounded-2xl font-black italic uppercase text-xs tracking-[0.2em]"
+                    >
                         LANZAR CAMPAÑA WHATSAPP
                     </Button>
                 </div>

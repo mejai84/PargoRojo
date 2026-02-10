@@ -34,6 +34,7 @@ import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { useRestaurant } from "@/providers/RestaurantProvider"
+import { toast } from "sonner"
 
 export default function AdminDashboard() {
     const [loading, setLoading] = useState(true)
@@ -68,12 +69,12 @@ export default function AdminDashboard() {
         <div className="min-h-screen text-white font-sans relative overflow-hidden">
 
             {/* 🖼️ FONDO PREMIM: Restaurante de Lujo con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
 
             {/* 🌫️ CAPA DE CRISTAL OSCURO PROFUNDO */}
-            <div className="fixed inset-0 backdrop-blur-[100px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[100px] bg-slate-950/90 pointer-events-none" />
 
-            <div className="relative z-10 p-8 space-y-10 max-w-[1800px] mx-auto h-screen flex flex-col">
+            <div className="relative z-10 p-8 md:p-12 space-y-10 max-w-[1800px] mx-auto flex flex-col min-h-full">
 
                 {/* HEADER EJECUTIVO */}
                 <div className="flex items-center justify-between shrink-0">
@@ -94,12 +95,17 @@ export default function AdminDashboard() {
                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">TIEMPO REAL DE SISTEMA</p>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5">
+                            <Button
+                                onClick={() => toast.info("CENTRO DE NOTIFICACIONES: Sin mensajes nuevos")}
+                                variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5"
+                            >
                                 <Bell className="w-6 h-6 text-slate-400" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5">
-                                <Settings className="w-6 h-6 text-slate-400" />
-                            </Button>
+                            <Link href="/admin/settings">
+                                <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-slate-800/40 border border-white/5">
+                                    <Settings className="w-6 h-6 text-slate-400" />
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -187,7 +193,10 @@ export default function AdminDashboard() {
                                     <p className="text-lg font-black italic tracking-tighter">$145.000</p>
                                 </div>
                             </div>
-                            <Button className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.2em] italic rounded-2xl hover:bg-slate-200 shadow-xl">
+                            <Button
+                                onClick={() => toast.success("CIERRE X GENERADO CORRECTAMENTE")}
+                                className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.2em] italic rounded-2xl hover:bg-slate-200 shadow-xl"
+                            >
                                 EJECUTAR CIERRE X
                             </Button>
                         </div>

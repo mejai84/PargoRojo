@@ -128,15 +128,15 @@ export default function KitchenPage() {
         <div className="min-h-screen bg-black text-white font-sans relative overflow-hidden">
 
             {/* 🖼️ CAPA 1: FONDO DE COCINA REAL CON BLUR */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-110 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-110 pointer-events-none" />
 
             {/* 🌫️ CAPA 2: DESENFOQUE Y OSCURECIMIENTO */}
-            <div className="fixed inset-0 backdrop-blur-[40px] bg-slate-950/80 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[40px] bg-slate-950/80 pointer-events-none" />
 
             {/* 🎇 CAPA 3: GRADIENTE DE CHISPAS / BOKEH */}
-            <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,120,40,0.15)_0%,transparent_50%),radial-gradient(circle_at_80%_70%,rgba(255,80,0,0.1)_0%,transparent_50%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,120,40,0.15)_0%,transparent_50%),radial-gradient(circle_at_80%_70%,rgba(255,80,0,0.1)_0%,transparent_50%)] pointer-events-none" />
 
-            <div className="relative z-10 p-6 space-y-6 h-screen flex flex-col">
+            <div className="relative z-10 p-8 md:p-12 space-y-6 flex flex-col min-h-full">
 
                 {/* HEADER (Estilo Mockup) */}
                 <div className="flex items-center justify-between shrink-0 mb-2">
@@ -230,11 +230,27 @@ export default function KitchenPage() {
                                                 {order.status === 'pending' && (
                                                     <>
                                                         <div className="flex gap-1.5 mr-auto">
-                                                            {[Pause, RefreshCw, Play].map((Icon, i) => (
-                                                                <button key={i} className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors">
-                                                                    <Icon className="w-4 h-4 text-slate-300" />
-                                                                </button>
-                                                            ))}
+                                                            <button
+                                                                onClick={() => toast.info("PRODUCCIÓN PAUSADA EN ESTACIÓN")}
+                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
+                                                            >
+                                                                <Pause className="w-4 h-4 text-slate-300" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    fetchData()
+                                                                    toast.success("DATOS SINCRONIZADOS")
+                                                                }}
+                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
+                                                            >
+                                                                <RefreshCw className="w-4 h-4 text-slate-300" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => toast.success("PRODUCCIÓN REANUDADA")}
+                                                                className="p-2.5 rounded-xl bg-slate-700/50 border border-white/5 hover:bg-slate-600 transition-colors"
+                                                            >
+                                                                <Play className="w-4 h-4 text-slate-300" />
+                                                            </button>
                                                         </div>
                                                         <Button
                                                             onClick={() => updateStatus(order.id, 'preparing')}

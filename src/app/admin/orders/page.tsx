@@ -34,7 +34,8 @@ import {
     Layers,
     Cpu,
     Zap,
-    Flame
+    Flame,
+    Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, Suspense } from "react"
@@ -295,7 +296,10 @@ function OrdersContent() {
 
                     <div className="flex flex-wrap items-center gap-6">
                         <Button
-                            onClick={() => setIsCreateOpen(true)}
+                            onClick={() => {
+                                setIsCreateOpen(true)
+                                toast.info("CARGANDO TERMINAL DE COMANDA...")
+                            }}
                             className="h-20 px-10 bg-foreground text-background hover:bg-primary hover:text-white font-black uppercase text-xs tracking-[0.4em] italic rounded-[2.5rem] shadow-3xl transition-all gap-5 border-none group active:scale-95 whitespace-nowrap"
                         >
                             <Plus className="w-7 h-7 group-hover:scale-110 transition-transform" />
@@ -307,7 +311,13 @@ function OrdersContent() {
                                 MONITOR COCINA
                             </Button>
                         </Link>
-                        <Button onClick={fetchOrders} variant="ghost" className="h-20 w-20 bg-card border-4 border-border/40 rounded-[2.5rem] hover:text-primary hover:border-primary/40 shadow-3xl transition-all group/btn active:scale-95">
+                        <Button
+                            onClick={() => {
+                                fetchOrders()
+                                toast.info("SINCRONIZANDO NODOS DE PEDIDO...")
+                            }}
+                            variant="ghost" className="h-20 w-20 bg-card border-4 border-border/40 rounded-[2.5rem] hover:text-primary hover:border-primary/40 shadow-3xl transition-all group/btn active:scale-95"
+                        >
                             <RefreshCcw className={cn("w-8 h-8 group-hover/btn:rotate-180 transition-transform duration-700", loading && "animate-spin")} />
                         </Button>
                     </div>
@@ -771,7 +781,7 @@ function OrdersContent() {
 
         try {
             const { processOrderPayment } = await import("@/actions/pos")
-            const res = await processOrderPayment(order.id, currentUser.id, method, total, tip)
+            const res = await processOrderPayment(order.id, currentUser.id, method as any, total, tip)
 
             if (res.success) {
                 fetchOrders()

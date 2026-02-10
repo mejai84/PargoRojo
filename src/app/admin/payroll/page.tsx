@@ -64,13 +64,13 @@ export default function PayrollPage() {
     ]
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO PREMIUM: Oficina de Diseño con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
 
-            <div className="relative z-10 p-10 space-y-10 max-w-[1800px] mx-auto h-screen flex flex-col">
+            <div className="relative z-10 p-8 md:p-12 space-y-10 max-w-[1800px] mx-auto flex flex-col min-h-full">
 
                 {/* HEADER (Estilo Mockup) */}
                 <div className="flex items-center justify-between shrink-0">
@@ -85,7 +85,10 @@ export default function PayrollPage() {
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.4em] mt-2 italic shadow-sm">Recursos Humanos & Liquidaciones</p>
                         </div>
                     </div>
-                    <Button className="h-14 px-8 bg-white text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-white/5">
+                    <Button
+                        onClick={() => toast.info("REGLAS DE CONTRATACIÓN NO DISPONIBLES EN MODO PRUEBA")}
+                        className="h-14 px-8 bg-white text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-white/5"
+                    >
                         <UserPlus className="w-5 h-5 mr-3 text-orange-600" /> CONTRATAR PERSONAL
                     </Button>
                 </div>
@@ -142,7 +145,10 @@ export default function PayrollPage() {
                                                     <p className="text-xs font-black text-emerald-400">$55.200</p>
                                                 </div>
                                             </div>
-                                            <Button className="w-full h-11 bg-orange-600/10 hover:bg-orange-600 text-orange-500 hover:text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all border border-orange-500/20 group-hover:border-orange-500">
+                                            <Button
+                                                onClick={() => toast.success(`TURNO DE ${emp.full_name} FINALIZADO`)}
+                                                className="w-full h-11 bg-orange-600/10 hover:bg-orange-600 text-orange-500 hover:text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all border border-orange-500/20 group-hover:border-orange-500"
+                                            >
                                                 FINALIZAR TURNO
                                             </Button>
                                         </div>
@@ -174,7 +180,10 @@ export default function PayrollPage() {
                         </div>
 
                         {/* ACCIÓN DE CIERRE */}
-                        <div className="p-10 bg-orange-600 rounded-[3rem] shadow-[0_20px_50px_rgba(234,88,12,0.3)] group hover:scale-105 transition-all text-center cursor-pointer border-t-[10px] border-white/10 relative overflow-hidden">
+                        <div
+                            onClick={() => toast.info("CALCULANDO LIQUIDACIONES DEL PERIODO...")}
+                            className="p-10 bg-orange-600 rounded-[3rem] shadow-[0_20px_50px_rgba(234,88,12,0.3)] group hover:scale-105 transition-all text-center cursor-pointer border-t-[10px] border-white/10 relative overflow-hidden"
+                        >
                             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
                             <Wallet className="w-12 h-12 text-black mx-auto mb-4 drop-shadow-lg" />
                             <h2 className="text-2xl font-black italic text-black uppercase tracking-tighter leading-none mb-2">EJECUTAR LIQUIDACIÓN</h2>

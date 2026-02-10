@@ -13,6 +13,7 @@ import {
     User as UserIcon,
     RefreshCw,
     Loader2,
+    X,
     DollarSign,
     Scale,
     ArrowLeft,
@@ -36,6 +37,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { toast } from "sonner"
 
 // Types aligned with DB Schema
 type Movement = {
@@ -375,6 +377,11 @@ export default function CashierPage() {
                                 <div className="relative group/search">
                                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within/search:text-primary transition-colors" />
                                     <input
+                                        onChange={(e) => {
+                                            if (e.target.value.length > 3) {
+                                                // toast.info(`Filtrando por: ${e.target.value}`)
+                                            }
+                                        }}
                                         placeholder="BUSCAR MOVIMIENTO..."
                                         className="h-16 w-[300px] bg-muted/40 border border-border rounded-[2rem] pl-16 pr-8 outline-none focus:border-primary font-black italic text-[10px] tracking-[0.2em] uppercase transition-all shadow-inner"
                                     />

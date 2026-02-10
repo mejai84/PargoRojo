@@ -76,13 +76,13 @@ export default function InventoryPage() {
     const criticalCount = ingredients.filter(i => i.current_stock <= i.min_stock).length
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO AMBIENTE (Coherente con KDS) */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-110 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[60px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-110 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[60px] bg-slate-950/90 pointer-events-none" />
 
-            <div className="relative z-10 p-8 space-y-8 max-w-[1600px] mx-auto">
+            <div className="relative z-10 p-8 md:p-12 space-y-8 max-w-[1600px] mx-auto flex-1 min-h-full">
 
                 {/* HEADER TÉCNICO */}
                 <div className="flex items-center justify-between">
@@ -100,7 +100,10 @@ export default function InventoryPage() {
                             </div>
                         </div>
                     </div>
-                    <Button className="h-14 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-orange-600/20">
+                    <Button
+                        onClick={() => toast.success("ABRIENDO EDITOR DE NUEVO INSUMO")}
+                        className="h-14 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-orange-600/20"
+                    >
                         <Plus className="w-5 h-5 mr-3" /> AGREGAR INSUMO
                     </Button>
                 </div>
@@ -109,18 +112,31 @@ export default function InventoryPage() {
                 <div className="grid grid-cols-4 gap-4">
                     {[
                         { label: 'LIBRO DE RECETAS', icon: ChefHat, href: '/admin/inventory/recipes' },
-                        { label: 'PROVEEDORES', icon: Truck, href: '#' },
-                        { label: 'CONTROL DE MERMAS', icon: Activity, href: '#' },
-                        { label: 'ENTRADA DE SUMINISTROS', icon: Warehouse, href: '#' }
+                        { label: 'PROVEEDORES', icon: Truck, onClick: () => toast.info("MÓDULO DE PROVEEDORES") },
+                        { label: 'CONTROL DE MERMAS', icon: Activity, onClick: () => toast.info("CONTRO DE MERMAS: Registro Activo") },
+                        { label: 'ENTRADA DE SUMINISTROS', icon: Warehouse, onClick: () => toast.info("MODULO DE ENTRADA: Supply Chain") }
                     ].map((btn, i) => (
-                        <Link key={i} href={btn.href}>
-                            <button className="w-full flex items-center gap-4 p-5 bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-orange-500/50 hover:bg-slate-700/50 transition-all group">
+                        btn.href ? (
+                            <Link key={i} href={btn.href}>
+                                <button className="w-full flex items-center gap-4 p-5 bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-orange-500/50 hover:bg-slate-700/50 transition-all group">
+                                    <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
+                                        <btn.icon className="w-5 h-5 text-orange-400" />
+                                    </div>
+                                    <span className="text-xs font-black tracking-widest uppercase italic">{btn.label}</span>
+                                </button>
+                            </Link>
+                        ) : (
+                            <button
+                                key={i}
+                                onClick={btn.onClick}
+                                className="w-full flex items-center gap-4 p-5 bg-slate-800/40 backdrop-blur-md rounded-2xl border border-white/5 hover:border-orange-500/50 hover:bg-slate-700/50 transition-all group"
+                            >
                                 <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
                                     <btn.icon className="w-5 h-5 text-orange-400" />
                                 </div>
                                 <span className="text-xs font-black tracking-widest uppercase italic">{btn.label}</span>
                             </button>
-                        </Link>
+                        )
                     ))}
                 </div>
 
@@ -157,7 +173,10 @@ export default function InventoryPage() {
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <Button variant="ghost" className="rounded-xl border border-white/5 text-slate-400">
+                        <Button
+                            onClick={() => toast.info("FILTROS AVANZADOS")}
+                            variant="ghost" className="rounded-xl border border-white/5 text-slate-400"
+                        >
                             <Filter className="w-4 h-4 mr-2" /> Filtrar
                         </Button>
                     </div>
@@ -197,10 +216,16 @@ export default function InventoryPage() {
                                             </td>
                                             <td className="p-6 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-white/5">
+                                                    <button
+                                                        onClick={() => toast.success(`EDITANDO: ${item.name}`)}
+                                                        className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white border border-white/5"
+                                                    >
                                                         <Edit className="w-4 h-4" />
                                                     </button>
-                                                    <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-orange-500 border border-white/5">
+                                                    <button
+                                                        onClick={() => toast.info(`MÁS OPCIONES: ${item.name}`)}
+                                                        className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-orange-500 border border-white/5"
+                                                    >
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </button>
                                                 </div>

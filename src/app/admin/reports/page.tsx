@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { cn, formatPrice } from "@/lib/utils"
+import { toast } from "sonner"
 
 type KPI = {
     total_revenue_month: number
@@ -100,45 +101,47 @@ export default function ReportsPagePremium() {
     }
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col h-screen">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO PREMIUM: Centro de Negocios / Analytics con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1551288049-bbbda5366991?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[100px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551288049-bbbda5366991?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[100px] bg-slate-950/90 pointer-events-none" />
 
-            {/* HEADER ANALÍTICO */}
-            <div className="relative z-20 p-8 flex items-center justify-between border-b border-white/5 bg-slate-950/40 backdrop-blur-xl shrink-0">
-                <div className="flex items-center gap-6">
-                    <Link href="/admin">
-                        <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10">
-                            <ArrowLeft className="w-6 h-6 text-slate-400" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">BUSINESS <span className="text-orange-500">INTELLIGENCE</span></h1>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em] mt-2 italic shadow-sm">Data Center & Intelligence Hub</p>
+            <div className="relative z-10 flex-1 flex flex-col min-h-full">
+
+                {/* HEADER ANALÍTICO */}
+                <div className="relative z-20 p-8 flex items-center justify-between border-b border-white/5 bg-slate-950/40 backdrop-blur-xl shrink-0">
+                    <div className="flex items-center gap-6">
+                        <Link href="/admin">
+                            <Button variant="ghost" size="icon" className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10">
+                                <ArrowLeft className="w-6 h-6 text-slate-400" />
+                            </Button>
+                        </Link>
+                        <div>
+                            <h1 className="text-5xl font-black italic tracking-tighter uppercase leading-none">BUSINESS <span className="text-orange-500">INTELLIGENCE</span></h1>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em] mt-2 italic shadow-sm">Data Center & Intelligence Hub</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="text-right">
+                            <p className="text-3xl font-black italic tracking-tighter font-mono">
+                                {currentTime.toLocaleTimeString('es-CO')}
+                            </p>
+                            <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest text-right">GLOBAL DATA SYNC</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button
+                                onClick={() => toast.success("GENERANDO REPORTE PDF / EXCEL...")}
+                                className="h-14 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-orange-600/20"
+                            >
+                                <Download className="w-5 h-5 mr-3" /> EXPORTAR DATA
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="text-right">
-                        <p className="text-3xl font-black italic tracking-tighter font-mono">
-                            {currentTime.toLocaleTimeString('es-CO')}
-                        </p>
-                        <p className="text-[9px] font-bold text-orange-500 uppercase tracking-widest text-right">GLOBAL DATA SYNC</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button className="h-14 px-8 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-xs italic tracking-widest rounded-2xl shadow-xl shadow-orange-600/20">
-                            <Download className="w-5 h-5 mr-3" /> EXPORTAR DATA
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="relative z-10 p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-8 max-w-[1800px] mx-auto w-full">
-
-                {/* 1. TOP METRICS ROW */}
-                <div className="grid grid-cols-4 gap-6 shrink-0">
+                <div className="p-8 md:p-12 flex-1 flex flex-col gap-8 max-w-[1800px] mx-auto w-full">
                     {[
                         { label: 'INGRESOS MES', val: formatPrice(kpis?.total_revenue_month || 0), icon: DollarSign, trend: '+12.5%', color: 'text-orange-500' },
                         { label: 'TRANSACCIONES', val: kpis?.total_orders_month || 0, icon: ShoppingBag, trend: '+8.2%', color: 'text-white' },
@@ -177,7 +180,11 @@ export default function ReportsPagePremium() {
                             </div>
                             <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10">
                                 {['7D', '30D', '90D', '1Y'].map(t => (
-                                    <button key={t} className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all", t === '7D' ? "bg-orange-500 text-black" : "text-slate-500 hover:text-white")}>
+                                    <button
+                                        key={t}
+                                        onClick={() => toast.info(`FILTRANDO DATOS POR ${t}`)}
+                                        className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all", t === '7D' ? "bg-orange-500 text-black" : "text-slate-500 hover:text-white")}
+                                    >
                                         {t}
                                     </button>
                                 ))}
@@ -238,7 +245,10 @@ export default function ReportsPagePremium() {
                             </div>
 
                             <div className="mt-8">
-                                <Button className="w-full h-14 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 font-black uppercase text-[10px] italic tracking-widest rounded-2xl">
+                                <Button
+                                    onClick={() => toast.info("CARGANDO REPORTE DETALLADO DE PRODUCTOS")}
+                                    className="w-full h-14 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-200 font-black uppercase text-[10px] italic tracking-widest rounded-2xl"
+                                >
                                     VER REPORTE COMPLETO
                                 </Button>
                             </div>

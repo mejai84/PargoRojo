@@ -197,7 +197,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <ShiftGuard>
             <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary selection:text-black">
                 {/* 🏰 ENTERPRISE SIDEBAR */}
-                <aside className="w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shadow-sm">
+                <aside className="w-72 border-r border-border bg-card hidden lg:flex flex-col sticky top-0 h-screen shadow-sm z-40 relative">
 
                     {/* Brand Header */}
                     <div className="p-8 pb-4 flex items-center justify-between">
@@ -244,6 +244,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
+                                name="pargo-module-search"
+                                autoComplete="off"
                                 placeholder="Buscar módulo..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -404,7 +406,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </div>
                     )}
 
-                    <div className="flex-1 p-6 md:p-12 overflow-y-auto">
+                    <div className="flex-1 relative overflow-y-auto custom-scrollbar">
                         {children}
                     </div>
                     <PargoBot />

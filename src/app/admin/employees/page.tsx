@@ -27,6 +27,7 @@ import {
     Receipt
 } from "lucide-react"
 import { cn, formatPrice } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface Employee {
     id: string
@@ -188,11 +189,11 @@ export default function EmployeesPage() {
 
             if (profileError) throw profileError
 
-            alert("Empleado creado exitosamente. Se ha enviado un correo de confirmación.")
+            toast.success("Empleado creado exitosamente. Se ha enviado un correo de confirmación.")
             setIsAddModalOpen(false)
             fetchEmployees()
         } catch (error: any) {
-            alert(error.message || "Error al crear empleado")
+            toast.error(error.message || "Error al crear empleado")
         } finally {
             setSubmitting(false)
         }
@@ -220,11 +221,11 @@ export default function EmployeesPage() {
 
             if (error) throw error
 
-            alert("Empleado actualizado correctamente")
+            toast.success("Empleado actualizado correctamente")
             setIsEditModalOpen(false)
             fetchEmployees()
         } catch (error: any) {
-            alert(error.message || "Error al actualizar")
+            toast.error(error.message || "Error al actualizar")
         } finally {
             setSubmitting(false)
         }

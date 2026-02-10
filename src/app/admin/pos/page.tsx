@@ -128,11 +128,11 @@ export default function PosPremiumPage() {
     }
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col h-screen">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO PREMIUM: Bar/Lounge Elegante con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[80px] bg-slate-950/90 pointer-events-none" />
 
             {/* HEADER SUPERIOR */}
             <div className="relative z-20 p-6 flex items-center justify-between border-b border-white/5 bg-slate-950/40 backdrop-blur-xl shrink-0">
@@ -314,13 +314,17 @@ export default function PosPremiumPage() {
 
                         <div className="flex gap-3">
                             <Button
+                                onClick={() => toast.info("PROCESANDO TERMINAL DE PAGO...")}
                                 className="flex-1 h-20 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-lg italic tracking-[0.2em] rounded-3xl shadow-2xl shadow-orange-600/30 group active:scale-95 transition-all"
                                 disabled={cart.length === 0}
                             >
                                 <Banknote className="w-7 h-7 mr-4 group-hover:scale-110 transition-transform" />
                                 PAGAR AHORA
                             </Button>
-                            <Button variant="ghost" className="h-20 w-20 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10">
+                            <Button
+                                onClick={() => toast.info("LINK DE PAGO DIGITAL ENVIADO")}
+                                variant="ghost" className="h-20 w-20 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10"
+                            >
                                 <Smartphone className="w-8 h-8 text-slate-400" />
                             </Button>
                         </div>

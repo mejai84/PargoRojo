@@ -160,6 +160,45 @@ export default function TablesAdminPage() {
         setLoading(false)
     }
 
+    const updateTableDimension = (id: string, field: keyof Table, value: number) => {
+        setTables(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t))
+    }
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedTable) return
+
+        const formData = new FormData(e.currentTarget as HTMLFormElement)
+        const updatedTable = {
+            ...selectedTable,
+            table_number: parseInt(formData.get('table_number') as string),
+            table_name: formData.get('table_name') as string,
+            capacity: parseInt(formData.get('capacity') as string),
+            location: formData.get('location') as string,
+            shape: formData.get('shape') as Table['shape']
+        }
+
+        const { error } = await supabase
+            .from('tables')
+            .update({
+                table_number: updatedTable.table_number,
+                table_name: updatedTable.table_name,
+                capacity: updatedTable.capacity,
+                location: updatedTable.location,
+                shape: updatedTable.shape
+            })
+            .eq('id', updatedTable.id)
+
+        if (!error) {
+            toast.success("Calibración de mesa guardada")
+            setIsEditModalOpen(false)
+            setSelectedTable(null)
+            loadTables()
+        } else {
+            toast.error("Error al calibrar: " + error.message)
+        }
+    }
+
     const saveLayout = async () => {
         setSavingLayout(true)
         try {
@@ -316,7 +355,10 @@ export default function TablesAdminPage() {
                             {["TODAS", "Interior", "Terraza", "Barra", "VIP"].map(zone => (
                                 <button
                                     key={zone}
-                                    onClick={() => setActiveZone(zone)}
+                                    onClick={() => {
+                                        setActiveZone(zone)
+                                        toast.info(`FILTRANDO ZONA: ${zone}`)
+                                    }}
                                     className={cn(
                                         "px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all italic",
                                         (activeZone === zone) ? "bg-primary text-black shadow-lg" : "text-muted-foreground/40 hover:text-foreground"
@@ -329,13 +371,19 @@ export default function TablesAdminPage() {
 
                         <div className="flex bg-card/60 backdrop-blur-md p-2 rounded-[2rem] border-2 border-border/40 shadow-xl">
                             <button
-                                onClick={() => setIsVisualView(false)}
+                                onClick={() => {
+                                    setIsVisualView(false)
+                                    toast.info("VISTA DE LISTA ACTIVADA")
+                                }}
                                 className={cn("px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all italic", !isVisualView ? "bg-primary text-black shadow-lg" : "text-muted-foreground/40 hover:text-foreground")}
                             >
                                 LISTA
                             </button>
                             <button
-                                onClick={() => setIsVisualView(true)}
+                                onClick={() => {
+                                    setIsVisualView(true)
+                                    toast.info("VISTA DE DISEÑO 2D ACTIVADA")
+                                }}
                                 className={cn("px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all italic", isVisualView ? "bg-primary text-black shadow-lg" : "text-muted-foreground/40 hover:text-foreground")}
                             >
                                 DISEÑO 2D

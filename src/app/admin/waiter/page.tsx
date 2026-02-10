@@ -113,13 +113,13 @@ export default function WaiterAppPremium() {
     })
 
     return (
-        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col h-screen">
+        <div className="min-h-screen text-white font-sans relative overflow-hidden flex flex-col">
 
             {/* 🖼️ FONDO PREMIM: Salón de Comedor Elegante con Blur */}
-            <div className="fixed inset-0 bg-[url('https://images.unsplash.com/photo-1550966841-3ee5ad60a05a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
-            <div className="fixed inset-0 backdrop-blur-[60px] bg-slate-950/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550966841-3ee5ad60a05a?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center scale-105 pointer-events-none" />
+            <div className="absolute inset-0 backdrop-blur-[60px] bg-slate-950/90 pointer-events-none" />
 
-            <div className="relative z-10 flex flex-col h-full">
+            <div className="relative z-10 flex flex-col flex-1 min-h-full">
 
                 {/* HEADER DINÁMICO */}
                 <header className="p-6 border-b border-white/5 bg-slate-950/40 backdrop-blur-xl flex items-center justify-between shrink-0">
@@ -139,7 +139,10 @@ export default function WaiterAppPremium() {
                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                             <span className="text-[8px] font-black uppercase text-emerald-500">ONLINE</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 bg-white/5 border border-white/10 rounded-xl">
+                        <Button
+                            onClick={() => toast.info("LISTA DE MESEROS ACTIVOS EN TURNO")}
+                            variant="ghost" size="icon" className="h-10 w-10 bg-white/5 border border-white/10 rounded-xl"
+                        >
                             <Users className="w-4 h-4 text-slate-400" />
                         </Button>
                     </div>
@@ -278,7 +281,18 @@ export default function WaiterAppPremium() {
                                             {formatPrice(cart.reduce((acc, curr) => acc + (curr.product.price * curr.qty), 0))}
                                         </p>
                                     </div>
-                                    <Button className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-sm italic tracking-[0.2em] rounded-2xl">
+                                    <Button
+                                        onClick={() => {
+                                            if (cart.length === 0) {
+                                                toast.error("EL CARRITO ESTÁ VACÍO")
+                                                return
+                                            }
+                                            toast.success("COMANDA ENVIADA A COCINA")
+                                            setCart([])
+                                            setView('tables')
+                                        }}
+                                        className="w-full h-14 bg-orange-600 hover:bg-orange-700 text-black font-black uppercase text-sm italic tracking-[0.2em] rounded-2xl"
+                                    >
                                         ENVIAR COMANDA
                                     </Button>
                                 </div>
@@ -289,10 +303,24 @@ export default function WaiterAppPremium() {
 
                 {/* BOTTOM NAVIGATION (For Tablet/Mobile View) */}
                 <nav className="p-4 border-t border-white/5 bg-slate-950/80 backdrop-blur-2xl lg:hidden flex gap-4">
-                    <Button className="flex-1 h-12 bg-orange-600 text-black font-black uppercase italic rounded-xl">
+                    <Button
+                        onClick={() => {
+                            if (cart.length === 0) {
+                                toast.error("SIN ITEMS PARA ENVIAR")
+                                return
+                            }
+                            toast.success("COMANDA ENVIADA")
+                            setCart([])
+                            setView('tables')
+                        }}
+                        className="flex-1 h-12 bg-orange-600 text-black font-black uppercase italic rounded-xl"
+                    >
                         ENVIAR ({cart.length})
                     </Button>
-                    <Button variant="ghost" className="h-12 w-12 bg-white/5 border border-white/10 rounded-xl">
+                    <Button
+                        onClick={() => toast.info("SOLICITANDO PRE-FACTURA")}
+                        variant="ghost" className="h-12 w-12 bg-white/5 border border-white/10 rounded-xl"
+                    >
                         <Receipt className="w-5 h-5 text-slate-400" />
                     </Button>
                 </nav>
