@@ -140,8 +140,8 @@ export default function WaiterAppPremium() {
                                 <ArrowLeft className="w-5 h-5" />
                             </button>
                         )}
-                        <div>
-                            <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">WAITER <span className="text-orange-500">PRO</span></h1>
+                        <div className="flex flex-col">
+                            <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">PORTAL <span className="text-orange-500">MESERO</span></h1>
                             <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">SISTEMA DE COMANDAS MÓVIL</p>
                         </div>
                     </div>
@@ -291,7 +291,7 @@ export default function WaiterAppPremium() {
                                     )}
                                 >
                                     <LayoutGrid className="w-5 h-5" />
-                                    <span className="text-[8px] font-black uppercase text-center italic">ALL</span>
+                                    <span className="text-[8px] font-black uppercase text-center italic">TODO</span>
                                 </button>
                                 {categories.map(cat => (
                                     <button

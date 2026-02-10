@@ -195,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <ShiftGuard>
-            <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300 selection:bg-primary selection:text-black">
+            <div className="flex min-h-screen bg-[#020406] text-foreground transition-colors duration-300 selection:bg-primary selection:text-black">
                 {/* 🏰 JAMALI OS ELITE SIDEBAR (AURA STYLE) */}
                 <aside className="w-72 border-r border-white/5 bg-[#0a0b0d]/80 backdrop-blur-[40px] hidden lg:flex flex-col sticky top-0 h-screen z-50 relative overflow-hidden">
                     {/* Background Decorative Glows */}
@@ -233,7 +233,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 type="search"
                                 name="pargo-master-search-no-autofill"
                                 autoComplete="new-password"
-                                placeholder="Search modules..."
+                                placeholder="Buscar módulos..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full h-11 pl-12 pr-4 rounded-xl bg-white/[0.02] border border-white/5 outline-none focus:border-primary/30 text-[10px] font-bold uppercase tracking-[0.1em] placeholder:text-slate-700 transition-all font-sans text-white"
@@ -326,7 +326,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             }}
                         >
                             <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                            DISCONECT
+                            CERRAR SESIÓN
                         </Button>
                     </div>
                 </aside>

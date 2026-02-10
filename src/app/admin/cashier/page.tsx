@@ -106,16 +106,24 @@ export default function CashierPage() {
 
             try {
                 const posStatus = await getPosStatus(user.id)
+                console.log("POS Status:", posStatus)
                 setStatus(posStatus)
 
                 if (!posStatus.hasActiveShift) {
+                    console.log("No active shift, redirecting...")
                     return router.push("/admin/cashier/start-shift")
                 }
                 if (!posStatus.hasOpenCashbox) {
+                    console.log("No open cashbox, redirecting...")
                     return router.push("/admin/cashier/open-box")
                 }
 
-                await fetchDashboardData(posStatus.activeCashboxSession?.id)
+                if (posStatus.activeCashboxSession?.id) {
+                    await fetchDashboardData(posStatus.activeCashboxSession.id)
+                } else {
+                    console.error("Missing session ID despite hasOpenCashbox being true")
+                    router.push("/admin/cashier/open-box")
+                }
 
             } catch (error) {
                 console.error("Error validating POS status:", error)
@@ -130,26 +138,43 @@ export default function CashierPage() {
         setRefreshing(true)
         if (!sessionId) return
 
-        const { data: moves } = await supabase
+        const { data: movements, error: movementsError } = await supabase
             .from('cash_movements')
             .select('*')
             .eq('cashbox_session_id', sessionId)
             .order('created_at', { ascending: false })
 
-        if (moves) {
-            setMovements(moves as any)
-            const opening = moves.find(m => m.movement_type === 'OPENING')?.amount || 0
-            const sales = moves.filter(m => m.movement_type === 'SALE').reduce((acc, m) => acc + m.amount, 0)
-            const incomes = moves.filter(m => m.movement_type === 'DEPOSIT').reduce((acc, m) => acc + m.amount, 0)
-            const expenses = moves.filter(m => m.movement_type === 'WITHDRAWAL').reduce((acc, m) => acc + m.amount, 0)
-
-            setBalance({
-                total: Number(opening) + Number(sales) + Number(incomes) - Number(expenses),
-                sales: Number(sales),
-                incomes: Number(incomes),
-                expenses: Number(expenses)
-            })
+        if (movementsError) {
+            console.error("Error fetching movements:", movementsError)
+            return
         }
+
+        setMovements(movements || [])
+
+        // Calcular balances
+        const sales = (movements || []).filter(m => m.movement_type === 'SALE').reduce((acc, m) => acc + Number(m.amount), 0)
+        const expenses = (movements || []).filter(m => m.movement_type === 'WITHDRAWAL').reduce((acc, m) => acc + Number(m.amount), 0)
+        const partials = (movements || []).filter(m => m.movement_type === 'DEPOSIT').reduce((acc, m) => acc + Number(m.amount), 0)
+
+        // Saldo inicial (opening_amount)
+        const { data: session, error: sessionError } = await supabase
+            .from('cashbox_sessions')
+            .select('opening_amount')
+            .eq('id', sessionId)
+            .maybeSingle()
+
+        if (sessionError) {
+            console.error("Error fetching session:", sessionError)
+        }
+
+        const opening = Number(session?.opening_amount || 0)
+
+        setBalance({
+            total: opening + sales + partials - expenses,
+            sales: sales,
+            expenses: expenses,
+            incomes: partials
+        })
         setRefreshing(false)
     }
 

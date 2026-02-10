@@ -109,9 +109,10 @@ export default function EmployeesPage() {
         }
     }
 
-    const handleAddOpen = () => {
+    const handleAddOpen = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
         setFormData({
-            email: "",
+            email: user?.email || "",
             password: "",
             full_name: "",
             phone: "",
@@ -189,9 +190,9 @@ export default function EmployeesPage() {
 
             if (profileError) throw profileError
 
-            toast.success("Empleado creado exitosamente. Se ha enviado un correo de confirmación.")
+            toast.success("Empleado creado exitosamente.")
             setIsAddModalOpen(false)
-            fetchEmployees()
+            setTimeout(() => fetchEmployees(), 500) // Pequeño delay para asegurar que el trigger termine
         } catch (error: any) {
             toast.error(error.message || "Error al crear empleado")
         } finally {
@@ -223,7 +224,7 @@ export default function EmployeesPage() {
 
             toast.success("Empleado actualizado correctamente")
             setIsEditModalOpen(false)
-            fetchEmployees()
+            setTimeout(() => fetchEmployees(), 500)
         } catch (error: any) {
             toast.error(error.message || "Error al actualizar")
         } finally {
@@ -256,27 +257,31 @@ export default function EmployeesPage() {
 
     const getRoleBadge = (role: string) => {
         switch (role) {
-            case 'admin': return { label: 'ADMIN', color: 'bg-primary/20 text-primary border-primary/20', icon: ShieldCheck };
+            case 'admin': return { label: 'ADMIN', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20', icon: ShieldCheck };
             case 'waiter': return { label: 'MESERO', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', icon: Utensils };
-            case 'cook': return { label: 'COCINA', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: ChefHat };
+            case 'cook': return { label: 'COCINA', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20', icon: ChefHat };
             case 'cashier': return { label: 'CAJERO', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: Shield };
-            default: return { label: 'STAFF', color: 'bg-muted text-muted-foreground border-border', icon: Users };
+            default: return { label: 'STAFF', color: 'bg-white/5 text-slate-500 border-white/5', icon: Users };
         }
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 bg-transparent text-foreground p-4 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-8 animate-in fade-in duration-500 bg-transparent text-white p-4 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-900/40 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/5 shadow-2xl">
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight uppercase text-foreground">Equipo <span className="text-primary italic">{businessInfo.name}</span></h1>
-                    <p className="text-muted-foreground font-medium mt-1 italic">Gestión integral de personal y jerarquías operativos.</p>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-orange-500 font-black italic text-[10px] uppercase tracking-[0.2em] border border-orange-500/20 mb-4">
+                        <Users className="w-3 h-3" />
+                        GESTIÓN DE TALENTO HUMANO
+                    </div>
+                    <h1 className="text-4xl font-black tracking-tighter uppercase italic text-white leading-none">EQUIPO <span className="text-orange-500">{businessInfo.name}</span></h1>
+                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2 italic">Infraestructura de personal y jerarquías del sistema.</p>
                 </div>
                 <Button
                     onClick={handleAddOpen}
-                    className="h-14 px-8 bg-primary text-primary-foreground border-none rounded-2xl font-black uppercase tracking-widest italic hover:scale-105 transition-all gap-2 shadow-xl shadow-primary/20"
+                    className="h-16 px-10 bg-orange-600 text-black border-none rounded-2xl font-black uppercase tracking-widest italic hover:bg-orange-500 transition-all gap-3 shadow-2xl shadow-orange-500/20 active:scale-95"
                 >
                     <UserPlus className="w-5 h-5" />
-                    AÑADIR PERSONAL
+                    AÑADIR COLABORADOR
                 </Button>
             </div>
 
@@ -284,11 +289,11 @@ export default function EmployeesPage() {
                 {/* Main List */}
                 <div className="lg:col-span-3 space-y-6">
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-600 group-focus-within:text-orange-500 transition-colors" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre, email o cargo..."
-                            className="w-full h-14 pl-12 pr-6 rounded-3xl bg-card border border-border focus:border-primary/50 outline-none transition-all shadow-xl font-medium text-foreground placeholder:text-muted-foreground/30"
+                            className="w-full h-16 pl-14 pr-6 rounded-[2rem] bg-white/[0.02] border border-white/10 focus:border-orange-500/30 outline-none transition-all shadow-2xl font-bold uppercase tracking-widest text-white text-xs placeholder:text-slate-700"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -297,25 +302,26 @@ export default function EmployeesPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {loading ? (
                             Array(4).fill(0).map((_, i) => (
-                                <div key={i} className="h-32 bg-card animate-pulse rounded-[2rem] border border-border" />
+                                <div key={i} className="h-40 bg-white/[0.02] animate-pulse rounded-[2.5rem] border border-white/5" />
                             ))
                         ) : filteredEmployees.length === 0 ? (
-                            <div className="col-span-full py-20 text-center bg-muted/20 rounded-[3rem] border border-dashed border-border animate-in fade-in">
-                                <Users className="w-16 h-16 mx-auto mb-4 opacity-10 text-muted-foreground" />
-                                <p className="text-xl font-bold opacity-30 uppercase tracking-widest text-muted-foreground italic">No hay personal que coincida</p>
+                            <div className="col-span-full py-24 text-center bg-white/[0.02] backdrop-blur-3xl rounded-[3rem] border border-dashed border-white/10 animate-in fade-in">
+                                <Users className="w-16 h-16 mx-auto mb-4 text-slate-800" />
+                                <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-600 italic">No se encontraron colaboradores operativos</p>
                             </div>
                         ) : filteredEmployees.map((emp) => {
                             const badge = getRoleBadge(emp.role);
                             const Icon = badge.icon;
                             return (
-                                <div key={emp.id} className="group bg-card hover:bg-muted/30 border border-border rounded-[2.5rem] p-6 transition-all hover:border-primary/30 shadow-xl flex flex-col justify-between">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex gap-4 min-w-0">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-2xl text-primary border border-primary/20 shrink-0">
+                                <div key={emp.id} className="group bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 transition-all hover:border-orange-500/30 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:bg-orange-500/5 transition-all duration-700" />
+                                    <div className="flex justify-between items-start mb-6 relative z-10">
+                                        <div className="flex gap-5 min-w-0">
+                                            <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center font-black text-2xl text-orange-500 border border-orange-500/20 shrink-0 shadow-inner italic">
                                                 {emp.full_name?.charAt(0) || emp.email.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="font-black text-lg leading-tight mb-1 group-hover:text-primary transition-colors text-foreground truncate">
+                                                <h3 className="font-black text-xl italic tracking-tighter uppercase mb-1 group-hover:text-orange-500 transition-colors text-white truncate">
                                                     {emp.full_name || 'Sin nombre'}
                                                 </h3>
                                                 <div className={cn(
@@ -422,14 +428,15 @@ export default function EmployeesPage() {
 
             {/* Modals */}
             {(isAddModalOpen || isEditModalOpen) && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card w-full max-w-xl rounded-[3rem] border border-border shadow-3xl overflow-hidden flex flex-col animate-in zoom-in-95 shadow-black/40">
-                        <div className="p-10 pb-4 flex justify-between items-center bg-muted/30 border-b border-border/50">
-                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-foreground leading-none">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl animate-in fade-in duration-300">
+                    <div className="bg-slate-900 border border-white/5 w-full max-w-2xl rounded-[3rem] shadow-3xl overflow-hidden flex flex-col animate-in zoom-in-95 relative">
+                        <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none" />
+                        <div className="p-10 pb-6 flex justify-between items-center border-b border-white/5 relative z-10">
+                            <h2 className="text-3xl font-black tracking-tight uppercase italic text-white leading-none">
                                 {isAddModalOpen ? 'Nuevo Colaborador' : 'Editar Expediente'}
                             </h2>
-                            <Button variant="ghost" size="icon" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="rounded-xl hover:bg-background transition-colors">
-                                <X className="w-6 h-6 text-muted-foreground" />
+                            <Button variant="ghost" size="icon" onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }} className="rounded-xl hover:bg-white/5 transition-colors">
+                                <X className="w-6 h-6 text-slate-500" />
                             </Button>
                         </div>
 
@@ -442,7 +449,7 @@ export default function EmployeesPage() {
                                             <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white placeholder:text-slate-700 shadow-inner"
                                                 placeholder="EJ: JUAN PÉREZ"
                                                 value={formData.full_name}
                                                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
@@ -454,7 +461,7 @@ export default function EmployeesPage() {
                                         <div className="relative">
                                             <Phone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white placeholder:text-slate-700 shadow-inner"
                                                 placeholder="+57 300..."
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -470,7 +477,7 @@ export default function EmployeesPage() {
                                             <Shield className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 required
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white placeholder:text-slate-700 shadow-inner"
                                                 placeholder="C.C. / C.E."
                                                 value={formData.document_id}
                                                 onChange={(e) => setFormData({ ...formData, document_id: e.target.value })}
@@ -480,11 +487,11 @@ export default function EmployeesPage() {
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-4 italic">Fecha de Vinculación</label>
                                         <div className="relative">
-                                            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30 pointer-events-none" />
+                                            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
                                             <input
                                                 required
                                                 type="date"
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner cursor-pointer"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white shadow-inner cursor-pointer"
                                                 value={formData.hire_date}
                                                 onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
                                             />
@@ -499,7 +506,7 @@ export default function EmployeesPage() {
                                             <Utensils className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 type="number"
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white shadow-inner"
                                                 value={formData.food_discount_pct}
                                                 onChange={(e) => setFormData({ ...formData, food_discount_pct: Number(e.target.value) })}
                                             />
@@ -511,7 +518,7 @@ export default function EmployeesPage() {
                                             <Receipt className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/30" />
                                             <input
                                                 type="number"
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white shadow-inner"
                                                 value={formData.max_credit}
                                                 onChange={(e) => setFormData({ ...formData, max_credit: Number(e.target.value) })}
                                             />
@@ -528,7 +535,7 @@ export default function EmployeesPage() {
                                                 required
                                                 type="email"
                                                 disabled={isEditModalOpen}
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground disabled:opacity-30 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white disabled:opacity-30 shadow-inner"
                                                 placeholder="email@pargorojo.com"
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -542,7 +549,7 @@ export default function EmployeesPage() {
                                             <input
                                                 required={formData.role === 'waiter'}
                                                 maxLength={4}
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-6 outline-none focus:border-orange-500/40 transition-all font-bold text-white placeholder:text-slate-700 shadow-inner"
                                                 placeholder="EJ: 1234"
                                                 value={formData.waiter_pin}
                                                 onChange={(e) => setFormData({ ...formData, waiter_pin: e.target.value.replace(/\D/g, '') })}
@@ -559,7 +566,7 @@ export default function EmployeesPage() {
                                             <input
                                                 required
                                                 type={showPassword ? "text" : "password"}
-                                                className="w-full bg-muted border border-border rounded-2xl py-4 pl-14 pr-14 outline-none focus:border-primary/50 transition-all font-bold text-foreground placeholder:text-muted-foreground/20 shadow-inner"
+                                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 pl-14 pr-14 outline-none focus:border-orange-500/40 transition-all font-bold text-white placeholder:text-slate-700 shadow-inner"
                                                 placeholder="Min. 8 caracteres"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -604,19 +611,19 @@ export default function EmployeesPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                            <div className="flex flex-col sm:flex-row gap-4 pt-6 relative z-10">
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     onClick={() => { setIsAddModalOpen(false); setIsEditModalOpen(false); }}
-                                    className="flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
+                                    className="flex-1 h-16 rounded-2xl font-black uppercase tracking-widest text-slate-400 hover:bg-white/5 border border-white/5"
                                 >
                                     CANCELAR
                                 </Button>
                                 <Button
                                     disabled={submitting}
                                     type="submit"
-                                    className="flex-[2] h-16 rounded-2xl bg-foreground text-background font-black uppercase tracking-widest italic hover:bg-primary hover:text-background transition-all border-none text-lg shadow-xl"
+                                    className="flex-[2] h-16 rounded-2xl bg-orange-600 text-black font-black uppercase tracking-widest italic hover:bg-orange-500 transition-all border-none text-lg shadow-2xl shadow-orange-500/20 active:scale-95"
                                 >
                                     {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : isAddModalOpen ? 'OPERATIVIZAR PERFIL' : 'ACTUALIZAR DATOS'}
                                 </Button>

@@ -70,15 +70,19 @@ export default function OpenBoxPage() {
 
     if (validating) {
         return (
-            <div className="min-h-screen bg-muted flex items-center justify-center">
-                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <div className="min-h-screen bg-[#020406] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-6">
+                    <Loader2 className="w-12 h-12 animate-spin text-orange-500" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500/40 italic animate-pulse">Autenticando Acceso a Bóveda...</p>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-muted text-foreground flex items-center justify-center p-4">
-            <div className="max-w-lg w-full space-y-8 animate-in fade-in zoom-in-95 duration-500">
+        <div className="min-h-screen bg-[#020406] text-white flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none" />
+            <div className="max-w-lg w-full space-y-8 animate-in fade-in zoom-in-95 duration-500 relative z-10">
 
                 <div className="text-center space-y-4">
                     <div className="inline-flex p-4 rounded-3xl bg-emerald-500/10 text-emerald-500 mb-4 ring-1 ring-emerald-500/20">
@@ -93,16 +97,16 @@ export default function OpenBoxPage() {
                 </div>
 
                 <form onSubmit={handleOpenBox} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-xs font-black text-muted-foreground uppercase tracking-widest pl-1">Saldo Inicial (Base)</label>
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] pl-6 italic">Saldo Inicial (Base)</label>
                         <div className="relative group">
-                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-emerald-600 italic">$</span>
+                            <span className="absolute left-8 top-1/2 -translate-y-1/2 text-4xl font-black text-orange-500 italic drop-shadow-2xl shadow-orange-500/50">$</span>
                             <input
                                 type="number"
                                 autoFocus
                                 required
                                 min="0"
-                                className="w-full h-24 bg-card border-2 border-border group-focus-within:border-emerald-500 rounded-[2rem] pl-12 pr-6 outline-none text-5xl font-black text-foreground text-center transition-all placeholder:text-muted-foreground/30 shadow-sm"
+                                className="w-full h-32 bg-white/[0.02] border border-white/5 group-focus-within:border-orange-500/40 rounded-[2.5rem] pl-16 pr-8 outline-none text-6xl font-black text-white text-center transition-all placeholder:text-slate-800 shadow-2xl backdrop-blur-3xl"
                                 placeholder="0"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}

@@ -177,31 +177,32 @@ export default function CouponsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-transparent text-foreground p-4 md:p-8 font-sans selection:bg-primary selection:text-primary-foreground relative">
-            <div className="max-w-[1400px] mx-auto space-y-12 animate-in fade-in duration-1000">
+        <div className="min-h-screen bg-[#020406] text-white p-4 md:p-8 font-sans selection:bg-orange-500 selection:text-black relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-[800px] bg-gradient-to-b from-orange-500/5 to-transparent pointer-events-none" />
+            <div className="max-w-[1400px] mx-auto space-y-12 animate-in fade-in duration-1000 relative z-10">
 
                 {/* 🔝 STRATEGIC HEADER */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 border-b border-border/50 pb-10">
                     <div className="space-y-3">
                         <div className="flex items-center gap-2.5">
-                            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic">Loyalty & Conversion v5.0</span>
+                            <Sparkles className="w-4 h-4 text-orange-500 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-orange-500 italic">SISTEMA DE FIDELIZACIÓN v5.0</span>
                         </div>
-                        <h1 className="text-5xl font-black italic uppercase tracking-tighter text-foreground leading-none">Cupones <span className="text-primary italic">& Ofertas</span></h1>
-                        <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest italic opacity-70">Ingeniería de incentivos y campañas de retención</p>
+                        <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white leading-none">CUPONES <span className="text-orange-500 italic">& OFERTAS</span></h1>
+                        <p className="text-slate-500 font-bold text-sm uppercase tracking-widest italic opacity-70">Protocolos de fidelización y campañas de conversión</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4">
                         <Link href="/admin">
-                            <Button variant="ghost" className="h-16 px-8 bg-card border border-border rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] italic shadow-xl transition-all gap-3 hover:bg-muted active:scale-95 group">
-                                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> RETORNO
+                            <Button variant="ghost" className="h-16 px-8 bg-white/[0.02] border border-white/5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] italic shadow-xl transition-all gap-3 hover:bg-white/5 active:scale-95 group">
+                                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> VOLVER
                             </Button>
                         </Link>
                         <Button
                             onClick={() => handleOpenModal()}
-                            className="h-16 px-10 bg-primary text-primary-foreground hover:bg-foreground hover:text-background font-black uppercase text-[10px] tracking-[0.2em] italic rounded-2xl shadow-3xl transition-all gap-3 border-none ring-offset-background focus-visible:ring-2 focus-visible:ring-primary active:scale-95 group"
+                            className="h-16 px-10 bg-orange-600 text-black hover:bg-orange-500 font-black uppercase text-[10px] tracking-[0.2em] italic rounded-2xl shadow-3xl shadow-orange-500/20 transition-all gap-3 border-none active:scale-95 group"
                         >
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> INICIAR PROTOCOLO DE DESCUENTO
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> CREAR PROTOCOLO DE DESCUENTO
                         </Button>
                     </div>
                 </div>
@@ -218,8 +219,8 @@ export default function CouponsPage() {
 
                         return (
                             <div key={coupon.id} className={cn(
-                                "group relative p-10 rounded-[3.5rem] border transition-all duration-700 hover:border-primary/40 shadow-2xl bg-card overflow-hidden flex flex-col justify-between min-h-[500px]",
-                                !coupon.active && "opacity-50 grayscale scale-[0.98] border-border/20"
+                                "group relative p-10 rounded-[3.5rem] border transition-all duration-700 hover:border-orange-500/40 shadow-2xl bg-slate-900/40 backdrop-blur-3xl overflow-hidden flex flex-col justify-between min-h-[500px] border-white/5",
+                                !coupon.active && "opacity-50 grayscale scale-[0.98]"
                             )}>
                                 {/* Background Accent */}
                                 <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-1000">
@@ -230,14 +231,14 @@ export default function CouponsPage() {
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-5">
                                             <div className={cn(
-                                                "w-16 h-16 rounded-2xl flex items-center justify-center border-2 shadow-inner transition-all duration-500",
-                                                coupon.active ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted border-border text-muted-foreground"
+                                                "w-16 h-16 rounded-2xl flex items-center justify-center border-2 transition-all duration-500 shadow-2xl",
+                                                coupon.active ? "bg-orange-500/10 border-orange-500/20 text-orange-500" : "bg-white/5 border-white/5 text-slate-600"
                                             )}>
                                                 {coupon.discount_type === 'percentage' ? <Percent className="w-8 h-8" /> : <DollarSign className="w-8 h-8" />}
                                             </div>
                                             <div className="space-y-1">
-                                                <h3 className="text-3xl font-black tracking-tighter italic uppercase text-foreground leading-none group-hover:text-primary transition-colors">{coupon.code}</h3>
-                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border/50 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic w-fit">
+                                                <h3 className="text-3xl font-black tracking-tighter italic uppercase text-white leading-none group-hover:text-orange-500 transition-colors">{coupon.code}</h3>
+                                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 italic w-fit">
                                                     <SeasonIcon className="w-3 h-3" />
                                                     {season?.label || 'General'}
                                                 </div>

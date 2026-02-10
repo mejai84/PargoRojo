@@ -38,6 +38,7 @@ type Employee = {
 export default function PayrollPage() {
     const { restaurant } = useRestaurant()
     const [employees, setEmployees] = useState<Employee[]>([])
+    const [activeShifts, setActiveShifts] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
 
@@ -47,18 +48,42 @@ export default function PayrollPage() {
 
     const loadData = async () => {
         setLoading(true)
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('restaurant_id', restaurant?.id)
-            .order('full_name', { ascending: true })
+        try {
+            const [profilesRes, shiftsRes] = await Promise.all([
+                supabase.from('profiles').select('*').eq('restaurant_id', restaurant?.id).order('full_name', { ascending: true }),
+                supabase.from('shifts').select('*, profiles(full_name)').eq('restaurant_id', restaurant?.id).eq('status', 'OPEN')
+            ])
 
-        if (!error) setEmployees(data || [])
-        setLoading(false)
+            if (profilesRes.data) setEmployees(profilesRes.data)
+            if (shiftsRes.data) setActiveShifts(shiftsRes.data)
+        } catch (error) {
+            console.error("Error loading payroll data:", error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleFinalizeShift = async (shiftId: string, empName: string) => {
+        if (!confirm(`¿Deseas finalizar forzosamente el turno de ${empName}?`)) return
+
+        const { error } = await supabase
+            .from('shifts')
+            .update({
+                status: 'CLOSED',
+                ended_at: new Date().toISOString()
+            })
+            .eq('id', shiftId)
+
+        if (!error) {
+            toast.success(`TURNO DE ${empName} FINALIZADO`)
+            loadData()
+        } else {
+            toast.error("Error al finalizar turno: " + error.message)
+        }
     }
 
     const stats = [
-        { label: 'TURNOS ACTIVOS', val: '6', icon: Zap, color: 'text-orange-500' },
+        { label: 'TURNOS ACTIVOS', val: activeShifts.length.toString(), icon: Zap, color: 'text-orange-500' },
         { label: 'NÓMINA PENDIENTE', val: '$450.000', icon: Wallet, color: 'text-white' },
         { label: 'HORAS TRABAJADAS', val: '124h', icon: Clock, color: 'text-blue-400' }
     ]
@@ -120,7 +145,7 @@ export default function PayrollPage() {
                                 <Activity className="w-4 h-4 text-orange-500" /> Turnos de Empleados Activos
                             </h2>
                             <div className="grid grid-cols-2 gap-6">
-                                {employees.slice(0, 6).map((emp, i) => (
+                                {activeShifts.length > 0 ? activeShifts.map((shift, i) => (
                                     <div key={i} className="bg-slate-800/30 backdrop-blur-2xl border border-white/5 rounded-[2.5rem] p-8 flex items-start gap-6 group hover:border-orange-500/40 transition-all">
                                         <div className="relative">
                                             <div className="w-20 h-20 rounded-[1.75rem] bg-slate-700 flex items-center justify-center border-2 border-white/5 overflow-hidden">
@@ -132,28 +157,28 @@ export default function PayrollPage() {
                                         </div>
                                         <div className="flex-1 space-y-4">
                                             <div>
-                                                <h3 className="text-xl font-black italic tracking-tight uppercase group-hover:text-orange-400 transition-colors leading-none">{emp.full_name}</h3>
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">INICIO DE TURNO: 14:00</p>
+                                                <h3 className="text-xl font-black italic tracking-tight uppercase group-hover:text-orange-400 transition-colors leading-none">{shift.profiles?.full_name || 'Empleado'}</h3>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">INICIO: {new Date(shift.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                             </div>
                                             <div className="flex items-center gap-6">
                                                 <div>
-                                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">TIEMPO TRANSCURRIDO:</p>
-                                                    <p className="text-lg font-black italic font-mono text-white">04:35:12</p>
-                                                </div>
-                                                <div className="px-4 py-2 bg-slate-900/60 rounded-xl border border-white/5">
-                                                    <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">PROPINAS:</p>
-                                                    <p className="text-xs font-black text-emerald-400">$55.200</p>
+                                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">TIPO TURNO:</p>
+                                                    <p className="text-lg font-black italic text-white uppercase">{shift.shift_type}</p>
                                                 </div>
                                             </div>
                                             <Button
-                                                onClick={() => toast.success(`TURNO DE ${emp.full_name} FINALIZADO`)}
+                                                onClick={() => handleFinalizeShift(shift.id, shift.profiles?.full_name)}
                                                 className="w-full h-11 bg-orange-600/10 hover:bg-orange-600 text-orange-500 hover:text-black font-black uppercase text-[10px] tracking-widest rounded-xl transition-all border border-orange-500/20 group-hover:border-orange-500"
                                             >
                                                 FINALIZAR TURNO
                                             </Button>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="col-span-2 py-20 text-center bg-slate-900/20 rounded-[2.5rem] border border-dashed border-white/5">
+                                        <p className="text-xs font-black uppercase tracking-widest text-slate-600 italic">No hay turnos activos en este momento</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
